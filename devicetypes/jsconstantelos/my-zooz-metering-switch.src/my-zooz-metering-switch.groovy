@@ -83,7 +83,7 @@ metadata {
 				attributeState "off", label: '${name}', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff"
 			}
             tileAttribute ("power", key: "SECONDARY_CONTROL") {
-           		attributeState "device.power", label:'Currently using ${currentValue} watts', icon: "https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/device-activity-tile@2x.png"
+           		attributeState "device.power", label:'Currently using ${currentValue} watts', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/device-activity-tile@2x.png"
             }
         }
 		valueTile("energy", "device.energy", width: 3, height: 1, decoration: "flat") {

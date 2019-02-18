@@ -131,13 +131,13 @@ metadata {
 
 //Thermostat Mode Control
         standardTile("modeheat", "device.thermostatMode", width: 3, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "heat", label:'Heat Mode', action:"heat", icon:"https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/heat@2x.png"
+            state "heat", label:'Heat Mode', action:"heat", icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/heat@2x.png"
         }
         standardTile("modecool", "device.thermostatMode", width: 3, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "cool", label:'Cool Mode', action:"cool", icon:"https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/cool@2x.png"
+            state "cool", label:'Cool Mode', action:"cool", icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/cool@2x.png"
         }
         standardTile("modeauto", "device.thermostatMode", width: 3, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "auto", label:'Auto Mode', action:"auto", icon:"https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/auto@2x.png"
+            state "auto", label:'Auto Mode', action:"auto", icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/auto@2x.png"
         }
         standardTile("modeheatemrgcy", "device.thermostatMode", width: 3, height: 1, inactiveLabel: false, decoration: "flat") {
             state "heatemrgcy", label:'', action:"emergencyHeat", icon:"st.thermostat.emergency-heat"
@@ -164,13 +164,13 @@ metadata {
 
 //Fan Mode Control        
         standardTile("fanauto", "device.thermostatFanMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "fanauto", label:'Set Fan To Auto', action:"fanAuto", icon:"https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/fan-auto@2x.png"
+            state "fanauto", label:'Set Fan To Auto', action:"fanAuto", icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/fan-auto@2x.png"
         }
         standardTile("fanon", "device.thermostatFanMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "fanon", label:'Turn On Fan', action:"fanOn", icon:"https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/fan-on@2x.png"
+            state "fanon", label:'Turn On Fan', action:"fanOn", icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/fan-on@2x.png"
         }
         standardTile("fancir", "device.thermostatFanMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "fancir", label:'Circulate Fan', action:"fanCirculate", icon:"https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/fan-on@2x.png"
+            state "fancir", label:'Circulate Fan', action:"fanCirculate", icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/fan-on@2x.png"
         }
 
 //Refresh and Config Controls
@@ -186,7 +186,7 @@ metadata {
 			state "default", label:'${currentValue}', icon:"st.Home.home1"
 		}
         valueTile("statusL2Text", "statusL2Text", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
-			state "default", label:'${currentValue}', icon:"https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/fan-on@2x.png"
+			state "default", label:'${currentValue}', icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/fan-on@2x.png"
 		}
         valueTile("temperature2", "device.temperature", width: 1, height: 1, canChangeIcon: true) {
             state "temperature", label: '${currentValue}°', icon:"st.thermostat.ac.air-conditioning", backgroundColor:"#38a815"}

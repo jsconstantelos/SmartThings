@@ -123,13 +123,13 @@ metadata {
 		}               
         carouselTile("chartCycle", "device.image", width: 6, height: 3) { }
 		standardTile("dayChart", "device.chartMode", width: 2, height: 1, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
-			state "day", label:'24 Hour View', action: 'take1', icon: "http://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/24-hour-clockv2.png"
+			state "day", label:'24 Hour View', action: 'take1', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/24-hour-clockv2.png"
 		}
 		standardTile("weekChart", "device.chartMode", width: 2, height: 1, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
-			state "week", label:'Daily View', action: 'take7', icon: "http://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/7day.png"
+			state "week", label:'Daily View', action: 'take7', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/7day.png"
 		}
 		standardTile("monthChart", "device.chartMode", width: 2, height: 1, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
-			state "month", label:'4 Week View', action: 'take28', icon: "http://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/monthv2.png"
+			state "month", label:'4 Week View', action: 'take28', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/monthv2.png"
 		}
 		valueTile("temperature", "device.temperature", width: 2, height: 1) {
             state("temperature", label:'${currentValue}°', action:"refresh.refresh",
@@ -166,7 +166,7 @@ metadata {
 			state "noBattery", icon:"http://swiftlet.technology/wp-content/uploads/2016/04/No-Battery-96.png", backgroundColor:"#cc0000"
 		}
 		standardTile("battery", "device.battery", inactiveLabel: false, width: 2, height:1) {
-			state "battery", label:'${currentValue}%', unit:"", icon: "https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/battery-icon-614x460.png"
+			state "battery", label:'${currentValue}%', unit:"", icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/battery-icon-614x460.png"
 		}
         standardTile("zeroTile", "device.zero", width: 3, height:1, canChangeIcon: false, canChangeBackground: false, decoration: "flat") {
 			state "zero", label:'Reset Meter', action: 'resetMeter', icon: "st.secondary.refresh-icon"

@@ -99,14 +99,14 @@ metadata {
 	tiles(scale: 2) {
 		multiAttributeTile(name:"currentWATTS", type: "generic", width: 6, height: 4, decoration: "flat"){
 			tileAttribute ("device.currentWATTS", key: "PRIMARY_CONTROL") {
-				attributeState "default", label: '${currentValue}W', icon: "https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/device-activity-tile@2x.png", backgroundColor: "#79b821"
+				attributeState "default", label: '${currentValue}W', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/device-activity-tile@2x.png", backgroundColor: "#79b821"
 			}
 			tileAttribute ("device.batteryStatus", key: "SECONDARY_CONTROL") {
-				attributeState "batteryStatus", label:'${currentValue}', icon:"https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/Battery-Charge-icon.png"
+				attributeState "batteryStatus", label:'${currentValue}', icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/Battery-Charge-icon.png"
 			}
 		}
 		standardTile("iconTile", "iconTile", inactiveLabel: false, width: 1, height: 1) {
-			state "default", icon:"https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/device-activity-tile@2x.png"
+			state "default", icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/device-activity-tile@2x.png"
 		}
 		valueTile("statusText", "statusText", inactiveLabel: false, decoration: "flat", width: 5, height: 1) {
 			state "statusText", label:'${currentValue}', backgroundColor:"#ffffff"

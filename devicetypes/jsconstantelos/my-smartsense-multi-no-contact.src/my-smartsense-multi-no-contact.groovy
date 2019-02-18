@@ -44,7 +44,7 @@ metadata {
 				attributeState "inactive", label:'No Activity', icon:"st.motion.acceleration.inactive", backgroundColor:"#ffffff"
 			}
             tileAttribute ("device.battery", key: "SECONDARY_CONTROL") {
-                attributeState("default", label:'${currentValue}% battery', icon: "https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/battery-icon-614x460.png")
+                attributeState("default", label:'${currentValue}% battery', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/battery-icon-614x460.png")
             }
 		}
 		valueTile("temperature", "device.temperature", width: 6, height: 2) {

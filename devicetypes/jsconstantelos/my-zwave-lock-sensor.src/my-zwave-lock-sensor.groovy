@@ -45,7 +45,7 @@ metadata {
 				attributeState "closed", action:"configure", label: 'Locked', icon:"st.locks.lock.locked", backgroundColor:"#00A0DC"
 			}
             tileAttribute ("device.battery", key: "SECONDARY_CONTROL") {
-                attributeState("default", label:'${currentValue}% battery', icon: "https://raw.githubusercontent.com/constjs/jcdevhandlers/master/img/battery-icon-614x460.png")
+                attributeState("default", label:'${currentValue}% battery', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/battery-icon-614x460.png")
             }
 		}
 		standardTile("lock", "device.lock", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
