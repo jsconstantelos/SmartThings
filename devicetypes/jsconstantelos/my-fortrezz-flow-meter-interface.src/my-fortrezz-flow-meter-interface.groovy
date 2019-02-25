@@ -324,6 +324,7 @@ def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelR
 	        map.value = cmd.scaledSensorValue
         }
         map.unit = location.temperatureScale
+        sendEvent(name: "alarmState", value: "Temperature Updated", descriptionText: text, displayed: false)
 	}
 	return map
 }
