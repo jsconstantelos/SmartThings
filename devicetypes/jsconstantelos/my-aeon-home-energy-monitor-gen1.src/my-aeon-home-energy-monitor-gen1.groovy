@@ -64,7 +64,7 @@
  *
  */
 metadata {
-	definition (name: "My Aeon Home Energy Monitor Gen1", namespace: "jsconstantelos", author: "SmartThings", ocfDeviceType: "oic.d.switch", mnmn: "SmartThings", vid:"generic-switch-power-energy")
+	definition (name: "My Aeon Home Energy Monitor Gen1", namespace: "jsconstantelos", author: "SmartThings", ocfDeviceType: "x.com.st.d.energymeter")
 	{
 		capability "Energy Meter"
 		capability "Power Meter"

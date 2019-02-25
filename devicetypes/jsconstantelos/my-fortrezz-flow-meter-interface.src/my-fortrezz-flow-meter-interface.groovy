@@ -59,7 +59,7 @@
  *
  */
 metadata {
-	definition (name: "My FortrezZ Flow Meter Interface", namespace: "jsconstantelos", author: "Daniel Kurin", ocfDeviceType: "oic.d.switch", mnmn: "SmartThings", vid:"generic-switch-power-energy") {
+	definition (name: "My FortrezZ Flow Meter Interface", namespace: "jsconstantelos", author: "Daniel Kurin", ocfDeviceType: "x.com.st.d.energymeter") {
 		capability "Battery"
 		capability "Energy Meter"
         capability "Power Meter"
@@ -517,7 +517,8 @@ def ping() {
 def refresh() {
     if (state.debug) log.debug "${device.label} refresh"
 	delayBetween([
-        zwave.sensorMultilevelV5.sensorMultilevelGet().format()
+        zwave.sensorMultilevelV5.sensorMultilevelGet().format(),
+        zwave.manufacturerSpecificV2.manufacturerSpecificGet().format()
 	])
     def statusTextmsg = ""
     def timeString = new Date().format("MM-dd-yy h:mm a", location.timeZone)
