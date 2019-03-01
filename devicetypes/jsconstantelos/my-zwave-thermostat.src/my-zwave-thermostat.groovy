@@ -140,7 +140,7 @@ metadata {
             state "auto", label:'Auto Mode', action:"auto", icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/auto@2x.png"
         }
         standardTile("modeheatemrgcy", "device.thermostatMode", width: 3, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "heatemrgcy", label:'', action:"emergencyHeat", icon:"st.thermostat.emergency-heat"
+            state "emergencyHeat", label:'', action:"emergencyHeat", icon:"st.thermostat.emergency-heat"
         }         
         standardTile("modeoff", "device.thermostatMode", width: 6, height:2, inactiveLabel: false, decoration: "flat") {
             state "off", label: '', action:"offmode", icon:"st.thermostat.heating-cooling-off"
