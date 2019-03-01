@@ -147,8 +147,8 @@ metadata {
 			state "holdOn", label:'Hold On', action:"setThermostatHoldMode", nextState:"holdOn"
 		}
 		standardTile("powerMode", "device.powerSource", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
-			state "24VAC", label:'AC', icon: "st.switches.switch.on", backgroundColor: "#79b821"
-			state "Battery", label:'Battery', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/battery-icon-614x460.png", backgroundColor:"#ffb3ff"
+			state "24VAC", label:'AC', action:"refresh.refresh", icon: "st.switches.switch.on", backgroundColor: "#79b821"
+			state "Battery", label:'Battery', action:"refresh.refresh", icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/battery-icon-614x460.png", backgroundColor:"#ffb3ff"
 		}
         
 //Miscellaneous tiles used in this DTH
@@ -164,7 +164,7 @@ metadata {
 
 //Tiles to display in the mobile app.  Main is used for the Room and Things view, and Details is for the Device view.
 		main(["temperature"])
-        details(["summary", "thermostatRunMode", "statusL1Text", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeheatemrgcy", "modeoff", "battery", "powerMode", "holdMode", "refresh"])
+        details(["summary", "thermostatRunMode", "statusL1Text", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeheatemrgcy", "modeoff", "battery", "powerMode", "holdMode"])
 	}
 }
 
