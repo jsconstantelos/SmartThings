@@ -56,6 +56,7 @@
  *  10-09-2018 : Cleaned up code.
  *  01-12-2019 : Cleaned up a lot of code.
  *  02-05-2019 : Added/updated error checking for negative delta values, crazy high delta values, duplicate current and previous flow values, and when current flow value is less than the previous flow value.
+ *  03-01-2019 : Fixed history reporting error with values when meter, high gallons used, or highest GPM was reset.
  *
  */
 metadata {
@@ -281,7 +282,7 @@ def resetMeter() {
     dispValue = "Meter was reset on "+timeString
     sendEvent(name: "lastReset", value: dispValue as String, displayed: false)
 	def historyDisp = ""
-    historyDisp = "${device.currentState('lastReset')?.value}\nCummulative at last reset: ${device.currentState('gpmTotal')?.doubleValue} gal\nHighest gallons used at last reset: ${device.currentState('gallonHighLastReset')?.value}\nHighest GPM at last reset: ${device.currentState('gpmHighLastReset')?.value}"
+    historyDisp = "${device.currentState('lastReset')?.value}\nCummulative at last reset: ${device.currentState('cumulativeLastReset')?.value} gal\nHighest gallons used at last reset: ${device.currentState('gallonHighLastReset')?.value}\nHighest GPM at last reset: ${device.currentState('gpmHighLastReset')?.value}"
     sendEvent(name: "history", value: historyDisp, displayed: false)
     sendEvent(name: "alarmState", value: "The meter was just reset", descriptionText: text, displayed: true)
     sendEvent(name: "errorHist", value: "The meter was just reset at "+timeString, descriptionText: text, displayed: true)
@@ -296,7 +297,7 @@ def resetgpmHigh() {
     sendEvent(name: "gpmHigh", value: "(resently reset)")
     sendEvent(name: "gpmHighValue", value: 0)
 	def historyDisp = ""
-    historyDisp = "${device.currentState('lastReset')?.value}\nCummulative at last reset: ${device.currentState('gpmTotal')?.doubleValue} gal\nHighest gallons used at last reset: ${device.currentState('gallonHighLastReset')?.value}\nHighest GPM at last reset: ${device.currentState('gpmHighLastReset')?.value}"
+    historyDisp = "${device.currentState('lastReset')?.value}\nCummulative at last reset: ${device.currentState('cumulativeLastReset')?.value} gal\nHighest gallons used at last reset: ${device.currentState('gallonHighLastReset')?.value}\nHighest GPM at last reset: ${device.currentState('gpmHighLastReset')?.value}"
     sendEvent(name: "history", value: historyDisp, displayed: false)
     sendEvent(name: "alarmState", value: "GPM high value was reset", descriptionText: text, displayed: true)
 }
@@ -308,7 +309,7 @@ def resetgallonHigh() {
     sendEvent(name: "gallonHigh", value: "(resently reset)")
     sendEvent(name: "gallonHighValue", value: 0)
 	def historyDisp = ""
-    historyDisp = "${device.currentState('lastReset')?.value}\nCummulative at last reset: ${device.currentState('gpmTotal')?.doubleValue} gal\nHighest gallons used at last reset: ${device.currentState('gallonHighLastReset')?.value}\nHighest GPM at last reset: ${device.currentState('gpmHighLastReset')?.value}"
+    historyDisp = "${device.currentState('lastReset')?.value}\nCummulative at last reset: ${device.currentState('cumulativeLastReset')?.value} gal\nHighest gallons used at last reset: ${device.currentState('gallonHighLastReset')?.value}\nHighest GPM at last reset: ${device.currentState('gpmHighLastReset')?.value}"
     sendEvent(name: "history", value: historyDisp, displayed: false)
     sendEvent(name: "alarmState", value: "Gals used high value was reset", descriptionText: text, displayed: true)
 }
