@@ -143,49 +143,44 @@ metadata {
 			state "battery", label:'${currentValue}% Battery', unit:""
 		}
 		standardTile("holdMode", "device.thermostatHoldMode", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
-			state "holdOff", label:'Hold Off', action:"setThermostatHoldMode", icon: "st.Lighting.light13", nextState:"holdOff"
-			state "holdOn", label:'Hold On', action:"setThermostatHoldMode", icon: "st.Lighting.light11", nextState:"holdOn"
+			state "holdOff", label:'Hold Off', action:"setThermostatHoldMode", nextState:"holdOff"
+			state "holdOn", label:'Hold On', action:"setThermostatHoldMode", nextState:"holdOn"
 		}
 		standardTile("powerMode", "device.powerSource", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
-			state "24VAC", label:'AC Power', icon: "st.switches.switch.on", backgroundColor:"#ffffff"
-			state "Battery", label:'Batteries', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/battery-icon-614x460.png", backgroundColor:"#ffb3ff"
+			state "24VAC", label:'AC', icon: "st.switches.switch.on", backgroundColor: "#79b821"
+			state "Battery", label:'Battery', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/battery-icon-614x460.png", backgroundColor:"#ffb3ff"
 		}
         
-//Miscellaneous tiles used in this DH
-        valueTile("statusL1Text", "statusL1Text", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
+//Miscellaneous tiles used in this DTH
+		valueTile("thermostatRunMode", "device.thermostatRunMode", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
 			state "default", label:'${currentValue}', icon:"st.Home.home1"
 		}
-        valueTile("statusL2Text", "statusL2Text", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
-			state "default", label:'${currentValue}', icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/fan-on@2x.png"
+		valueTile("statusL1Text", "statusL1Text", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
+			state "default", label:'${currentValue}', icon:"st.Home.home1"
 		}
 		valueTile("temperature", "device.temperature", width: 2, height: 2) {
 			state("temperature", label:'${currentValue}°', icon:"st.thermostat.ac.air-conditioning")
 		}
 
+//Tiles to display in the mobile app.  Main is used for the Room and Things view, and Details is for the Device view.
 		main(["temperature"])
-//		details(["summary", "statusL1Text", "statusL2Text", "heatSliderControl", "coolSliderControl", "modeheat", "modecool", "fanon", "fanauto", "modeheatemrgcy", "modeoff", "battery", "holdMode", "powerMode", "refresh"])
-        details(["summary", "statusL1Text", "statusL2Text", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeheatemrgcy", "modeoff", "battery", "holdMode", "powerMode", "refresh"])
+        details(["summary", "thermostatRunMode", "statusL1Text", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeheatemrgcy", "modeoff", "battery", "powerMode", "holdMode", "refresh"])
 	}
 }
 
 def setTemperature(setpoint) {
 	log.debug "setTemperature() called with setpoint ${setpoint}. "
  	log.debug "Current temperature: ${device.currentValue("temperature")}. Heat Setpoint: ${device.currentValue("heatingSetpoint")}. Cool Setpoint: ${device.currentValue("coolingSetpoint")}"
-   
     def mode = device.currentValue("thermostatMode")
     def midpoint
 	def targetvalue
-
 	if (mode == "off") {
 		log.warn "setTemperature(): this mode: $mode does not allow raiseSetpoint"
         return
     } 
-    
     def currentTemp = device.currentValue("temperature")
     def deltaTemp = setpoint - currentTemp
-    
     log.debug "deltaTemp = ${deltaTemp}"
-    
     if (mode == "heat") {
     	// Change the heat
         log.debug "setTemperature(): change the heat temp"
@@ -224,10 +219,8 @@ def raiseHeatLevel(){
 			minTemp = 30 // Max temp in F
 			log.trace "Location is in Farenheit, MaxTemp: $maxTemp, MinTemp: $minTemp"
 		}
-		
 		def currentLevel = device.currentValue("heatingSetpoint")
 		int nextLevel = currentLevel.toInteger() + 1
-    
 		if( nextLevel > maxTemp){
 			nextLevel = maxTemp
 		}
@@ -252,10 +245,8 @@ def lowHeatLevel(){
 			minTemp = 30 // Max temp in F
 			log.trace "Location is in Farenheit, MaxTemp: $maxTemp, MinTemp: $minTemp"
 		}
-
 		def currentLevel = device.currentValue("heatingSetpoint")
 		int nextLevel = currentLevel.toInteger() - 1
-    
 		if( nextLevel < minTemp){
 			nextLevel = minTemp
 		}
@@ -280,10 +271,8 @@ def raiseCoolLevel(){
 			minTemp = 30 // Max temp in F
 			log.trace "Location is in Farenheit, MaxTemp: $maxTemp, MinTemp: $minTemp"
 		}
-
 		def currentLevel = device.currentValue("coolingSetpoint")
 		int nextLevel = currentLevel.toInteger() + 1
-   
 		if( nextLevel > maxTemp){
 			nextLevel = maxTemp
 		}
@@ -365,7 +354,6 @@ def parse(String description) {
 			map.value = getPowerSource()[descMap.value]			
 		}
 	}
-
 	def result = null
 	if (map) {
 		result = createEvent(map)
@@ -407,6 +395,7 @@ def getThermostatRunMode(value) {
 	if (value != null) {
 	    def RunModeValue = Integer.parseInt(value, 16)
 		log.debug "Thermostat RunMode: ${RunModeValue} "
+        sendEvent("name":"thermostatRunMode", "value":RunModeValue, displayed: true)
 	}
 }
 
@@ -465,7 +454,6 @@ def setThermostatFanMode() {
 	def currentFanMode = device.currentState("thermostatFanMode")?.value
 	log.debug "switching fan from current mode: $currentFanMode"
 	def returnCommand
-
 	switch (currentFanMode) {
 		case "fanAuto":
 			returnCommand = fanOn()
@@ -483,7 +471,6 @@ def setThermostatHoldMode() {
 	def currentHoldMode = device.currentState("thermostatHoldMode")?.value
 	log.debug "switching thermostat from current mode: $currentHoldMode"
 	def returnCommand
-
 	switch (currentHoldMode) {
 		case "holdOff":
 			returnCommand = holdOn()
@@ -578,13 +565,11 @@ def poll() {
 }
 
 def configure() {
-
 	log.debug "binding to Thermostat and Fan Control cluster"
 	[
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 200",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x201 {${device.zigbeeId}} {}", "delay 200",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x202 {${device.zigbeeId}} {}", "delay 200",
-		
 		"zcl global send-me-a-report 1 0x20 0x20 3600 86400 {01}", "delay 100", //battery report request
 		"send 0x${device.deviceNetworkId} 1 1", "delay 200"
 	]
