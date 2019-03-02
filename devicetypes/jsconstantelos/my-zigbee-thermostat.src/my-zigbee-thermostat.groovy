@@ -145,7 +145,7 @@ metadata {
 			state "configure", label:'', action:"configuration.configure", icon:"st.secondary.configure"
 		}
 		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false, width: 2, height: 1) {
-			state "battery", label:'${currentValue}% Battery', unit:""
+			state "battery", action:"configuration.configure", label:'${currentValue}% Battery', unit:""
 		}
 		standardTile("holdMode", "device.thermostatHoldMode", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
 			state "holdOff", label:'Hold Off', action:"setThermostatHoldMode", nextState:"holdOff"
@@ -568,10 +568,10 @@ def poll() {
 }
 
 def configure() {
+	log.debug "binding to Thermostat and Fan Control cluster"
 	// Device-Watch allows 2 check-in misses from device + ping (plus 1 min lag time)
 	// enrolls with default periodic reporting until newer 5 min interval is confirmed
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 1 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
-	log.debug "binding to Thermostat and Fan Control cluster"
 	[
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 200",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x201 {${device.zigbeeId}} {}", "delay 200",

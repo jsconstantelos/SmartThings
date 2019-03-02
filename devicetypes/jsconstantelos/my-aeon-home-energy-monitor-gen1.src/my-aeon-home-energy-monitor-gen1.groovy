@@ -102,7 +102,7 @@ metadata {
 				attributeState "default", label: '${currentValue}W', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/device-activity-tile@2x.png", backgroundColor: "#79b821"
 			}
 			tileAttribute ("device.batteryStatus", key: "SECONDARY_CONTROL") {
-				attributeState "batteryStatus", label:'${currentValue}', icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/Battery-Charge-icon.png"
+				attributeState "batteryStatus", label:'${currentValue}', icon:"st.switches.switch.on"
 			}
 		}
 		standardTile("iconTile", "iconTile", inactiveLabel: false, width: 1, height: 1) {
@@ -181,10 +181,10 @@ def parse(String description) {
 
 	if (state.displayUSB) {
     	if (state.displayBattery) {
-        	def batteryStatusmsg = "USB Power, ${device.currentState('batteryMsg')?.value}"
+        	def batteryStatusmsg = "Mains Powered, ${device.currentState('batteryMsg')?.value}"
 			sendEvent(name: "batteryStatus", value: batteryStatusmsg, displayed: false)
         } else {
-        	def batteryStatusmsg = "USB Power"
+        	def batteryStatusmsg = "Mains Powered"
 			sendEvent(name: "batteryStatus", value: batteryStatusmsg, displayed: false)
         }
 	} else {
