@@ -150,7 +150,7 @@ metadata {
         standardTile("heatTile", "device.heatingSetpoint", inactiveLabel: false, decoration: "flat", width: 1, height: 2) {
 			state "default", label:'', icon:"st.thermostat.heat", backgroundColor: "#ee7681"
 		}
-		controlTile("heatSliderControl", "device.heatingSetpoint", "slider", width: 3, height: 1, inactiveLabel: false, range:"(60..80)") {
+		controlTile("heatSliderControl", "device.heatingSetpoint", "slider", width: 2, height: 1, inactiveLabel: false, range:"(60..80)") {
 			state "default", label:'Heat to {currentValue}°', action:"quickSetHeat", backgroundColor: "#bb434e"
 		}
 
@@ -158,7 +158,7 @@ metadata {
         standardTile("coolTile", "device.coolingSetpoint", inactiveLabel: false, decoration: "flat", width: 1, height: 2) {
 			state "default", label:'', icon:"st.thermostat.cool", backgroundColor: "#51afdb"
 		}
-		controlTile("coolSliderControl", "device.coolingSetpoint", "slider", width: 3, height: 1, inactiveLabel: false, range:"(60..80)") {
+		controlTile("coolSliderControl", "device.coolingSetpoint", "slider", width: 2, height: 1, inactiveLabel: false, range:"(60..80)") {
 			state "default", label:'Cool to ${currentValue}°', action:"quickSetCool", backgroundColor: "#1e7ca8"
 		}
 
@@ -185,14 +185,15 @@ metadata {
         valueTile("statusL1Text", "statusL1Text", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
 			state "default", label:'${currentValue}', icon:"st.Home.home1"
 		}
-        valueTile("statusL2Text", "statusL2Text", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
+        valueTile("statusL2Text", "statusL2Text", inactiveLabel: false, decoration: "flat", width: 2, height: 1) {
 			state "default", label:'${currentValue}', icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/fan-on@2x.png"
 		}
         valueTile("temperature2", "device.temperature", width: 1, height: 1, canChangeIcon: true) {
             state "temperature", label: '${currentValue}°', icon:"st.thermostat.ac.air-conditioning", backgroundColor:"#38a815"}
         
 		main (["temperature2"])
-		details(["temperature", "heatSliderControl", "coolSliderControl", "statusL1Text", "statusL2Text", "fanon", "fanauto", "fancir", "modeheat", "modecool", "modeauto", "modeheatemrgcy", "refresh", "configure", "modeoff"])
+//		details(["temperature", "heatSliderControl", "coolSliderControl", "statusL1Text", "statusL2Text", "fanon", "fanauto", "fancir", "modeheat", "modecool", "modeauto", "modeheatemrgcy", "refresh", "configure", "modeoff"])
+		details(["temperature", "heatSliderControl", "statusL2Text", "coolSliderControl", "fanon", "fanauto", "fancir", "modeheat", "modecool", "modeauto", "modeheatemrgcy", "refresh", "configure", "modeoff"])
 	}
 }
 
