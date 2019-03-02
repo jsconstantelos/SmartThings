@@ -12,6 +12,11 @@
  *
  *	Author: SmartThings
  *	Date: 2013-12-02
+  *
+ *  Updates:
+ *  -------
+ *  03-01-2019 : Initial commit/prototyping
+ *
  */
 metadata {
 	definition (name: "My Zigbee Thermostat", namespace: "jsconstantelos", author: "SmartThings") {
@@ -201,9 +206,7 @@ def setTemperature(setpoint) {
 }
 
 def raiseHeatLevel(){
-
     def mode = device.currentValue("thermostatMode")
-
  	if (mode == "off") {
 		log.warn "raiseHeatLevel(): this mode: $mode does not allow raiseHeatLevel"
 	} else {
@@ -565,6 +568,9 @@ def poll() {
 }
 
 def configure() {
+	// Device-Watch allows 2 check-in misses from device + ping (plus 1 min lag time)
+	// enrolls with default periodic reporting until newer 5 min interval is confirmed
+	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 1 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
 	log.debug "binding to Thermostat and Fan Control cluster"
 	[
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 200",
@@ -573,6 +579,11 @@ def configure() {
 		"zcl global send-me-a-report 1 0x20 0x20 3600 86400 {01}", "delay 100", //battery report request
 		"send 0x${device.deviceNetworkId} 1 1", "delay 200"
 	]
+}
+
+// PING is used by Device-Watch in attempt to reach the Device
+def ping() {
+	zigbee.readAttribute(zigbee.IAS_ZONE_CLUSTER, zigbee.ATTRIBUTE_IAS_ZONE_STATUS)
 }
 
 def refresh()

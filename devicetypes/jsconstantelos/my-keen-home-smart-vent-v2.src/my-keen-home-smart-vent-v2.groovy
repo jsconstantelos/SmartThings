@@ -26,6 +26,7 @@
  *  01-21-2018 : Revert change made on 1/18/2018.  Back to Pa from Hg.
  *  10-26-2018 : Created version 2.  Removed temp, pressure, and battery tiles.  Added battery level to the main tile.  Set temp/pressure reporting to once every 8 hours.
  *  10-27-2018 : Updated to account for Keen's zigbee bug when opening a vent - it can't anymore with a normal zigbee on command.  Using a set level command instead as a workaround.
+ *  03-02-2019 : Updated HealthCheck to start working on getting this DTH working in the new app.
  *
  */
 metadata {
@@ -148,13 +149,6 @@ def parse(String description) {
     log.debug "Parse returned $map"
     
     return map ? createEvent(map) : null
-}
-
-/**
- * PING is used by Device-Watch in attempt to reach the Device
- * */
-def ping() {
-	return zigbee.readAttribute(0x001, 0x0020) // Read the Battery Level
 }
 
 private Map parseCatchAllMessage(String description) {
@@ -563,8 +557,16 @@ def refresh() {
     getBattery()
 }
 
+// PING is used by Device-Watch in attempt to reach the Device
+def ping() {
+	zigbee.readAttribute(zigbee.IAS_ZONE_CLUSTER, zigbee.ATTRIBUTE_IAS_ZONE_STATUS)
+}
+
 def configure() {
     log.debug "CONFIGURE"
+	// Device-Watch allows 2 check-in misses from device + ping (plus 1 min lag time)
+	// enrolls with default periodic reporting until newer 5 min interval is confirmed
+	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 1 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
 
     // get ZigBee ID by hidden tile because that's the only way we can do it
     setZigBeeIdTile()
