@@ -185,7 +185,7 @@ metadata {
         valueTile("statusL1Text", "statusL1Text", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
 			state "default", label:'${currentValue}', icon:"st.Home.home1"
 		}
-        valueTile("statusL2Text", "statusL2Text", inactiveLabel: false, decoration: "flat", width: 2, height: 1) {
+        standardTile("statusL2Text", "statusL2Text", inactiveLabel: false, decoration: "flat", width: 2, height: 1) {
 			state "default", label:'${currentValue}', icon:"https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/fan-on@2x.png"
 		}
         valueTile("temperature2", "device.temperature", width: 1, height: 1, canChangeIcon: true) {
@@ -213,9 +213,9 @@ def parse(String description)
 	}
 
 	if (map.name == "thermostatFanMode"){
-		if (map.value == "fanAuto") {sendEvent(name: "currentfanMode", value: "AUTO mode" as String)}
-	    if (map.value == "fanOn") {sendEvent(name: "currentfanMode", value: "ON mode" as String)}
-	    if (map.value == "fanCirculate") {sendEvent(name: "currentfanMode", value: "CYCLE mode" as String)}
+		if (map.value == "fanAuto") {sendEvent(name: "currentfanMode", value: "AUTO" as String)}
+	    if (map.value == "fanOn") {sendEvent(name: "currentfanMode", value: "ON" as String)}
+	    if (map.value == "fanCirculate") {sendEvent(name: "currentfanMode", value: "CYCLE" as String)}
 	}
 
 	def result = [map]
@@ -254,7 +254,7 @@ def parse(String description)
     }
     sendEvent("name":"statusL1Text", "value":statusL1Textmsg, displayed: false)
 
-    statusL2Textmsg = "Fan is in ${device.currentState('currentfanMode').value} and is ${device.currentState('thermostatFanState').value}"
+    statusL2Textmsg = "Fan is ${device.currentState('currentfanMode').value} and ${device.currentState('thermostatFanState').value}"
     sendEvent("name":"statusL2Text", "value":statusL2Textmsg, displayed: false)
     
 	if (state.debug) log.debug "Parse returned $result"
@@ -413,15 +413,15 @@ def zwaveEvent(physicalgraph.zwave.commands.thermostatfanmodev3.ThermostatFanMod
 	switch (cmd.fanMode) {
 		case physicalgraph.zwave.commands.thermostatfanmodev3.ThermostatFanModeReport.FAN_MODE_AUTO_LOW:
 			map.value = "fanAuto"
-            sendEvent(name: "currentfanMode", value: "AUTO Mode" as String)
+            sendEvent(name: "currentfanMode", value: "AUTO" as String)
 			break
 		case physicalgraph.zwave.commands.thermostatfanmodev3.ThermostatFanModeReport.FAN_MODE_LOW:
 			map.value = "fanOn"
-            sendEvent(name: "currentfanMode", value: "ON Mode" as String)
+            sendEvent(name: "currentfanMode", value: "ON" as String)
 			break
 		case physicalgraph.zwave.commands.thermostatfanmodev3.ThermostatFanModeReport.FAN_MODE_CIRCULATION:
 			map.value = "fanCirculate"
-            sendEvent(name: "currentfanMode", value: "CYCLE Mode" as String)
+            sendEvent(name: "currentfanMode", value: "CYCLE" as String)
 			break
 	}
 	map.name = "thermostatFanMode"
@@ -646,7 +646,7 @@ def emergencyHeat() {
 
 def fanOn() {
 	if (state.debug) log.debug "Switching fan to on mode..."
-    sendEvent(name: "currentfanMode", value: "On Mode" as String)
+    sendEvent(name: "currentfanMode", value: "On" as String)
 	delayBetween([
 		zwave.thermostatFanModeV3.thermostatFanModeSet(fanMode: 1).format(),
 		zwave.thermostatFanModeV3.thermostatFanModeGet().format(),
@@ -656,7 +656,7 @@ def fanOn() {
 
 def fanAuto() {
 	if (state.debug) log.debug "Switching fan to auto mode..."
-    sendEvent(name: "currentfanMode", value: "Auto Mode" as String)
+    sendEvent(name: "currentfanMode", value: "Auto" as String)
 	delayBetween([
 		zwave.thermostatFanModeV3.thermostatFanModeSet(fanMode: 0).format(),
 		zwave.thermostatFanModeV3.thermostatFanModeGet().format(),
@@ -666,7 +666,7 @@ def fanAuto() {
 
 def fanCirculate() {
 	if (state.debug) log.debug "Switching fan to circulate mode..."
-    sendEvent(name: "currentfanMode", value: "Cycle Mode" as String)
+    sendEvent(name: "currentfanMode", value: "Cycle" as String)
 	delayBetween([
 		zwave.thermostatFanModeV3.thermostatFanModeSet(fanMode: 6).format(),
 		zwave.thermostatFanModeV3.thermostatFanModeGet().format(),
