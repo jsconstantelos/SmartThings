@@ -111,22 +111,22 @@ metadata {
 		}
 
 //Additional thermostat capabilities
-		standardTile("refresh", "device.temperature", height: 2, width: 6, inactiveLabel: false, decoration: "flat") {
+		standardTile("refresh", "device.temperature", height: 1, width: 3, inactiveLabel: false, decoration: "flat") {
 			state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
-		standardTile("configure", "device.configure", height: 2, width: 2, inactiveLabel: false, decoration: "flat") {
+		standardTile("configure", "device.configure", height: 1, width: 3, inactiveLabel: false, decoration: "flat") {
 			state "configure", label:'', action:"configuration.configure", icon:"st.secondary.configure"
 		}
 		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false, width: 2, height: 1) {
-			state "battery", action:"configuration.configure", label:'${currentValue}% Battery', unit:""
+			state "battery", label:'${currentValue}% Battery', unit:""
 		}
 		standardTile("holdMode", "device.thermostatHoldMode", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
 			state "holdOff", label:'Hold Off', action:"setThermostatHoldMode", nextState:"holdOff"
 			state "holdOn", label:'Hold On', action:"setThermostatHoldMode", nextState:"holdOn"
 		}
 		standardTile("powerMode", "device.powerSource", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
-			state "24VAC", label:'AC', action:"refresh.refresh", icon: "st.switches.switch.on", backgroundColor: "#79b821"
-			state "Battery", label:'Battery', action:"refresh.refresh", icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/battery-icon-614x460.png", backgroundColor:"#ffb3ff"
+			state "24VAC", label:'AC', icon: "st.switches.switch.on", backgroundColor: "#79b821"
+			state "Battery", label:'Battery', icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/battery-icon-614x460.png", backgroundColor:"#ffb3ff"
 		}
         
 //Miscellaneous tiles used in this DTH
@@ -142,7 +142,7 @@ metadata {
 
 //Tiles to display in the mobile app.  Main is used for the Room and Things view, and Details is for the Device view.
 		main(["temperature"])
-        details(["summary", "thermostatMode", "fanMode", "heatSliderControl", "coolSliderControl", "modeheat", "modecool", "modeheatemrgcy", "modeoff", "battery", "powerMode", "holdMode"])
+        details(["summary", "thermostatMode", "fanMode", "heatSliderControl", "coolSliderControl", "modeheat", "modecool", "modeheatemrgcy", "modeoff", "battery", "powerMode", "holdMode", "refresh", "configure"])
 	}
 }
 
