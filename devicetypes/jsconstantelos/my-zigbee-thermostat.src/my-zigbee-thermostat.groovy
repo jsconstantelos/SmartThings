@@ -19,7 +19,7 @@
  *
  */
 metadata {
-	definition (name: "My Zigbee Thermostat", namespace: "jsconstantelos", author: "SmartThings") {
+	definition (name: "My Zigbee Thermostat", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", ocfDeviceType: "oic.d.thermostat") {
 		capability "Actuator"
 		capability "Temperature Measurement"
 		capability "Thermostat"
@@ -160,14 +160,14 @@ def parse(String description) {
 		} else if (descMap.cluster == "0201" && descMap.attrId == "0011") {
 			log.debug "COOLING SETPOINT"
 			map.name = "coolingSetpoint"
-			map.value = getTemperature(descMap.value)
+			map.value = getCoolSetTemp(descMap.value)
             if (device.currentValue("thermostatMode") == "cool") {
 	            sendEvent("name": "thermostatSetpoint", "value": map.value)
 			}
 		} else if (descMap.cluster == "0201" && descMap.attrId == "0012") {
 			log.debug "HEATING SETPOINT"
 			map.name = "heatingSetpoint"
-			map.value = getTemperature(descMap.value)
+			map.value = getHeatSetTemp(descMap.value)
             if (device.currentValue("thermostatMode") == "heat") {
 	            sendEvent("name": "thermostatSetpoint", "value": map.value)
 			}
@@ -238,20 +238,46 @@ def getFanModeMap() { [
 ]}
 
 def getThermostatRunMode(value) {
-	if (value != null) {
+//	if (value != null) {
+    	log.debug "RAW VALUE for Thermostat RunMode: ${value} "
 	    def RunModeValue = Integer.parseInt(value, 16)
 		log.debug "Thermostat RunMode: ${RunModeValue} "
         sendEvent("name":"thermostatRunMode", "value":RunModeValue, displayed: true)
-	}
+//	}
 }
 
 def getTemperature(value) {
+	if (value != null) {
+    	log.debug "Raw Value for temperature : ${value} "
+		def celsius = Integer.parseInt(value, 16) / 100
+        log.debug "Value for temperature in C: ${celsius}"
+		if (getTemperatureScale() == "C") {
+			return celsius
+		} else {
+        	log.debug "Value for temperature in F not rounded: ${celsiusToFahrenheit(celsius)}"
+			return Math.round(celsiusToFahrenheit(celsius))
+		}
+	}
+}
+
+def getCoolSetTemp(value) {
 	if (value != null) {
 		def celsius = Integer.parseInt(value, 16) / 100
 		if (getTemperatureScale() == "C") {
 			return celsius
 		} else {
-			return Math.round(celsiusToFahrenheit(celsius))			
+			return Math.round(celsiusToFahrenheit(celsius))
+		}
+	}
+}
+
+def getHeatSetTemp(value) {
+	if (value != null) {
+		def celsius = Integer.parseInt(value, 16) / 100
+		if (getTemperatureScale() == "C") {
+			return celsius
+		} else {
+			return Math.round(celsiusToFahrenheit(celsius))
 		}
 	}
 }
@@ -260,43 +286,47 @@ def setLevelUp(){
     if (device.currentValue("thermostatMode") == "heat") {
     	int nextLevel = device.currentValue("heatingSetpoint") + 1
     	setHeatingSetpoint(nextLevel)
-	} else if (device.latestValue("thermostatMode") == "cool") {   
+	} else if (device.currentValue("thermostatMode") == "cool") {   
         int nextLevel = device.currentValue("coolingSetpoint") + 1
         setCoolingSetpoint(nextLevel)
 	}   
 }
 
 def setLevelDown(){
-    if (device.latestValue("thermostatMode") == "heat") {
+    if (device.currentValue("thermostatMode") == "heat") {
     	int nextLevel = device.currentValue("heatingSetpoint") - 1
     	setHeatingSetpoint(nextLevel)
-	} else if (device.latestValue("thermostatMode") == "cool") {   
+	} else if (device.currentValue("thermostatMode") == "cool") {   
         int nextLevel = device.currentValue("coolingSetpoint") - 1
         setCoolingSetpoint(nextLevel)
 	}   
 }
 
 def setHeatingSetpoint(degrees) {
-	if (degrees != null) {
-		def temperatureScale = getTemperatureScale()
-		def degreesInteger = Math.round(degrees)
-		log.debug "setHeatingSetpoint({$degreesInteger} ${temperatureScale})"
-		sendEvent("name": "heatingSetpoint", "value": degreesInteger)
-        sendEvent("name": "thermostatSetpoint", "value": degreesInteger)
-		def celsius = (getTemperatureScale() == "C") ? degreesInteger : (fahrenheitToCelsius(degreesInteger) as Double).round(2)
-		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x12 0x29 {" + hex(celsius * 100) + "}"
-	}
+	if (device.currentValue("thermostatMode") == "heat") {
+        if (degrees != null) {
+            def temperatureScale = getTemperatureScale()
+            def degreesInteger = Math.round(degrees)
+            log.debug "setHeatingSetpoint({$degreesInteger} ${temperatureScale})"
+            sendEvent("name": "heatingSetpoint", "value": degreesInteger)
+            sendEvent("name": "thermostatSetpoint", "value": degreesInteger)
+            def celsius = (getTemperatureScale() == "C") ? degreesInteger : (fahrenheitToCelsius(degreesInteger) as Double).round(2)
+            "st wattr 0x${device.deviceNetworkId} 1 0x201 0x12 0x29 {" + hex(celsius * 100) + "}"
+        }
+    }
 }
 
 def setCoolingSetpoint(degrees) {
-	if (degrees != null) {
-		def degreesInteger = Math.round(degrees)
-		log.debug "setCoolingSetpoint({$degreesInteger} ${temperatureScale})"
-		sendEvent("name": "coolingSetpoint", "value": degreesInteger)
-        sendEvent("name": "thermostatSetpoint", "value": degreesInteger)
-		def celsius = (getTemperatureScale() == "C") ? degreesInteger : (fahrenheitToCelsius(degreesInteger) as Double).round(2)
-		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x11 0x29 {" + hex(celsius * 100) + "}"
-	}
+	if (device.currentValue("thermostatMode") == "cool") {
+        if (degrees != null) {
+            def degreesInteger = Math.round(degrees)
+            log.debug "setCoolingSetpoint({$degreesInteger} ${temperatureScale})"
+            sendEvent("name": "coolingSetpoint", "value": degreesInteger)
+            sendEvent("name": "thermostatSetpoint", "value": degreesInteger)
+            def celsius = (getTemperatureScale() == "C") ? degreesInteger : (fahrenheitToCelsius(degreesInteger) as Double).round(2)
+            "st wattr 0x${device.deviceNetworkId} 1 0x201 0x11 0x29 {" + hex(celsius * 100) + "}"
+        }
+    }
 }
 
 def modes() {

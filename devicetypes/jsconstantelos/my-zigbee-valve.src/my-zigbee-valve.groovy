@@ -14,7 +14,7 @@
 import physicalgraph.zigbee.zcl.DataType
 
 metadata {
-    definition (name: "My ZigBee Valve", namespace: "jsconstantelos", author: "SmartThings", runLocally: false, minHubCoreVersion: '000.017.0012', executeCommandsLocally: false) {
+    definition (name: "My ZigBee Valve", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", ocfDeviceType: "oic.d.watervalve") {
         capability "Actuator"
         capability "Battery"
         capability "Configuration"
