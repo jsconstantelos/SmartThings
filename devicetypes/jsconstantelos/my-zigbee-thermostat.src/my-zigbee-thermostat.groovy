@@ -19,7 +19,7 @@
  *
  */
 metadata {
-	definition (name: "My Zigbee Thermostat", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", ocfDeviceType: "oic.d.thermostat") {
+	definition (name: "My Zigbee Thermostat", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", ocfDeviceType: "oic.d.thermostat", vid:"generic-thermostat") {
 		capability "Actuator"
 		capability "Temperature Measurement"
 		capability "Thermostat"
@@ -45,12 +45,14 @@ metadata {
 		attribute "powerSource", "string"
         attribute "thermostatSetpoint", "number"
         attribute "thermostatRunMode", "number"
+        attribute "currentState", "string"
+        attribute "currentMode", "string"
 		
 		fingerprint profileId: "0104", inClusters: "0000,0001,0003,0020,0201,0202,0204,0B05", outClusters: "000A, 0019"
 	}
 
 	tiles(scale: 2) {
-        multiAttributeTile(name:"summary", type: "thermostat", width: 6, height: 4) {
+        multiAttributeTile(name:"summary", type: "", width: 6, height: 4) {
         	tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
 				attributeState("temperature", label:'${currentValue}°', unit:"F",
 				backgroundColors:[
@@ -74,6 +76,9 @@ metadata {
             tileAttribute("device.coolingSetpoint", key: "COOLING_SETPOINT") {
                 attributeState("default", label:'${currentValue}°')
             }
+            tileAttribute("device.statusL1Text", key: "SECONDARY_CONTROL") {
+                attributeState("default", label:'${currentValue}', icon:"st.Home.home1")
+            } 
  		}
         
 //Thermostat Mode Control
@@ -163,6 +168,12 @@ def parse(String description) {
 			map.value = getCoolSetTemp(descMap.value)
             if (device.currentValue("thermostatMode") == "cool") {
 	            sendEvent("name": "thermostatSetpoint", "value": map.value)
+                if (device.currentState('coolingSetpoint')?.value > device.currentState('temperature')?.value) {
+                	sendEvent(name: "currentState", value: "idle" as String, displayed: false)
+                }
+                if (device.currentState('coolingSetpoint')?.value <= device.currentState('temperature')?.value) {
+                	sendEvent(name: "currentState", value: "running" as String, displayed: false)
+                }
 			}
 		} else if (descMap.cluster == "0201" && descMap.attrId == "0012") {
 			log.debug "HEATING SETPOINT"
@@ -170,9 +181,21 @@ def parse(String description) {
 			map.value = getHeatSetTemp(descMap.value)
             if (device.currentValue("thermostatMode") == "heat") {
 	            sendEvent("name": "thermostatSetpoint", "value": map.value)
+                if (device.currentState('heatingSetpoint')?.value > device.currentState('temperature')?.value) {
+                	sendEvent(name: "currentState", value: "running" as String, displayed: false)
+                }
+                if (device.currentState('heatingSetpoint')?.value <= device.currentState('temperature')?.value) {
+                	sendEvent(name: "currentState", value: "idle" as String, displayed: false)
+                }
 			}
             if (device.currentValue("thermostatMode") == "emergencyHeat") {
 	            sendEvent("name": "thermostatSetpoint", "value": map.value)
+                if (device.currentState('heatingSetpoint')?.value > device.currentState('temperature')?.value) {
+                	sendEvent(name: "currentState", value: "running" as String, displayed: false)
+                }
+                if (device.currentState('heatingSetpoint')?.value <= device.currentState('temperature')?.value) {
+                	sendEvent(name: "currentState", value: "idle" as String, displayed: false)
+                }
 			}
 		} else if (descMap.cluster == "0201" && descMap.attrId == "001c") {
 			log.debug "MODE"
@@ -205,6 +228,9 @@ def parse(String description) {
 		result = createEvent(map)
 	}
 	log.debug "Parse returned $map"
+    def statusL1Textmsg = ""
+    statusL1Textmsg = "Unit is in ${device.currentState('thermostatMode')?.value} mode and is ${device.currentState('currentState')?.value}"
+    sendEvent("name":"statusL1Text", "value":statusL1Textmsg, displayed: false)
 	return result
 }
 
@@ -248,14 +274,13 @@ def getThermostatRunMode(value) {
 
 def getTemperature(value) {
 	if (value != null) {
-    	log.debug "Raw Value for temperature : ${value} "
 		def celsius = Integer.parseInt(value, 16) / 100
-        log.debug "Value for temperature in C: ${celsius}"
 		if (getTemperatureScale() == "C") {
 			return celsius
 		} else {
         	log.debug "Value for temperature in F not rounded: ${celsiusToFahrenheit(celsius)}"
-			return Math.round(celsiusToFahrenheit(celsius))
+//			return Math.round(celsiusToFahrenheit(celsius))
+            return String.format("%3.1f",celsiusToFahrenheit(celsius))
 		}
 	}
 }
@@ -307,7 +332,6 @@ def setHeatingSetpoint(degrees) {
         if (degrees != null) {
             def temperatureScale = getTemperatureScale()
             def degreesInteger = Math.round(degrees)
-            log.debug "setHeatingSetpoint({$degreesInteger} ${temperatureScale})"
             sendEvent("name": "heatingSetpoint", "value": degreesInteger)
             sendEvent("name": "thermostatSetpoint", "value": degreesInteger)
             def celsius = (getTemperatureScale() == "C") ? degreesInteger : (fahrenheitToCelsius(degreesInteger) as Double).round(2)
@@ -320,7 +344,6 @@ def setCoolingSetpoint(degrees) {
 	if (device.currentValue("thermostatMode") == "cool") {
         if (degrees != null) {
             def degreesInteger = Math.round(degrees)
-            log.debug "setCoolingSetpoint({$degreesInteger} ${temperatureScale})"
             sendEvent("name": "coolingSetpoint", "value": degreesInteger)
             sendEvent("name": "thermostatSetpoint", "value": degreesInteger)
             def celsius = (getTemperatureScale() == "C") ? degreesInteger : (fahrenheitToCelsius(degreesInteger) as Double).round(2)
@@ -334,21 +357,15 @@ def modes() {
 }
 
 def setThermostatMode() {
-	log.debug "switching thermostatMode"
 	def currentMode = device.currentState("thermostatMode")?.value
 	def modeOrder = modes()
-    log.debug "modeOrder: ${modeOrder}"
 	def index = modeOrder.indexOf(currentMode)
-    log.debug "index: ${index}"
     def next = index >= 0 && index < modeOrder.size() - 1 ? modeOrder[index + 1] : modeOrder[0]
-	log.debug "switching mode from $currentMode to $next"
 	"$next"()
 }
 
 def setThermostatFanMode() {
-	log.debug "Switching fan mode"
 	def currentFanMode = device.currentState("thermostatFanMode")?.value
-	log.debug "switching fan from current mode: $currentFanMode"
 	def returnCommand
 	switch (currentFanMode) {
 		case "fanAuto":
@@ -363,9 +380,7 @@ def setThermostatFanMode() {
 }
 
 def setThermostatHoldMode() {
-	log.debug "Switching Hold mode"
 	def currentHoldMode = device.currentState("thermostatHoldMode")?.value
-	log.debug "switching thermostat from current mode: $currentHoldMode"
 	def returnCommand
 	switch (currentHoldMode) {
 		case "holdOff":
@@ -380,42 +395,35 @@ def setThermostatHoldMode() {
 }
 
 def setThermostatMode(String value) {
-	log.debug "setThermostatMode({$value})"
 	"$value"()
 }
 
 def setThermostatFanMode(String value) {
-	log.debug "setThermostatFanMode({$value})"
 	"$value"()
 }
 
 def setThermostatHoldMode(String value) {
-	log.debug "setThermostatHoldMode({$value})"
 	"$value"()
 }
 
 def offmode() {
-	log.debug "off"
 	sendEvent("name":"thermostatMode", "value":"off")
 	"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {00}"
 }
 
 def cool() {
-	log.debug "cool"
 	sendEvent("name":"thermostatMode", "value":"cool")
     sendEvent("name": "thermostatSetpoint", "value": device.currentState("coolingSetpoint")?.value)
 	"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {03}"
 }
 
 def heat() {
-	log.debug "heat"
 	sendEvent("name":"thermostatMode", "value":"heat")
     sendEvent("name": "thermostatSetpoint", "value": device.currentState("heatingSetpoint")?.value)
 	"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {04}"
 }
 
 def emergencyHeat() {
-	log.debug "emergencyHeat"
 	sendEvent("name":"thermostatMode", "value":"emergencyHeat")
     sendEvent("name": "thermostatSetpoint", "value": device.currentState("heatingSetpoint")?.value)
 	"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {05}"
@@ -430,7 +438,6 @@ def off() {
 }
 
 def fanOn() {
-	log.debug "fanOn"
 	sendEvent("name":"thermostatFanMode", "value":"fanOn")
 	"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {04}"
 }
@@ -440,26 +447,22 @@ def auto() {
 }
 
 def fanAuto() {
-	log.debug "fanAuto"
 	sendEvent("name":"thermostatFanMode", "value":"fanAuto")
 	"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {05}"
 }
 
 def holdOn() {
-	log.debug "Set Hold On for thermostat"
 	sendEvent("name":"thermostatHoldMode", "value":"holdOn")
 	"st wattr 0x${device.deviceNetworkId} 1 0x201 0x23 0x30 {01}"
 }
 
 def holdOff() {
-	log.debug "Set Hold Off for thermostat"
 	sendEvent("name":"thermostatHoldMode", "value":"holdOff")
 	"st wattr 0x${device.deviceNetworkId} 1 0x201 0x23 0x30 {00}"
 }
 
 // Commment out below if no C-wire since it will kill the batteries.
 def poll() {
-	log.debug "Executing 'poll'"
 	refresh()
 }
 
