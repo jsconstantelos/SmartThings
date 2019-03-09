@@ -54,7 +54,6 @@ metadata {
         attribute "thermostatSetpoint", "number"
         attribute "thermostatRunMode", "number"
         attribute "thermostatOperatingState", "number"
-        attribute "currentMode", "string"
 		
         fingerprint profileId: "0104", inClusters: "0000,0001,0003,0004,0005,0020,0201,0202,0204,0B05", outClusters: "000A, 0019"
 	}
@@ -117,10 +116,10 @@ metadata {
 
 //Temperature Set Point Controls
 		controlTile("heatSliderControl", "device.heatingSetpoint", "slider", height: 1, width: 3, inactiveLabel: false, range:"(60..80)") {
-			state "setHeatingSetpoint", action:"thermostat.setHeatingSetpoint", backgroundColor:"#d04e00", unit:"F"
+			state "setHeatingSetpoint", action:"thermostat.setHeatingSetpoint", backgroundColor:"#d04e00", unit:""
 		}
 		controlTile("coolSliderControl", "device.coolingSetpoint", "slider", height: 1, width: 3, inactiveLabel: false, range:"(60..80)") {
-			state "setCoolingSetpoint", action:"thermostat.setCoolingSetpoint", backgroundColor: "#003CEC", unit:"F"
+			state "setCoolingSetpoint", action:"thermostat.setCoolingSetpoint", backgroundColor: "#003CEC", unit:""
 		}
 
 //Additional thermostat capabilities
@@ -161,11 +160,11 @@ metadata {
 
 // parse events into attributes
 def parse(String description) {
-//	log.debug "Parse description : $description"
+	log.debug "Parse description : $description"
 	def map = [:]
 	if (description?.startsWith("read attr -")) {
 		def descMap = parseDescriptionAsMap(description)
-//		log.debug "Desc Map : $descMap"
+		log.debug "Desc Map : $descMap"
 		if (descMap.cluster == "0201" && descMap.attrId == "0000") {			// OK
         	"st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 			map.name = "temperature"
@@ -173,7 +172,7 @@ def parse(String description) {
 		} else if (descMap.cluster == "0201" && descMap.attrId == "0011") {		// OK
         	"st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 			map.name = "coolingSetpoint"
-			map.value = getCoolSetTemp(descMap.value)
+			map.value = getTemperature(descMap.value)
             if (device.currentValue("thermostatMode") == "cool") {
 	            sendEvent("name": "thermostatSetpoint", "value": map.value)
                 if (device.currentState('coolingSetpoint')?.value > device.currentState('temperature')?.value) {
@@ -186,7 +185,7 @@ def parse(String description) {
 		} else if (descMap.cluster == "0201" && descMap.attrId == "0012") {		// OK
         	"st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 			map.name = "heatingSetpoint"
-			map.value = getHeatSetTemp(descMap.value)
+			map.value = getTemperature(descMap.value)
             if (device.currentValue("thermostatMode") == "heat" || "emergencyHeat") {
 	            sendEvent("name": "thermostatSetpoint", "value": map.value)
                 if (device.currentState('heatingSetpoint')?.value > device.currentState('temperature')?.value) {
@@ -297,28 +296,6 @@ def getTemperature(value) {
 	}
 }
 
-def getCoolSetTemp(value) {
-	if (value != null) {
-		def celsius = Integer.parseInt(value, 16) / 100
-		if (getTemperatureScale() == "C") {
-			return celsius
-		} else {
-			return Math.round(celsiusToFahrenheit(celsius))
-		}
-	}
-}
-
-def getHeatSetTemp(value) {
-	if (value != null) {
-		def celsius = Integer.parseInt(value, 16) / 100
-		if (getTemperatureScale() == "C") {
-			return celsius
-		} else {
-			return Math.round(celsiusToFahrenheit(celsius))
-		}
-	}
-}
-
 def setLevelUp(){
     if (device.currentValue("thermostatMode") == "heat") {
     	int nextLevel = device.currentValue("heatingSetpoint") + 1
@@ -372,18 +349,6 @@ def setCoolingSetpoint(degrees) {
     }
 }
 
-def modes() {
-	["off", "cool", "heat", "emergencyHeat"]
-}
-
-def setThermostatMode() {
-	def currentMode = device.currentState("thermostatMode")?.value
-	def modeOrder = modes()
-	def index = modeOrder.indexOf(currentMode)
-    def next = index >= 0 && index < modeOrder.size() - 1 ? modeOrder[index + 1] : modeOrder[0]
-	"$next"()
-}
-
 def setThermostatFanMode() {
 	def currentFanMode = device.currentState("thermostatFanMode")?.value
 	def returnCommand
@@ -412,10 +377,6 @@ def setThermostatHoldMode() {
 	}
 	if(!currentHoldMode) { returnCommand = holdOff() }
 	returnCommand
-}
-
-def setThermostatMode(String value) {
-	"$value"()
 }
 
 def setThermostatFanMode(String value) {
