@@ -41,7 +41,7 @@ metadata {
 		capability "Thermostat Cooling Setpoint"
 		capability "Thermostat Heating Setpoint"
 		capability "Thermostat Operating State"
-		capability "Power Source"
+        capability "Power Source"
 
 		command "setTemperature"
 		command "setThermostatHoldMode"
@@ -54,7 +54,6 @@ metadata {
         command "getOpsReport"
 
 		attribute "thermostatHoldMode", "string"
-		attribute "powerSource", "string"
         attribute "thermostatSetpoint", "number"
         attribute "thermostatOperatingState", "number"
 		
@@ -136,16 +135,10 @@ metadata {
 		}
 		standardTile("powerMode", "device.powerSource", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
 			state "24VAC", label:'AC', action:"getPowerSource", icon: "st.switches.switch.on", backgroundColor: "#79b821"
-			state "Battery", label:'Battery', action:"getPowerSource", icon: "https://raw.githubusercontent.com/jsconstantelos/SmartThings/master/img/battery-icon-614x460.png", backgroundColor:"#ffb3ff"
+			state "Battery", label:'Battery', action:"getPowerSource", icon: "st.switches.switch.off"
 		}
         
 //Miscellaneous tiles used in this DTH
-		valueTile("thermostatMode", "device.thermostatMode", inactiveLabel: false, decoration: "flat", width: 3, height: 1) {
-			state "OFF", label:'Mode is OFF', icon:"st.Home.home1"
-            state "Heat", label:'MODE is Heat', icon:"st.Home.home1"
-            state "Cool", label:'MODE is Cool', icon:"st.Home.home1"
-            state "AUXHeat", label:'AUX Heat', icon:"st.Home.home1"
-		}
 		valueTile("temperature", "device.temperature", width: 2, height: 2) {
 			state("temperature", label:'${currentValue}°', icon:"st.thermostat.ac.air-conditioning", backgroundColor:"#38a815")
 		}
