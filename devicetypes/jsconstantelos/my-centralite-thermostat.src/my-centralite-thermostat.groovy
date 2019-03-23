@@ -25,7 +25,7 @@
 import physicalgraph.zigbee.zcl.DataType
  
 metadata {
-	definition (name: "My Centralite Thermostat", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", ocfDeviceType: "oic.d.thermostat", vid: "generic-thermostat-1") {
+	definition (name: "My Centralite Thermostat", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", ocfDeviceType: "oic.d.thermostat") {
 		capability "Actuator"
 		capability "Temperature Measurement"
 		capability "Thermostat"
@@ -41,7 +41,7 @@ metadata {
 		capability "Thermostat Cooling Setpoint"
 		capability "Thermostat Heating Setpoint"
 		capability "Thermostat Operating State"
-        capability "Power Source"
+//        capability "Power Source"
 
 		command "setTemperature"
 		command "setThermostatHoldMode"
@@ -64,7 +64,7 @@ metadata {
 	tiles(scale: 2) {
         multiAttributeTile(name:"summary", type: "", width: 6, height: 4) {
         	tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
-				attributeState("temperature", action:"getOpsReport", label:'${currentValue}°',
+				attributeState("temperature", action:"getOpsReport", label:'${currentValue}°', unit:"F",
 				backgroundColors:[
 					[value: 31, color: "#153591"],
 					[value: 44, color: "#1e9cbb"],
@@ -113,10 +113,10 @@ metadata {
 
 //Temperature Set Point Controls
 		controlTile("heatSliderControl", "device.heatingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false, range:"(60..80)") {
-			state "setHeatingSetpoint", action:"thermostat.setHeatingSetpoint", backgroundColor:"#d04e00"
+			state "setHeatingSetpoint", action:"thermostat.setHeatingSetpoint", backgroundColor:"#d04e00", unit:"F"
 		}
 		controlTile("coolSliderControl", "device.coolingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false, range:"(60..80)") {
-			state "setCoolingSetpoint", action:"thermostat.setCoolingSetpoint", backgroundColor: "#003CEC"
+			state "setCoolingSetpoint", action:"thermostat.setCoolingSetpoint", backgroundColor: "#003CEC", unit:"F"
 		}
 
 //Additional thermostat capabilities
@@ -140,7 +140,7 @@ metadata {
         
 //Miscellaneous tiles used in this DTH
 		valueTile("temperature", "device.temperature", width: 2, height: 2) {
-			state("temperature", label:'${currentValue}°', icon:"st.thermostat.ac.air-conditioning", backgroundColor:"#38a815")
+			state("temperature", label:'${currentValue}°', icon:"st.Home.home1", backgroundColor:"#38a815")
 		}
 
 //Tiles to display in the mobile app.  Main is used for the Room and Things view, and Details is for the Device view.
