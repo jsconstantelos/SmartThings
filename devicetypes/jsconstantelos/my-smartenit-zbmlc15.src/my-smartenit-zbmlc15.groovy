@@ -75,10 +75,10 @@ metadata {
 	tiles(scale: 2) {
 		multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4, canChangeIcon: true){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "on", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00A0DC", nextState:"turningOff"
-				attributeState "off", label:'${name}', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
-				attributeState "turningOn", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00A0DC", nextState:"turningOff"
-				attributeState "turningOff", label:'${name}', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
+				attributeState "on", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00A0DC"//, nextState:"turningOff"
+				attributeState "off", label:'${name}', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff"//, nextState:"turningOn"
+//				attributeState "turningOn", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00A0DC", nextState:"turningOff"
+//				attributeState "turningOff", label:'${name}', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
 			}
             tileAttribute ("power", key: "SECONDARY_CONTROL") {
 				attributeState "power", label:'${currentValue} W'
@@ -117,7 +117,7 @@ def parse(String description) {
                 sendEvent(name:"power", value: getFPoint(mapDescription.value))
             }
             else if(mapDescription.attrId == "0000") {
-            	log.debug "Received Energy value: ${mapDescription.value}"
+//            	log.debug "Received Energy value: ${mapDescription.value}"
                 sendEvent(name:"energy", value: getFPoint(mapDescription.value)/MeteringDivisor)
             }
             else if(mapDescription.attrId == "e000") {
@@ -172,16 +172,18 @@ def parse(String description) {
 }
 
 def off() {
-	//log.info 'turn Off'
+	log.debug "turn Off"
+    sendEvent(name:"power", value: 0.0)
 	zigbee.off()
 }
 
 def on() {
-	//log.info 'turn On'
+	log.debug "turn On"
 	zigbee.on()
 }
 
 def refresh() {
+	log.debug "Refreshing..."
 	if (state.configured != 1) {
     	return configure()
 	}
