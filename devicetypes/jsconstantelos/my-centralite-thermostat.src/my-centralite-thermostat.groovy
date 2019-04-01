@@ -19,6 +19,7 @@
  *  03-08-2019 : Tweaks for the new ST app, and more thermostat capabilities (operating state).
  *  03-10-2019 : Several updates to clean up code, add comments and debug info, and get thermostat operating state.
  *  03-12-2019 : Cleaned up code, removed "run mode" since it's only used when mode is "auto", which this thermostat does not support.  PowerSource is work in progress.
+ *  04-01-2019 : Cleaned up code, and made some wording changes for operating state descriptions.
  *
  */
  
@@ -265,21 +266,56 @@ def getPowerSource() { //This is only used for figuring out how/where to get pow
     ]
 }
 
-def getModeMap() {["00":"OFF","03":"Cool","04":"Heat","05":"AUXHeat"]}
+def getModeMap() {
+	[
+    "00":"OFF",
+    "01":"Auto",
+    "03":"Cool",
+    "04":"Heat",
+    "05":"AUXHeat",
+    "06":"Precooling",
+    "07":"Fan Only"
+    ]
+}
 
-def getHoldModeMap() {["00":"holdOff","01":"holdOn"]}
+def getHoldModeMap() {
+	[
+    "00":"holdOff",
+    "01":"holdOn"
+    ]
+}
 
-def getPowerSourceMap() {["00000000":"24VAC","00000001":"Battery"]}  // These don't look right.  This is a work in progress.
+def getPowerSourceMap() {  // These don't look right.  This is a work in progress.
+	[
+    "00000000":"24VAC",
+    "00000001":"Battery"
+    ]
+}
 
-def getFanModeMap() {["04":"fanOn","05":"fanAuto"]}
+def getFanModeMap() {
+	[
+    "00":"fanOff",
+    "04":"fanOn",
+    "05":"fanAuto"
+    ]
+}
 
 def getThermostatOperatingState() {
 	[
-    "0000":"Unit is in ${device.currentValue("thermostatMode")} mode and is Idle",
-    "0001":"Unit is in ${device.currentValue("thermostatMode")} mode and is Heating",
-    "0004":"Unit is in ${device.currentValue("thermostatMode")} mode and is running the Fan",
-    "0005":"Unit is in ${device.currentValue("thermostatMode")} mode and is Heating",
-    "0006":"Unit is in ${device.currentValue("thermostatMode")} mode and is Cooling"
+    "0000":"Mode is ${device.currentValue("thermostatMode")} and is Idle",
+    "0001":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
+    "0002":"Mode is ${device.currentValue("thermostatMode")} and is Cooling",
+    "0004":"Mode is ${device.currentValue("thermostatMode")} and the Fan is Running",
+    "0005":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
+    "0006":"Mode is ${device.currentValue("thermostatMode")} and is Cooling",
+    "0008":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
+    "0009":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
+    "000A":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
+    "000D":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
+    "0010":"Mode is ${device.currentValue("thermostatMode")} and is Cooling",
+    "0012":"Mode is ${device.currentValue("thermostatMode")} and is Cooling",
+    "0014":"Mode is ${device.currentValue("thermostatMode")} and is Cooling",
+    "0015":"Mode is ${device.currentValue("thermostatMode")} and is Cooling"
     ]
 }
 
@@ -481,7 +517,7 @@ def configure() {
 		"zcl global send-me-a-report 1 0x20 0x20 3600 86400 {01}", "delay 1000", // Battery report
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
-    zigbee.configureReporting(0x0201, 0x0029, 0x19, 60, 0, null) // Thermostat operating state report to send whenever it changes, or at a minimum of every minute.
+    zigbee.configureReporting(0x0201, 0x0029, 0x19, 60, 0, null) // Thermostat operating state report to send whenever it changes, or at a minimum of every minute.  This is also known as Running State (Zen).
 }
 
 def refresh() {

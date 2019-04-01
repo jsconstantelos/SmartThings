@@ -110,15 +110,18 @@ def parse(String description) {
     }
     else  {
         def mapDescription = zigbee.parseDescriptionAsMap(description)
-		// log.debug "parse... mapDescription: ${mapDescription}"
+//		log.debug "parse... mapDescription: ${mapDescription}"
         if(mapDescription.clusterInt == MeteringCluster) {
             if(mapDescription.attrId == "0400") {
             	log.debug "Received Power value: ${mapDescription.value}"
                 sendEvent(name:"power", value: getFPoint(mapDescription.value))
             }
             else if(mapDescription.attrId == "0000") {
-//            	log.debug "Received Energy value: ${mapDescription.value}"
+            	log.debug "Received Energy value: ${mapDescription.value}"
                 sendEvent(name:"energy", value: getFPoint(mapDescription.value)/MeteringDivisor)
+            }
+            else if(mapDescription.attrId == "e000") {
+//            	log.debug "UNKOWN Attribute Found (e000): ${mapDescription.value}"
             }
             
             if (mapDescription.additionalAttrs) {
@@ -128,15 +131,23 @@ def parse(String description) {
                 	sendEvent(name:"power", value: getFPoint(mapDescription.additionalAttrs[0].value))
             	}
             	else if(mapDescription.additionalAttrs[0].attrId == "0000") {
-//            		log.debug "Received attr Energy value: ${mapDescription.additionalAttrs[0].value}"
+            		log.debug "Received attr Energy value: ${mapDescription.additionalAttrs[0].value}"
                 	sendEvent(name:"energy", value: getFPoint(mapDescription.additionalAttrs[0].value)/MeteringDivisor)
+           	 	}
+                else if(mapDescription.additionalAttrs[0].attrId == "e001") {
+//            		log.debug "UNKOWN attr Attribute Found (e001): ${mapDescription.additionalAttrs[0].value}"
+           	 	}
+                else if(mapDescription.additionalAttrs[1].attrId == "e002") {
+//            		log.debug "UNKOWN attr Attribute Found (e002): ${mapDescription.additionalAttrs[1].value}"
+           	 	}
+                else if(mapDescription.additionalAttrs[2].attrId == "e003") {
+//            		log.debug "UNKOWN attr Attribute Found (e003): ${mapDescription.additionalAttrs[2].value}"
            	 	}
             }
         }
         else if(mapDescription.clusterInt == OnoffCluster) {
             def attrName = "switch"
             def attrValue = null
-            //sendEvent(name: "parseSwitch", value: mapDescription)
 			if(mapDescription.command == "0B") {
                 if(mapDescription.data[0] == "00") {
                     attrValue = "off"
@@ -186,7 +197,7 @@ def configure() {
 	log.debug "in configure()"
     state.configured = 1
     
-    //configureHealthCheck()
+    sendEvent(name: "checkInterval", value: HealthCheckSecs, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID])
     
 	def meterconfigCmds = ["zdo bind 0x${device.deviceNetworkId} MeteringEP 0x01 MeteringCluster {${device.zigbeeId}} {}"]
     def onoffconfigCmds = ["zdo bind 0x${device.deviceNetworkId} MeteringEP 0x01 OnoffCluster {${device.zigbeeId}} {}"]
@@ -199,17 +210,8 @@ def configure() {
     	)
 }
 
-def configureHealthCheck() {
-    sendEvent(name: "checkInterval", value: HealthCheckSecs, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID])
-    return refresh()
-}
-
 def updated() {
     log.debug "in updated()"
-    // updated() doesn't have it's return value processed as hub commands, so we have to send them explicitly
-//    def cmds = configureHealthCheck()
-//    cmds.each{ sendHubCommand(new physicalgraph.device.HubAction(it)) }
-	sendEvent(name: "checkInterval", value: HealthCheckSecs, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID])
     configure()
 }
 
