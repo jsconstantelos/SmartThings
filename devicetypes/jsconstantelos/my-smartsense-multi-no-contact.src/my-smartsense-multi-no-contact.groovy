@@ -18,7 +18,7 @@
  *
  */
 metadata {
-	definition (name: "My SmartSense Multi (no contact)", namespace: "jsconstantelos", author: "SmartThings") {
+	definition (name: "My SmartSense Multi (no contact)", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", vid: "generic-contact-2") {
 		capability "Three Axis"
 //		capability "Contact Sensor"
 		capability "Acceleration Sensor"
@@ -69,7 +69,7 @@ metadata {
 def parse(String description) {
 	def results
 
-	if (!isSupportedDescription(description) || zigbee.isZoneType19(description)) {
+	if (!isSupportedDescription(description) || description.startsWith("zone")) {
 		results = parseSingleMessage(description)
 	}
 	else if (description == 'updated') {
@@ -471,12 +471,7 @@ private String parseValue(String description) {
 	if (!isSupportedDescription(description)) {
 		return description
 	}
-	else if (zigbee.translateStatusZoneType19(description)) {
-		return "open"
-	}
-	else {
-		return "closed"
-	}
+	return zigbee.parseZoneStatus(description)?.isAlarm1Set() ? "open" : "closed"
 }
 
 private parseDescriptionText(String linkText, String value, String description) {

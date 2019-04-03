@@ -73,12 +73,12 @@ def parse(String description) {
             else if(event.value == "off") {
                 event.value = "closed"
             }
+            sendEvent(event)
+            // we need a valve and a contact event every time
+            event.name = "valve"
         } else if (event.name == "powerSource") {
             event.value = event.value.toLowerCase()
         }
-        sendEvent(event)
-        //handle valve attribute
-        event.name = "valve"
         sendEvent(event)
     }
     else {
@@ -103,11 +103,31 @@ def parse(String description) {
             event.value = Math.round(Integer.parseInt(descMap.value, 16) / 2)
             sendEvent(event)
         }
+        else if (descMap.clusterInt == zigbee.IAS_ZONE_CLUSTER && descMap.attrInt == zigbee.ATTRIBUTE_IAS_ZONE_STATUS) {
+            sendBatteryResult(description)
+        }
         else {
             log.warn "DID NOT PARSE MESSAGE for description : $description"
             log.debug descMap
         }
     }
+}
+
+def sendBatteryResult(description) {
+    def result = [:]
+    def descMap = zigbee.parseDescriptionAsMap(description)
+    //IAS Zone Cluster (0x0500) - Zone Status Attribute (0x0002) - BIT 3 (0x0008) : Low Battery 
+    def descValue = Integer.parseInt(descMap.value,16)
+    //normal: sendout 50%,low: sendout 5%,UI metadata will handle 5%->low, 50%->normal.
+    def value = descValue & 0x0008 ?5:50
+    log.debug "$value"
+
+    result.name = 'battery'
+    result.value = value
+    result.descriptionText = "${device.displayName} battery value is ${value}"
+    result.translatable = true
+
+    sendEvent(result)
 }
 
 def open() {
@@ -128,17 +148,23 @@ def off() {
 
 def refresh() {
     log.debug "refresh called"
-    zigbee.onOffRefresh() +
-    zigbee.readAttribute(CLUSTER_BASIC, BASIC_ATTR_POWER_SOURCE) +
-    zigbee.readAttribute(CLUSTER_POWER, POWER_ATTR_BATTERY_PERCENTAGE_REMAINING) +
-    zigbee.onOffConfig() +
-    zigbee.configureReporting(CLUSTER_POWER, POWER_ATTR_BATTERY_PERCENTAGE_REMAINING, DataType.UINT8, 600, 21600, 1) +
-    zigbee.configureReporting(CLUSTER_BASIC, BASIC_ATTR_POWER_SOURCE, DataType.ENUM8, 5, 21600, 1)
+    def cmds= []
+    cmds += zigbee.onOffRefresh()
+    cmds += zigbee.readAttribute(CLUSTER_BASIC, BASIC_ATTR_POWER_SOURCE)
+    cmds += zigbee.onOffConfig()
+    cmds += zigbee.configureReporting(CLUSTER_BASIC, BASIC_ATTR_POWER_SOURCE, DataType.ENUM8, 5, 21600, 1)
+    if (device.getDataValue("model") == "E253-KR0B0ZX-HA") {
+        cmds += zigbee.readAttribute(zigbee.IAS_ZONE_CLUSTER, zigbee.ATTRIBUTE_IAS_ZONE_STATUS)
+        cmds += zigbee.iasZoneConfig()
+    } else {
+        cmds += zigbee.readAttribute(CLUSTER_POWER, POWER_ATTR_BATTERY_PERCENTAGE_REMAINING)
+        cmds += zigbee.configureReporting(CLUSTER_POWER, POWER_ATTR_BATTERY_PERCENTAGE_REMAINING, DataType.UINT8, 600, 21600, 1)
+    }
+    return cmds
 }
 
 def configure() {
     log.debug "Configuring Reporting and Bindings."
-    sendEvent(name: "checkInterval", value: 2*15* 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     refresh()
 }
 
