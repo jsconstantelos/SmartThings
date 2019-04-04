@@ -36,17 +36,17 @@
  @Field final MeteringDivisor = 1000
 
  @Field final SumMaxReportTimeSecs = 0
- @Field final SumMinReportTimeSecs = 0
+ @Field final SumMinReportTimeSecs = 120
  @Field final DemMaxReportTimeSecs = 0
- @Field final DemMinReportTimeSecs = 0
+ @Field final DemMinReportTimeSecs = 120
  @Field final MeteringReportableChange = 0	//watt-hour and watts
 
- @Field final ReportIntervalsecs = 300	// 5 mins
- @Field final HealthCheckSecs = 600	// 5 mins
+ @Field final ReportIntervalsecs = 300
+ @Field final HealthCheckSecs = 720	
  
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "My Smartenit ZBMLC15", namespace: "jsconstantelos", author: "Smartenit") {
+	definition (name: "My Smartenit ZBMLC15", namespace: "jsconstantelos", author: "Smartenit", ocfDeviceType: "oic.d.switch", genericHandler: "Zigbee") {
 		capability "Switch"
 		capability "Power Meter"
 		capability "Configuration"
