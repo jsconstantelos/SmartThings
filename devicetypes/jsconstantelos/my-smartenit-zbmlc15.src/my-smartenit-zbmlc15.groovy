@@ -35,10 +35,10 @@
  @Field final MeteringSummAttrID = 0x0000
  @Field final MeteringDivisor = 1000
 
- @Field final SumMaxReportTimeSecs = 0
- @Field final SumMinReportTimeSecs = 120
- @Field final DemMaxReportTimeSecs = 0
- @Field final DemMinReportTimeSecs = 120
+ @Field final SumMaxReportTimeSecs = 120
+ @Field final SumMinReportTimeSecs = 0
+ @Field final DemMaxReportTimeSecs = 120
+ @Field final DemMinReportTimeSecs = 0
  @Field final MeteringReportableChange = 0	//watt-hour and watts
 
  @Field final ReportIntervalsecs = 300
@@ -203,12 +203,19 @@ def configure() {
     
 	def meterconfigCmds = ["zdo bind 0x${device.deviceNetworkId} MeteringEP 0x01 MeteringCluster {${device.zigbeeId}} {}"]
     def onoffconfigCmds = ["zdo bind 0x${device.deviceNetworkId} MeteringEP 0x01 OnoffCluster {${device.zigbeeId}} {}"]
+//    return  (
+//    	meterconfigCmds + 
+//        onoffconfigCmds +
+//    	zigbee.configureReporting(MeteringCluster, MeteringSummAttrID, MetSummDataType, SumMinReportTimeSecs, SumMaxReportTimeSecs, MeteringReportableChange, [destEndpoint:MeteringEP]) + 
+//    	zigbee.configureReporting(MeteringCluster, MeteringDemandAttrID, MetDemandDataType, DemMinReportTimeSecs, DemMaxReportTimeSecs, MeteringReportableChange, [destEndpoint:MeteringEP]) +
+//        zigbee.configureReporting(OnoffCluster, 0x0000, 0x10, 0, 0, 0x01, [destEndpoint:MeteringEP])
+//    	)
     return  (
     	meterconfigCmds + 
         onoffconfigCmds +
-    	zigbee.configureReporting(MeteringCluster, MeteringSummAttrID, MetSummDataType, SumMinReportTimeSecs, SumMaxReportTimeSecs, MeteringReportableChange, [destEndpoint:MeteringEP]) + 
-    	zigbee.configureReporting(MeteringCluster, MeteringDemandAttrID, MetDemandDataType, DemMinReportTimeSecs, DemMaxReportTimeSecs, MeteringReportableChange, [destEndpoint:MeteringEP]) +
-        zigbee.configureReporting(OnoffCluster, 0x0000, 0x10, 0, 0, 0x01, [destEndpoint:MeteringEP])
+    	zigbee.configureReporting(MeteringCluster, MeteringSummAttrID, MetSummDataType, SumMinReportTimeSecs, SumMaxReportTimeSecs, null) + 
+    	zigbee.configureReporting(MeteringCluster, MeteringDemandAttrID, MetDemandDataType, DemMinReportTimeSecs, DemMaxReportTimeSecs, null) +
+        zigbee.configureReporting(OnoffCluster, 0x0000, 0x10, 0, 0, 0x01)
     	)
 }
 
