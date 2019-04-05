@@ -58,6 +58,10 @@ metadata {
 
 		// indicates that device keeps track of heartbeat (in state.heartbeat)
 		attribute "heartbeat", "string"
+        attribute "voltage", "number"
+        attribute "current", "number"
+
+		command "reset"
 
 		fingerprint profileId: "0104", inClusters: "0000,0005,0003,0004,0006,0702", model: "ZBMLC15", deviceJoinName: "Smartenit ZBMLC15"
 }
@@ -85,13 +89,16 @@ metadata {
 			}
 		}
 		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
+			state "default", label:'Refresh', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
 		valueTile("energy", "device.energy", width: 2, height: 2) {
 		    state "val", label:'0${currentValue} kWh', action:"configuration.configure"
 		}
+		standardTile("reset", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "default", label:'Reset kWh', action:"reset", icon:"st.secondary.refresh"
+		}
 		main "switch"
-		details(["switch","refresh","energy"])
+		details(["switch","refresh","energy","reset"])
 	}
 }
 
@@ -117,11 +124,16 @@ def parse(String description) {
                 sendEvent(name:"power", value: getFPoint(mapDescription.value))
             }
             else if(mapDescription.attrId == "0000") {
-//            	log.debug "Received Energy value: ${mapDescription.value}"
+            	log.debug "Received Energy value: ${mapDescription.value}"
                 sendEvent(name:"energy", value: getFPoint(mapDescription.value)/MeteringDivisor)
             }
             else if(mapDescription.attrId == "e000") {
-//            	log.debug "UNKOWN Attribute Found (e000): ${mapDescription.value}"
+            	log.debug "Received Current value: ${mapDescription.value}"
+                sendEvent(name:"current", value: getFPoint(mapDescription.value), "displayed": false)
+            }
+            else if(mapDescription.attrId == "e001") {
+            	log.debug "Received Voltage value: ${mapDescription.value}"
+                sendEvent(name:"voltage", value: getFPoint(mapDescription.value), "displayed": false)
             }
             
             if (mapDescription.additionalAttrs) {
@@ -134,14 +146,13 @@ def parse(String description) {
             		log.debug "Received attr Energy value: ${mapDescription.additionalAttrs[0].value}"
                 	sendEvent(name:"energy", value: getFPoint(mapDescription.additionalAttrs[0].value)/MeteringDivisor)
            	 	}
+                else if(mapDescription.additionalAttrs[0].attrId == "e000") {
+            		log.debug "Received attr Current value: ${mapDescription.additionalAttrs[0].value}"
+                    sendEvent(name:"current", value: getFPoint(mapDescription.additionalAttrs[0].value), "displayed": false)
+           	 	}
                 else if(mapDescription.additionalAttrs[0].attrId == "e001") {
-//            		log.debug "UNKOWN attr Attribute Found (e001): ${mapDescription.additionalAttrs[0].value}"
-           	 	}
-                else if(mapDescription.additionalAttrs[1].attrId == "e002") {
-//            		log.debug "UNKOWN attr Attribute Found (e002): ${mapDescription.additionalAttrs[1].value}"
-           	 	}
-                else if(mapDescription.additionalAttrs[2].attrId == "e003") {
-//            		log.debug "UNKOWN attr Attribute Found (e003): ${mapDescription.additionalAttrs[2].value}"
+            		log.debug "Received attr Voltage value: ${mapDescription.additionalAttrs[0].value}"
+                    sendEvent(name:"voltage", value: getFPoint(mapDescription.additionalAttrs[0].value), "displayed": false)
            	 	}
             }
         }
@@ -180,6 +191,14 @@ def off() {
 def on() {
 	log.debug "turn On"
 	zigbee.on()
+}
+
+def reset() {
+	log.debug "Resetting kWh value"
+    [
+    	zigbee.command(0x0702, 0xe0, "00"), "delay 1000",
+    	zigbee.readAttribute(0x0702, 0x0000)
+	]
 }
 
 def refresh() {
