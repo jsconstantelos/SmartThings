@@ -517,7 +517,7 @@ def configure() {
 		"zcl global send-me-a-report 1 0x20 0x20 3600 86400 {01}", "delay 1000", // Battery report
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
-    zigbee.configureReporting(0x0201, 0x0029, 0x19, 60, 0, null) // Thermostat operating state report to send whenever it changes, or at a minimum of every minute.  This is also known as Running State (Zen).
+    zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null) // Thermostat operating state report to send whenever it changes, or at a minimum of every minute.  This is also known as Running State (Zen).
 }
 
 def refresh() {
@@ -534,7 +534,7 @@ def refresh() {
         "st rattr 0x${device.deviceNetworkId} 1 0x001 0x3e", "delay 200",
 		"st rattr 0x${device.deviceNetworkId} 1 0x202 0"
 	]
-    zigbee.configureReporting(0x0201, 0x0029, 0x19, 60, 0, null)
+    zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null)
 }
 
 private hex(value) {
