@@ -46,6 +46,7 @@ metadata {
 
 		command "setTemperature"
 		command "setThermostatHoldMode"
+        command "setThermostatFanMode"
 		command "getPowerSource"
         command "offmode"
         command "holdOn"
@@ -53,6 +54,8 @@ metadata {
 		command "setLevelUp"
 		command "setLevelDown"
         command "getOpsReport"
+        command "fanOn"
+        command "fanAuto"
 
 		attribute "thermostatHoldMode", "string"
         attribute "thermostatSetpoint", "number"
