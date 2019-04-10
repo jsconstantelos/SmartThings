@@ -514,8 +514,7 @@ def configure() {
     zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null) // Thermostat operating state report to send whenever it changes (no min or max, or change threshold).  This is also known as Running State (Zen).
     [
     	zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null), "delay 1000",	// Thermostat Operating State report to send whenever it changes (no min or max, or change threshold).  This is also known as Running State (Zen).
-        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",	// Thermostat Mode
-        zigbee.configureReporting(0x0202, 0x0000, 0x30, 0, 0, null)					// Thermostat Fan Mode
+        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null)
 	]
 }
 
@@ -535,8 +534,7 @@ def refresh() {
 	]
     [
     	zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null), "delay 1000",
-        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
-        zigbee.configureReporting(0x0202, 0x0000, 0x30, 0, 0, null)
+        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null)
 	]
 }
 
