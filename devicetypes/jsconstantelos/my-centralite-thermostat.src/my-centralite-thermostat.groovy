@@ -492,12 +492,16 @@ def holdOff() {
 
 // Commment out below if no C-wire since it will kill the batteries.
 def poll() {
-	refresh()
+//	refresh()
+	log.debug "Poll..."
+	"st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 }
 
 // PING is used by Device-Watch in attempt to reach the Device
 def ping() {
-	refresh()
+//	refresh()
+	log.debug "Ping..."
+    "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 }
 
 def configure() {
@@ -511,7 +515,6 @@ def configure() {
 		"zcl global send-me-a-report 1 0x20 0x20 3600 86400 {01}", "delay 1000", // Battery report
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
-    zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null) // Thermostat operating state report to send whenever it changes (no min or max, or change threshold).  This is also known as Running State (Zen).
     [
     	zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null), "delay 1000",	// Thermostat Operating State report to send whenever it changes (no min or max, or change threshold).  This is also known as Running State (Zen).
         zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null)
