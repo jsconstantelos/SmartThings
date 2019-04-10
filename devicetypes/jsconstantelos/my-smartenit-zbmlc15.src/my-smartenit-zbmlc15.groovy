@@ -42,7 +42,7 @@
  @Field final MeteringReportableChange = 1	//watt-hour and watts
 
  @Field final ReportIntervalsecs = 300
- @Field final HealthCheckSecs = 720	
+ @Field final HealthCheckSecs = 600
  
 metadata {
 	// Automatically generated. Make future change here.
@@ -218,7 +218,7 @@ def configure() {
 	log.debug "in configure()"
     state.configured = 1
     
-    sendEvent(name: "checkInterval", value: HealthCheckSecs, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID])
+    sendEvent(name: "checkInterval", value: HealthCheckSecs, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     
 	def meterconfigCmds = ["zdo bind 0x${device.deviceNetworkId} MeteringEP 0x01 MeteringCluster {${device.zigbeeId}} {}"]
     def onoffconfigCmds = ["zdo bind 0x${device.deviceNetworkId} MeteringEP 0x01 OnoffCluster {${device.zigbeeId}} {}"]
@@ -244,5 +244,6 @@ def updated() {
 }
 
 def ping() {
+	log.debug "in ping()"
     return zigbee.onOffRefresh()
 }
