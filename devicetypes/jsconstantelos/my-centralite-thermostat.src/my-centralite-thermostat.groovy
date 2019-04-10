@@ -187,12 +187,14 @@ def parse(String description) {
                     log.debug "COOLING SETPOINT is : ${fahrenheit}${tempScale}"
                     if (device.currentValue("thermostatMode") == "Cool") {
                     	sendEvent("name": "thermostatSetpoint", "value": fahrenheit, "displayed": false)
+                        log.debug "THERMOSTAT SETPOINT for Cooling is : ${fahrenheit}${tempScale}"
                 	}
                 } else {
                     sendEvent("name": "coolingSetpoint", "value": celsius, "displayed": true)
                     log.debug "COOLING SETPOINT is : ${celsius}${tempScale}"
                     if (device.currentValue("thermostatMode") == "Cool") {
                     	sendEvent("name": "thermostatSetpoint", "value": celsius, "displayed": false)
+                        log.debug "THERMOSTAT SETPOINT for Cooling is : ${celsius}${tempScale}"
                 	}
                 }
             }
@@ -205,14 +207,24 @@ def parse(String description) {
                 if (tempScale == "F") {
                     sendEvent("name": "heatingSetpoint", "value": fahrenheit, "displayed": true)
                     log.debug "HEATING SETPOINT is : ${fahrenheit}${tempScale}"
-                    if (device.currentValue("thermostatMode") == "Heat" || "AUXHeat") {
+                    if (device.currentValue("thermostatMode") == "Heat") {
                     	sendEvent("name": "thermostatSetpoint", "value": fahrenheit, "displayed": false)
+                        log.debug "THERMOSTAT SETPOINT for Heating is : ${fahrenheit}${tempScale}"
+                	}
+                    if (device.currentValue("thermostatMode") == "AUXHeat") {
+                    	sendEvent("name": "thermostatSetpoint", "value": fahrenheit, "displayed": false)
+                        log.debug "THERMOSTAT SETPOINT for Heating is : ${fahrenheit}${tempScale}"
                 	}
                 } else {
                     sendEvent("name": "heatingSetpoint", "value": celsius, "displayed": true)
                     log.debug "HEATING SETPOINT is : ${celsius}${tempScale}"
-                    if (device.currentValue("thermostatMode") == "Heat" || "AUXHeat") {
+                    if (device.currentValue("thermostatMode") == "Heat") {
                     	sendEvent("name": "thermostatSetpoint", "value": celsius, "displayed": false)
+                        log.debug "THERMOSTAT SETPOINT for Heating is : ${celsius}${tempScale}"
+                	}
+                    if (device.currentValue("thermostatMode") == "AUXHeat") {
+                    	sendEvent("name": "thermostatSetpoint", "value": celsius, "displayed": false)
+                        log.debug "THERMOSTAT SETPOINT for Heating is : ${celsius}${tempScale}"
                 	}
                 }
             }
