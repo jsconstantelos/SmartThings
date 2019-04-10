@@ -245,5 +245,5 @@ def updated() {
 
 def ping() {
 	log.debug "in ping()"
-    return zigbee.onOffRefresh()
+    refresh()
 }
