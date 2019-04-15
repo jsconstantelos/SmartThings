@@ -240,7 +240,8 @@ def configure() {
 
 def updated() {
     log.debug "in updated()"
-    configure()
+//    configure()
+    refresh()
 }
 
 def ping() {
