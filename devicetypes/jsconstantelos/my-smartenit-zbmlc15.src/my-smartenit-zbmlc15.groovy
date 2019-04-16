@@ -183,13 +183,13 @@ def parse(String description) {
 }
 
 def off() {
-	log.debug "turn Off"
+	log.debug "Turning Off..."
     sendEvent(name:"power", value: 0.0)
 	zigbee.off()
 }
 
 def on() {
-	log.debug "turn On"
+	log.debug "Turning On..."
 	zigbee.on()
 }
 
@@ -215,7 +215,7 @@ def refresh() {
 }
 
 def configure() {
-	log.debug "in configure()"
+	log.debug "Configuring..."
     state.configured = 1
     
     sendEvent(name: "checkInterval", value: HealthCheckSecs, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
@@ -239,12 +239,16 @@ def configure() {
 }
 
 def updated() {
-    log.debug "in updated()"
+    log.debug "Updated..."
 //    configure()
     refresh()
 }
 
 def ping() {
-	log.debug "in ping()"
-    refresh()
+	log.debug "Health Check called..."
+    [
+    	zigbee.readAttribute(MeteringCluster, MeteringSummAttrID, [destEndpoint:MeteringEP]), "delay 1000",
+    	zigbee.readAttribute(MeteringCluster, MeteringDemandAttrID, [destEndpoint:MeteringEP]), "delay 1000",
+    	zigbee.onOffRefresh()
+    ]
 }
