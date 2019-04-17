@@ -225,17 +225,17 @@ def configure() {
     return  (
     	meterconfigCmds + 
         onoffconfigCmds +
-    	zigbee.configureReporting(MeteringCluster, MeteringSummAttrID, MetSummDataType, SumMinReportTimeSecs, SumMaxReportTimeSecs, MeteringReportableChange, [destEndpoint:MeteringEP]) + 
-    	zigbee.configureReporting(MeteringCluster, MeteringDemandAttrID, MetDemandDataType, DemMinReportTimeSecs, DemMaxReportTimeSecs, MeteringReportableChange, [destEndpoint:MeteringEP]) +
+    	zigbee.configureReporting(MeteringCluster, MeteringSummAttrID, MetSummDataType, SumMinReportTimeSecs, SumMaxReportTimeSecs, null, [destEndpoint:MeteringEP]) + 
+    	zigbee.configureReporting(MeteringCluster, MeteringDemandAttrID, MetDemandDataType, DemMinReportTimeSecs, DemMaxReportTimeSecs, null, [destEndpoint:MeteringEP]) +
         zigbee.configureReporting(OnoffCluster, 0x0000, 0x10, 0, 0, 0x01, [destEndpoint:MeteringEP])
    	)
 //    return  (
 //    	meterconfigCmds + 
 //      onoffconfigCmds +
-//    	zigbee.configureReporting(MeteringCluster, MeteringSummAttrID, MetSummDataType, SumMinReportTimeSecs, SumMaxReportTimeSecs, null) + 
-//    	zigbee.configureReporting(MeteringCluster, MeteringDemandAttrID, MetDemandDataType, DemMinReportTimeSecs, DemMaxReportTimeSecs, null) +
-//      zigbee.configureReporting(OnoffCluster, 0x0000, 0x10, 0, 0, 0x01)
-//    	)
+//    	zigbee.configureReporting(MeteringCluster, MeteringSummAttrID, MetSummDataType, SumMinReportTimeSecs, SumMaxReportTimeSecs, MeteringReportableChange, [destEndpoint:MeteringEP]) + 
+//    	zigbee.configureReporting(MeteringCluster, MeteringDemandAttrID, MetDemandDataType, DemMinReportTimeSecs, DemMaxReportTimeSecs, MeteringReportableChange, [destEndpoint:MeteringEP]) +
+//      zigbee.configureReporting(OnoffCluster, 0x0000, 0x10, 0, 0, 0x01, [destEndpoint:MeteringEP])
+//  	)
 }
 
 def updated() {
