@@ -79,10 +79,8 @@ metadata {
 	tiles(scale: 2) {
 		multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4, canChangeIcon: true){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "on", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00A0DC"//, nextState:"turningOff"
-				attributeState "off", label:'${name}', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff"//, nextState:"turningOn"
-//				attributeState "turningOn", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00A0DC", nextState:"turningOff"
-//				attributeState "turningOff", label:'${name}', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
+				attributeState "on", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00A0DC"
+				attributeState "off", label:'${name}', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff"
 			}
             tileAttribute ("power", key: "SECONDARY_CONTROL") {
 				attributeState "power", label:'${currentValue} W'
@@ -110,7 +108,7 @@ def getFPoint(String FPointHex){
 * Parse incoming device messages to generate events
 */
 def parse(String description) {
-	//log.debug "parse... description: ${description}"    
+//	log.debug "parse... description: ${description}"    
 	def event = zigbee.getEvent(description)
 	if ((event) && (event.name == "switch")) {
         sendEvent(event)
