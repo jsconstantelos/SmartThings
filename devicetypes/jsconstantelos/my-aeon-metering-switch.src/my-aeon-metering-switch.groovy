@@ -117,7 +117,7 @@ metadata {
 			state "power", icon: "st.switches.switch.on", label:'${currentValue} W'
 		}
 
-		main "power2"
+		main "switch"
 		details(["switch", "energy", "kwhCosts", "history", "resetWatts", "resetEnergy", "refresh"])
 	}
 }
