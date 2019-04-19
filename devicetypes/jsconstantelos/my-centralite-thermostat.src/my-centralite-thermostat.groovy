@@ -21,6 +21,7 @@
  *  03-12-2019 : Cleaned up code, removed "run mode" since it's only used when mode is "auto", which this thermostat does not support.  PowerSource is work in progress.
  *  04-01-2019 : Cleaned up code, and made some wording changes for operating state descriptions.
  *  04-09-2019 : Cleaned up code, added additional reporting configs for mode and fan.
+ *  04-19-2019 : Added command "setTemperature" that gets executed by a SmartApp via a virtual dimmer switch. This is a workaround because Alexa isn't playing nice with this DTH for some reason.
  *
  */
  
@@ -48,6 +49,8 @@ metadata {
 		command "setTemperature"
 		command "setThermostatHoldMode"
         command "setThermostatFanMode"
+        command "setHeatingSetpoint"
+        command "setCoolingSetpoint"
 		command "getPowerSource"
         command "offmode"
         command "holdOn"
@@ -112,16 +115,16 @@ metadata {
 
 //Fan Mode Control
 		standardTile("fanMode", "device.thermostatFanMode", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
-			state "fanAuto", label:'', action:"thermostat.setThermostatFanMode", icon: "st.thermostat.fan-auto"
-			state "fanOn", label:'', action:"thermostat.setThermostatFanMode", icon: "st.thermostat.fan-on"
+			state "fanAuto", label:'', action:"setThermostatFanMode", icon: "st.thermostat.fan-auto"
+			state "fanOn", label:'', action:"setThermostatFanMode", icon: "st.thermostat.fan-on"
 		}
 
 //Temperature Set Point Controls
 		controlTile("heatSliderControl", "device.heatingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false, range:"(60..80)") {
-			state "setHeatingSetpoint", action:"thermostat.setHeatingSetpoint", backgroundColor:"#d04e00", unit:"F"
+			state "setHeatingSetpoint", action:"setHeatingSetpoint", backgroundColor:"#d04e00", unit:"F"
 		}
 		controlTile("coolSliderControl", "device.coolingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false, range:"(60..80)") {
-			state "setCoolingSetpoint", action:"thermostat.setCoolingSetpoint", backgroundColor: "#003CEC", unit:"F"
+			state "setCoolingSetpoint", action:"setCoolingSetpoint", backgroundColor: "#003CEC", unit:"F"
 		}
 
 //Additional thermostat capabilities
@@ -366,6 +369,21 @@ def setLevelDown(){
 	} else if (device.currentValue("thermostatMode") == "Cool") {   
         int nextLevel = device.currentValue("coolingSetpoint") - 1
         setCoolingSetpoint(nextLevel)
+	} else {
+    	log.debug "Can't adjust set point when unit isn't in heat, e-heat, or cool mode."
+    }
+}
+
+//Gets executed by a SmartApp via a virtual dimmer switch.  For example, "Alexa, set Downstairs Temperature to 72"
+def setTemperature(value) {
+    log.debug "Setting Temperature by a SmartApp to ${value}"
+    def int desiredTemp = value.toInteger()
+    if (device.currentValue("thermostatMode") == "Heat") {
+    	setHeatingSetpoint(desiredTemp)
+	} else if (device.currentValue("thermostatMode") == "AUXHeat") {   
+        setHeatingSetpoint(desiredTemp)
+	} else if (device.currentValue("thermostatMode") == "Cool") {   
+        setCoolingSetpoint(desiredTemp)
 	} else {
     	log.debug "Can't adjust set point when unit isn't in heat, e-heat, or cool mode."
     }
