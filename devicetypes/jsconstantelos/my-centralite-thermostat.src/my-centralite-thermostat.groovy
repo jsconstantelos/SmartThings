@@ -21,7 +21,7 @@
  *  03-12-2019 : Cleaned up code, removed "run mode" since it's only used when mode is "auto", which this thermostat does not support.  PowerSource is work in progress.
  *  04-01-2019 : Cleaned up code, and made some wording changes for operating state descriptions.
  *  04-09-2019 : Cleaned up code, added additional reporting configs for mode and fan.
- *  04-19-2019 : Added command "setTemperature" that gets executed by a SmartApp via a virtual dimmer switch. This is a workaround because Alexa isn't playing nice with this DTH for some reason.
+ *  04-19-2019 : Added command "setTemperature" that gets executed by a SmartApp via a virtual dimmer switch. This is a workaround because Alexa isn't playing nice with this DTH for some reason. Cleaned up code too.
  *
  */
  
