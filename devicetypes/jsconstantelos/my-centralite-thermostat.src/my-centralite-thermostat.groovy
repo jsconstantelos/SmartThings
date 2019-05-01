@@ -60,6 +60,12 @@ metadata {
         command "getOpsReport"
         command "fanOn"
         command "fanAuto"
+        command "sixtySix"
+        command "sixtyEight"
+        command "seventy"
+        command "seventyTwo"
+        command "seventyFour"
+        command "seventySix"
 
 		attribute "thermostatHoldMode", "string"
         attribute "thermostatSetpoint", "number"
@@ -98,7 +104,27 @@ metadata {
                 attributeState("default", label:'${currentValue}', icon:"st.Home.home1")
             }
  		}
-        
+
+//Thermostat presets for temperature setpoints
+        standardTile("sixtySix", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'66', action:"sixtySix"
+        }
+        standardTile("sixtyEight", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'68', action:"sixtyEight"
+        }
+        standardTile("seventy", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'70', action:"seventy"
+        }
+        standardTile("seventyTwo", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'72', action:"seventyTwo"
+        }
+        standardTile("seventyFour", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'74', action:"seventyFour"
+        }
+        standardTile("seventySix", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'76', action:"seventySix"
+        }
+
 //Thermostat Mode Control
         standardTile("modeheat", "device.thermostatMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "Heat", label:'', action:"heat", icon:"st.thermostat.heat"
@@ -121,10 +147,10 @@ metadata {
 
 //Temperature Set Point Controls
 		controlTile("heatSliderControl", "device.heatingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false, range:"(60..80)") {
-			state "setHeatingSetpoint", action:"setHeatingSetpoint", backgroundColor:"#d04e00", unit:"F"
+			state "setHeatingSetpoint", label:'${currentValue}°', action:"setHeatingSetpoint", backgroundColor:"#d04e00", unit:"F"
 		}
 		controlTile("coolSliderControl", "device.coolingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false, range:"(60..80)") {
-			state "setCoolingSetpoint", action:"setCoolingSetpoint", backgroundColor: "#003CEC", unit:"F"
+			state "setCoolingSetpoint", label:'${currentValue}°', action:"setCoolingSetpoint", backgroundColor: "#003CEC", unit:"F"
 		}
 
 //Additional thermostat capabilities
@@ -153,7 +179,7 @@ metadata {
 
 //Tiles to display in the mobile app.  Main is used for the Room and Things view, and Details is for the Device view.
 		main(["temperature"])
-        details(["summary", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeoff", "battery", "holdMode", "refresh", "configure"])
+        details(["summary", "sixtySix", "sixtyEight", "seventy", "seventyTwo", "seventyFour", "seventySix", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeoff", "battery", "holdMode", "refresh", "configure"])
 	}
 }
 //*************
@@ -413,6 +439,25 @@ def setCoolingSetpoint(degrees) {
             ["st wattr 0x${device.deviceNetworkId} 1 0x201 0x11 0x29 {" + hex(celsius * 100) + "}"]
         }
     }
+}
+
+def sixtySix() {
+	setTemperature(66)
+}
+def sixtyEight() {
+	setTemperature(68)
+}
+def seventy() {
+	setTemperature(70)
+}
+def seventyTwo() {
+	setTemperature(72)
+}
+def seventyFour() {
+	setTemperature(74)
+}
+def seventySix() {
+	setTemperature(76)
 }
 
 def setThermostatFanMode() {
