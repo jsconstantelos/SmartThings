@@ -358,18 +358,18 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
 			def prevCumulative = cmd.scaledMeterValue - device.currentState('gpmTotal')?.doubleValue
             sendDataToCloud(prevCumulative)
 			if (prevCumulative > device.currentState('gallonHighValue')?.doubleValue) {
-                sendEvent(name: "gallonHigh", value: String.format("%3.1f",prevCumulative)+" gallons on"+"\n"+timeString as String, displayed: false)
+                sendEvent(name: "gallonHigh", value: String.format("%3.1f",prevCumulative)+" gallons on"+"\n"+timeString as String, displayed: true)
                 sendEvent(name: "gallonHighValue", value: String.format("%3.1f",prevCumulative), displayed: false)
             }
             sendEvent(name: "power", value: delta, displayed: false)  // This is only used for SmartApps that need Power capabilities.
             sendEvent(name: "gpmTotal", value: cmd.scaledMeterValue, displayed: false)
-            sendEvent(name: "gpmLastUsed", value: String.format("%3.1f",prevCumulative), displayed: false)
+            sendEvent(name: "gpmLastUsed", value: String.format("%3.1f",prevCumulative), displayed: true)
             sendEvent(name: "waterState", value: "none", displayed: true)
-            sendEvent(name: "gpm", value: delta, displayed: true)
+            sendEvent(name: "gpm", value: delta, displayed: false)
             sendEvent(name: "alarmState", value: "Normal Operation", descriptionText: text, displayed: true)
             return
     	} else {
-        	sendEvent(name: "gpm", value: delta)
+        	sendEvent(name: "gpm", value: delta, displayed: false)
             sendEvent(name: "power", value: delta, displayed: false)  // This is only used for SmartApps that need Power capabilities.
             if (state.debug) log.debug "flowing at ${delta}"
             if (delta > device.currentState('gpmHighValue')?.doubleValue) {
