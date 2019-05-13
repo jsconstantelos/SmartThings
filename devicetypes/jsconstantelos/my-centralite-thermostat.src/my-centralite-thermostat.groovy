@@ -22,6 +22,7 @@
  *  04-01-2019 : Cleaned up code, and made some wording changes for operating state descriptions.
  *  04-09-2019 : Cleaned up code, added additional reporting configs for mode and fan.
  *  04-19-2019 : Added command "setTemperature" that gets executed by a SmartApp via a virtual dimmer switch. This is a workaround because Alexa isn't playing nice with this DTH for some reason. Cleaned up code too.
+ *  05-13-2019 : Added 6 "quick change" temperature tiles.
  *
  */
  
@@ -60,12 +61,12 @@ metadata {
         command "getOpsReport"
         command "fanOn"
         command "fanAuto"
-        command "sixtySix"
-        command "sixtyEight"
-        command "seventy"
-        command "seventyTwo"
-        command "seventyFour"
-        command "seventySix"
+        command "plusThree"
+        command "plusTwo"
+        command "plusOne"
+        command "minusOne"
+        command "minusTwo"
+        command "minusThree"
 
 		attribute "thermostatHoldMode", "string"
         attribute "thermostatSetpoint", "number"
@@ -106,23 +107,23 @@ metadata {
  		}
 
 //Thermostat presets for temperature setpoints
-        standardTile("sixtySix", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'66', action:"sixtySix"
+        valueTile("minusThree", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'-3 Degrees', action:"minusThree"
         }
-        standardTile("sixtyEight", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'68', action:"sixtyEight"
+        valueTile("minusTwo", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'-2 Degrees', action:"minusTwo"
         }
-        standardTile("seventy", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'70', action:"seventy"
+        valueTile("minusOne", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'-1 Degree', action:"minusOne"
         }
-        standardTile("seventyTwo", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'72', action:"seventyTwo"
+        valueTile("plusOne", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'+1 Degree', action:"plusOne"
         }
-        standardTile("seventyFour", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'74', action:"seventyFour"
+        valueTile("plusTwo", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'+2 Degrees', action:"plusTwo"
         }
-        standardTile("seventySix", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'76', action:"seventySix"
+        valueTile("plusThree", "device.level", width: 1, height: 1, inactiveLabel: false) {
+            state "default", label:'+3 Degrees', action:"plusThree"
         }
 
 //Thermostat Mode Control
@@ -179,7 +180,7 @@ metadata {
 
 //Tiles to display in the mobile app.  Main is used for the Room and Things view, and Details is for the Device view.
 		main(["temperature"])
-        details(["summary", "sixtySix", "sixtyEight", "seventy", "seventyTwo", "seventyFour", "seventySix", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeoff", "battery", "holdMode", "refresh", "configure"])
+        details(["summary", "minusThree", "minusTwo", "minusOne", "plusOne", "plusTwo", "plusThree", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeoff", "battery", "holdMode", "refresh", "configure"])
 	}
 }
 //*************
@@ -441,23 +442,29 @@ def setCoolingSetpoint(degrees) {
     }
 }
 
-def sixtySix() {
-	setTemperature(66)
+def minusThree() {
+	int nextLevel = device.currentValue("thermostatSetpoint") - 3
+	setTemperature(nextLevel)
 }
-def sixtyEight() {
-	setTemperature(68)
+def minusTwo() {
+	int nextLevel = device.currentValue("thermostatSetpoint") - 2
+	setTemperature(nextLevel)
 }
-def seventy() {
-	setTemperature(70)
+def minusOne() {
+	int nextLevel = device.currentValue("thermostatSetpoint") -1
+	setTemperature(nextLevel)
 }
-def seventyTwo() {
-	setTemperature(72)
+def plusThree() {
+	int nextLevel = device.currentValue("thermostatSetpoint") + 3
+	setTemperature(nextLevel)
 }
-def seventyFour() {
-	setTemperature(74)
+def plusTwo() {
+	int nextLevel = device.currentValue("thermostatSetpoint") + 2
+	setTemperature(nextLevel)
 }
-def seventySix() {
-	setTemperature(76)
+def plusOne() {
+	int nextLevel = device.currentValue("thermostatSetpoint") + 1
+	setTemperature(nextLevel)
 }
 
 def setThermostatFanMode() {
