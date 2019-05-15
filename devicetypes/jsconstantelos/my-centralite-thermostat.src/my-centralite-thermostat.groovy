@@ -23,6 +23,7 @@
  *  04-09-2019 : Cleaned up code, added additional reporting configs for mode and fan.
  *  04-19-2019 : Added command "setTemperature" that gets executed by a SmartApp via a virtual dimmer switch. This is a workaround because Alexa isn't playing nice with this DTH for some reason. Cleaned up code too.
  *  05-13-2019 : Added 6 "quick change" temperature tiles.
+ *  05-15-2019 : Added code for Power Source reporting.  Still a work in progress.
  *
  */
  
@@ -45,7 +46,7 @@ metadata {
 		capability "Thermostat Cooling Setpoint"
 		capability "Thermostat Heating Setpoint"
 		capability "Thermostat Operating State"
-//        capability "Power Source"
+		capability "Power Source"
 
 		command "setTemperature"
 		command "setThermostatHoldMode"
@@ -58,7 +59,6 @@ metadata {
         command "holdOff"
 		command "setLevelUp"
 		command "setLevelDown"
-        command "getOpsReport"
         command "fanOn"
         command "fanAuto"
         command "plusThree"
@@ -79,7 +79,7 @@ metadata {
 	tiles(scale: 2) {
         multiAttributeTile(name:"summary", type: "", width: 6, height: 4) {
         	tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
-				attributeState("temperature", action:"getOpsReport", label:'${currentValue}°', unit:"F",
+				attributeState("temperature", label:'${currentValue}°', unit:"F",
 				backgroundColors:[
 					[value: 31, color: "#153591"],
 					[value: 44, color: "#1e9cbb"],
@@ -161,16 +161,16 @@ metadata {
 		standardTile("configure", "device.configure", height: 1, width: 3, inactiveLabel: false, decoration: "flat") {
 			state "configure", label:'', action:"configuration.configure", icon:"st.secondary.configure"
 		}
-		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false, width: 3, height: 1) {
+		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false, width: 2, height: 1) {
 			state "battery", label:'${currentValue}% Battery', unit:""
 		}
-		standardTile("holdMode", "device.thermostatHoldMode", height: 1, width: 3, inactiveLabel: false, decoration: "flat") {
+		standardTile("holdMode", "device.thermostatHoldMode", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
 			state "holdOff", label:'Hold Off', action:"setThermostatHoldMode", nextState:"holdOff"
 			state "holdOn", label:'Hold On', action:"setThermostatHoldMode", nextState:"holdOn"
 		}
 		standardTile("powerMode", "device.powerSource", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
 			state "24VAC", label:'AC', action:"getPowerSource", icon: "st.switches.switch.on", backgroundColor: "#79b821"
-			state "Battery", label:'Battery', action:"getPowerSource", icon: "st.switches.switch.off"
+			state "unknown", label:'Unknown', action:"getPowerSource", icon: "st.switches.switch.off"
 		}
         
 //Miscellaneous tiles used in this DTH
@@ -180,9 +180,15 @@ metadata {
 
 //Tiles to display in the mobile app.  Main is used for the Room and Things view, and Details is for the Device view.
 		main(["temperature"])
-        details(["summary", "minusThree", "minusTwo", "minusOne", "plusOne", "plusTwo", "plusThree", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeoff", "battery", "holdMode", "refresh", "configure"])
+        details(["summary", "minusThree", "minusTwo", "minusOne", "plusOne", "plusTwo", "plusThree", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeoff", "battery", "powerMode", "holdMode", "refresh", "configure"])
 	}
 }
+
+//private getCLUSTER_BASIC() { 0x0000 }
+//private getBASIC_ATTR_POWER_SOURCE() { 0x0007 }
+//private getCLUSTER_POWER() { 0x0001 }
+//private getPOWER_ATTR_BATTERY_PERCENTAGE_REMAINING() { 0x0021 }
+
 //*************
 // parse events into clusters and attributes and do something with the data we received from the thermostat
 //*************
@@ -288,12 +294,11 @@ def parse(String description) {
             def modeValue = getHoldModeMap()[trimvalue]
             sendEvent("name": "thermostatHoldMode", "value": modeValue, "displayed": true)
             log.debug "THERMOSTAT HOLD MODE is : ${modeValue}"
-        // POWER SOURCE (work in progress)
-		} else if (descMap.cluster == "0001" && descMap.attrId == "003e") {
-        	def trimvalue = descMap.value[-2..-1]
-            def sourceValue = getPowerSourceMap()[trimvalue]
-            sendEvent("name": "powerSource", "value": sourceValue, "displayed": true)
-            log.debug "POWER SOURCE is : ${sourceValue}"
+        // POWER SOURCE
+		} else if (descMap.cluster == "0000" && descMap.attrId == "0007") {
+        	getPowerSourceMap(descMap.value)
+		} else if (descMap.clusterId == "0000" && descMap.attrId == "0007") {
+        	getPowerSourceMap(descMap.value)
 		} else {
         	log.debug "UNKNOWN Cluster and Attribute : $descMap"
         }
@@ -302,12 +307,9 @@ def parse(String description) {
     }
 }
 
-def getOpsReport() {["st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"]}  // Forces the thermostat to send it's operating state (used for testing).
-
 def getPowerSource() { //This is only used for figuring out how/where to get power source data from to determine if we're on AC or batteries.  Work in progress.
+	log.debug "Refresh power source info..."
 	[
-    "st rattr 0x${device.deviceNetworkId} 1 0x001 0x00", "delay 1000",
-    "st rattr 0x${device.deviceNetworkId} 1 0x001 0x3e", "delay 1000",
     "st rattr 0x${device.deviceNetworkId} 1 0x000 0x07"
     ]
 }
@@ -331,11 +333,14 @@ def getHoldModeMap() {
     ]
 }
 
-def getPowerSourceMap() {  // These don't look right.  This is a work in progress.
-	[
-    "00000000":"24VAC",
-    "00000001":"Battery"
-    ]
+def getPowerSourceMap(value) {
+    if (value == "81") {
+        sendEvent(name: "powerSource", value: "24VAC", "displayed": true)
+        log.debug "POWER SOURCE is 24VAC"
+    } else {
+      	sendEvent(name: "powerSource", value: "unknown", "displayed": true)
+        log.debug "POWER SOURCE is Unknown"
+    }
 }
 
 def getFanModeMap() {
@@ -599,7 +604,8 @@ def configure() {
 	]
     [
     	zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null), "delay 1000",	// Thermostat Operating State report to send whenever it changes (no min or max, or change threshold).  This is also known as Running State (Zen).
-        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null)
+        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
+        zigbee.configureReporting(0x0000, 0x0007, 0x30, 0, 0, null)
 	]
 }
 
@@ -619,7 +625,8 @@ def refresh() {
 	]
     [
     	zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null), "delay 1000",
-        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null)
+        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
+        zigbee.configureReporting(0x0000, 0x0007, 0x30, 0, 0, null)
 	]
 }
 
