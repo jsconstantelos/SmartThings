@@ -114,10 +114,10 @@ metadata {
             state "default", label:'-2 Degrees', action:"minusTwo"
         }
         valueTile("minusOne", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'-1 Degree', action:"minusOne"
+            state "default", label:'-1 Degrees', action:"minusOne"
         }
         valueTile("plusOne", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'+1 Degree', action:"plusOne"
+            state "default", label:'+1 Degrees', action:"plusOne"
         }
         valueTile("plusTwo", "device.level", width: 1, height: 1, inactiveLabel: false) {
             state "default", label:'+2 Degrees', action:"plusTwo"
