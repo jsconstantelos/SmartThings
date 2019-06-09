@@ -30,7 +30,7 @@
 import physicalgraph.zigbee.zcl.DataType
  
 metadata {
-	definition (name: "My Centralite Thermostat", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", ocfDeviceType: "oic.d.thermostat") {
+	definition (name: "My Centralite Thermostat", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", vid: "generic-thermostat-1", genericHandler: "Zigbee") {
 		capability "Actuator"
 		capability "Temperature Measurement"
 		capability "Thermostat"
