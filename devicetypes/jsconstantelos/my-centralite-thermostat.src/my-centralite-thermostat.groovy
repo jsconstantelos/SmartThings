@@ -24,170 +24,118 @@
  *  04-19-2019 : Added command "setTemperature" that gets executed by a SmartApp via a virtual dimmer switch. This is a workaround because Alexa isn't playing nice with this DTH for some reason. Cleaned up code too.
  *  05-13-2019 : Added 6 "quick change" temperature tiles.
  *  05-15-2019 : Added code for Power Source reporting.  Still a work in progress.
+ *  06-16-2019 : Overhauled to support new app.  Based off of ST's Zigbee Thermostat DTH.
  *
  */
- 
+
+import groovy.json.JsonOutput
 import physicalgraph.zigbee.zcl.DataType
  
 metadata {
 	definition (name: "My Centralite Thermostat", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", vid: "generic-thermostat-1", genericHandler: "Zigbee") {
 		capability "Actuator"
+        capability "Switch"
 		capability "Temperature Measurement"
 		capability "Thermostat"
-        capability "Thermostat Fan Mode"
-		capability "Configuration"
-		capability "Refresh"
-		capability "Sensor"
-		capability "Polling"
-		capability "Battery"
-        capability "Health Check"
-        capability "Switch"
 		capability "Thermostat Mode"
+		capability "Thermostat Fan Mode"
 		capability "Thermostat Cooling Setpoint"
 		capability "Thermostat Heating Setpoint"
 		capability "Thermostat Operating State"
+		capability "Configuration"
+		capability "Battery"
 		capability "Power Source"
+		capability "Health Check"
+		capability "Refresh"
+		capability "Sensor"
 
-		command "setTemperature"
-		command "setThermostatHoldMode"
-        command "setThermostatFanMode"
-        command "setHeatingSetpoint"
-        command "setCoolingSetpoint"
-		command "getPowerSource"
-        command "offmode"
         command "holdOn"
         command "holdOff"
-		command "setLevelUp"
-		command "setLevelDown"
-        command "fanOn"
-        command "fanAuto"
-        command "plusThree"
-        command "plusTwo"
-        command "plusOne"
-        command "minusOne"
-        command "minusTwo"
-        command "minusThree"
 
-		attribute "thermostatHoldMode", "string"
-        attribute "thermostatSetpoint", "number"
-        attribute "thermostatOperatingState", "number"
-		
-        fingerprint profileId: "0104", inClusters: "0000,0001,0003,0004,0005,0020,0201,0202,0204,0B05", outClusters: "000A, 0019"
+        command "getPowerSource"
 
+		fingerprint profileId: "0104", inClusters: "0000,0001,0003,0004,0005,0020,0201,0202,0204,0B05", outClusters: "000A, 0019",  manufacturer: "LUX", model: "KONOZ", deviceJoinName: "LUX KONOz Thermostat"
 	}
 
-	tiles(scale: 2) {
-        multiAttributeTile(name:"summary", type: "", width: 6, height: 4) {
-        	tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
-				attributeState("temperature", label:'${currentValue}°', unit:"F",
-				backgroundColors:[
-					[value: 31, color: "#153591"],
-					[value: 44, color: "#1e9cbb"],
-					[value: 59, color: "#90d2a7"],
-					[value: 74, color: "#44b621"],
-					[value: 84, color: "#f1d801"],
-					[value: 95, color: "#d04e00"],
-					[value: 96, color: "#bc2323"]
-					])
+	tiles {
+		multiAttributeTile(name:"thermostatMulti", type:"thermostat", width:3, height:2, canChangeIcon: true) {
+			tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
+				attributeState("temperature", label:'${currentValue}°', icon: "st.alarm.temperature.normal",
+					backgroundColors: [
+						// Celsius
+						[value: 0, color: "#153591"],
+						[value: 7, color: "#1e9cbb"],
+						[value: 15, color: "#90d2a7"],
+						[value: 23, color: "#44b621"],
+						[value: 28, color: "#f1d801"],
+						[value: 35, color: "#d04e00"],
+						[value: 37, color: "#bc2323"],
+						// Fahrenheit
+						[value: 40, color: "#153591"],
+						[value: 44, color: "#1e9cbb"],
+						[value: 59, color: "#90d2a7"],
+						[value: 74, color: "#44b621"],
+						[value: 84, color: "#f1d801"],
+						[value: 95, color: "#d04e00"],
+						[value: 96, color: "#bc2323"]
+					]
+				)
 			}
-			tileAttribute("device.thermostatSetpoint", key: "VALUE_CONTROL") {
-				attributeState("VALUE_UP", action: "setLevelUp")
-				attributeState("VALUE_DOWN", action: "setLevelDown")
-                attributeState("default", label:'${currentValue}°')
+			tileAttribute("device.thermostatOperatingState", key: "OPERATING_STATE") {
+				attributeState("idle", backgroundColor: "#cccccc")
+				attributeState("heating", backgroundColor: "#E86D13")
+				attributeState("cooling", backgroundColor: "#00A0DC")
 			}
-            tileAttribute("device.heatingSetpoint", key: "HEATING_SETPOINT") {
-                attributeState("default", label:'${currentValue}°')
-            }
-            tileAttribute("device.coolingSetpoint", key: "COOLING_SETPOINT") {
-                attributeState("default", label:'${currentValue}°')
-            }
-            tileAttribute("device.thermostatOperatingState", key: "SECONDARY_CONTROL") {
-                attributeState("default", label:'${currentValue}', icon:"st.Home.home1")
-            }
- 		}
-
-//Thermostat presets for temperature setpoints
-        valueTile("minusThree", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'-3 Degrees', action:"minusThree"
-        }
-        valueTile("minusTwo", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'-2 Degrees', action:"minusTwo"
-        }
-        valueTile("minusOne", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'-1 Degrees', action:"minusOne"
-        }
-        valueTile("plusOne", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'+1 Degrees', action:"plusOne"
-        }
-        valueTile("plusTwo", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'+2 Degrees', action:"plusTwo"
-        }
-        valueTile("plusThree", "device.level", width: 1, height: 1, inactiveLabel: false) {
-            state "default", label:'+3 Degrees', action:"plusThree"
-        }
-
-//Thermostat Mode Control
-        standardTile("modeheat", "device.thermostatMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "Heat", label:'', action:"heat", icon:"st.thermostat.heat"
-        }
-        standardTile("modecool", "device.thermostatMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "Cool", label:'', action:"cool", icon:"st.thermostat.cool"
-        }
-        standardTile("modeheatemrgcy", "device.thermostatMode", width: 3, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "AUXHeat", label:'', action:"emergencyHeat", icon:"st.thermostat.emergency-heat"
-        }         
-        standardTile("modeoff", "device.thermostatMode", width: 2, height:1, inactiveLabel: false, decoration: "flat") {
-            state "OFF", label: '', action:"offmode", icon:"st.thermostat.heating-cooling-off"
-        } 
-
-//Fan Mode Control
-		standardTile("fanMode", "device.thermostatFanMode", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
-			state "fanAuto", label:'', action:"setThermostatFanMode", icon: "st.thermostat.fan-auto"
-			state "fanOn", label:'', action:"setThermostatFanMode", icon: "st.thermostat.fan-on"
+			tileAttribute("device.thermostatMode", key: "THERMOSTAT_MODE") {
+				attributeState("off", action: "setThermostatMode", label: "Off", icon: "st.thermostat.heating-cooling-off")
+				attributeState("cool", action: "setThermostatMode", label: "Cool", icon: "st.thermostat.cool")
+				attributeState("heat", action: "setThermostatMode", label: "Heat", icon: "st.thermostat.heat")
+				attributeState("emergency heat", action:"setThermostatMode", label: "Emergency heat", icon: "st.thermostat.emergency-heat")
+			}
+			tileAttribute("device.heatingSetpoint", key: "HEATING_SETPOINT") {
+				attributeState("default", label: '${currentValue}', unit: "°", defaultState: true)
+			}
+			tileAttribute("device.coolingSetpoint", key: "COOLING_SETPOINT") {
+				attributeState("default", label: '${currentValue}', unit: "°", defaultState: true)
+			}
 		}
-
-//Temperature Set Point Controls
-		controlTile("heatSliderControl", "device.heatingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false, range:"(60..80)") {
-			state "setHeatingSetpoint", label:'${currentValue}°', action:"setHeatingSetpoint", backgroundColor:"#d04e00", unit:"F"
+		controlTile("thermostatMode", "device.thermostatMode", "enum", width: 2 , height: 2, supportedStates: "device.supportedThermostatModes") {
+			state("off", action: "setThermostatMode", label: 'Off', icon: "st.thermostat.heating-cooling-off")
+			state("cool", action: "setThermostatMode", label: 'Cool', icon: "st.thermostat.cool")
+			state("heat", action: "setThermostatMode", label: 'Heat', icon: "st.thermostat.heat")
+			state("emergency heat", action:"setThermostatMode", label: 'Emergency heat', icon: "st.thermostat.emergency-heat")
 		}
-		controlTile("coolSliderControl", "device.coolingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false, range:"(60..80)") {
-			state "setCoolingSetpoint", label:'${currentValue}°', action:"setCoolingSetpoint", backgroundColor: "#003CEC", unit:"F"
+		controlTile("heatingSetpoint", "device.heatingSetpoint", "slider",
+				sliderType: "HEATING",
+				debouncePeriod: 1500,
+				range: "device.heatingSetpointRange",
+				width: 2, height: 2) {
+					state "default", action:"setHeatingSetpoint", label:'${currentValue}', backgroundColor: "#E86D13"
+				}
+		controlTile("coolingSetpoint", "device.coolingSetpoint", "slider",
+				sliderType: "COOLING",
+				debouncePeriod: 1500,
+				range: "device.coolingSetpointRange",
+				width: 2, height: 2) {
+					state "default", action:"setCoolingSetpoint", label:'${currentValue}', backgroundColor: "#00A0DC"
+				}
+		controlTile("thermostatFanMode", "device.thermostatFanMode", "enum", width: 2 , height: 2, supportedStates: "device.supportedThermostatFanModes") {
+			state "auto", action: "setThermostatFanMode", label: 'Auto', icon: "st.thermostat.fan-auto"
+			state "on",	action: "setThermostatFanMode", label: 'On', icon: "st.thermostat.fan-on"
 		}
-
-//Additional thermostat capabilities
-		standardTile("refresh", "device.temperature", height: 1, width: 3, inactiveLabel: false, decoration: "flat") {
+		standardTile("refresh", "device.thermostatMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
 			state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
-		standardTile("configure", "device.configure", height: 1, width: 3, inactiveLabel: false, decoration: "flat") {
-			state "configure", label:'', action:"configuration.configure", icon:"st.secondary.configure"
+		valueTile("powerSource", "device.powerSource", width: 2, heigh: 1, inactiveLabel: true, decoration: "flat") {
+			state "powerSource", label: 'Power Source: ${currentValue}', action:"configuration.configure", backgroundColor: "#ffffff"
 		}
-		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false, width: 2, height: 1) {
-			state "battery", label:'${currentValue}% Battery', unit:""
+		valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "battery", label:'${currentValue}% battery', unit:""
 		}
-		standardTile("holdMode", "device.thermostatHoldMode", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
-			state "holdOff", label:'Hold Off', action:"setThermostatHoldMode", nextState:"holdOff"
-			state "holdOn", label:'Hold On', action:"setThermostatHoldMode", nextState:"holdOn"
-		}
-		standardTile("powerMode", "device.powerSource", height: 1, width: 2, inactiveLabel: false, decoration: "flat") {
-			state "24VAC", label:'AC', action:"getPowerSource", icon: "st.switches.switch.on", backgroundColor: "#79b821"
-			state "unknown", label:'Unknown', action:"getPowerSource", icon: "st.switches.switch.off"
-		}
-        
-//Miscellaneous tiles used in this DTH
-		valueTile("temperature", "device.temperature", width: 2, height: 2) {
-			state("temperature", label:'${currentValue}°', icon:"st.Home.home1", backgroundColor:"#38a815")
-		}
-
-//Tiles to display in the mobile app.  Main is used for the Room and Things view, and Details is for the Device view.
-		main(["temperature"])
-        details(["summary", "minusThree", "minusTwo", "minusOne", "plusOne", "plusTwo", "plusThree", "heatSliderControl", "fanMode", "coolSliderControl", "modeheat", "modecool", "modeoff", "battery", "powerMode", "holdMode", "refresh", "configure"])
+		main "thermostatMulti"
+		details(["thermostatMulti", "thermostatMode", "heatingSetpoint", "coolingSetpoint", "thermostatFanMode", "battery", "powerSource", "refresh"])
 	}
 }
-
-//private getCLUSTER_BASIC() { 0x0000 }
-//private getBASIC_ATTR_POWER_SOURCE() { 0x0007 }
-//private getCLUSTER_POWER() { 0x0001 }
-//private getPOWER_ATTR_BATTERY_PERCENTAGE_REMAINING() { 0x0021 }
 
 //*************
 // parse events into clusters and attributes and do something with the data we received from the thermostat
@@ -205,11 +153,11 @@ def parse(String description) {
                 def celsius = Integer.parseInt(trimvalue, 16) / 100
                 def fahrenheit = String.format("%3.1f",celsiusToFahrenheit(celsius))
                 if (tempScale == "F") {
-                    sendEvent("name": "temperature", "value": fahrenheit, "displayed": true)
-                    log.debug "TEMPERATURE is : ${fahrenheit}${tempScale}"
+                    sendEvent("name": "temperature", "value": fahrenheit, "unit": temperatureScale, "displayed": true)
+                    log.debug "TEMPERATURE is : ${fahrenheit}${temperatureScale}"
                 } else {
-                    sendEvent("name": "temperature", "value": celsius, "displayed": true)
-                    log.debug "TEMPERATURE is : ${celsius}${tempScale}"
+                    sendEvent("name": "temperature", "value": celsius, "unit": temperatureScale, "displayed": true)
+                    log.debug "TEMPERATURE is : ${celsius}${temperatureScale}"
                 }
             }
         // COOLING SETPOINT
@@ -219,19 +167,11 @@ def parse(String description) {
                 def celsius = Integer.parseInt(trimvalue, 16) / 100
                 def fahrenheit = String.format("%3.1f",celsiusToFahrenheit(celsius))
                 if (tempScale == "F") {
-                    sendEvent("name": "coolingSetpoint", "value": fahrenheit, "displayed": true)
-                    log.debug "COOLING SETPOINT is : ${fahrenheit}${tempScale}"
-                    if (device.currentValue("thermostatMode") == "Cool") {
-                    	sendEvent("name": "thermostatSetpoint", "value": fahrenheit, "displayed": false)
-                        log.debug "THERMOSTAT SETPOINT for Cooling is : ${fahrenheit}${tempScale}"
-                	}
+                    sendEvent("name": "coolingSetpoint", "value": fahrenheit, "unit": temperatureScale, "displayed": true)
+                    log.debug "COOLING SETPOINT is : ${fahrenheit}${temperatureScale}"
                 } else {
-                    sendEvent("name": "coolingSetpoint", "value": celsius, "displayed": true)
-                    log.debug "COOLING SETPOINT is : ${celsius}${tempScale}"
-                    if (device.currentValue("thermostatMode") == "Cool") {
-                    	sendEvent("name": "thermostatSetpoint", "value": celsius, "displayed": false)
-                        log.debug "THERMOSTAT SETPOINT for Cooling is : ${celsius}${tempScale}"
-                	}
+                    sendEvent("name": "coolingSetpoint", "value": celsius, "unit": temperatureScale, "displayed": true)
+                    log.debug "COOLING SETPOINT is : ${celsius}${temperatureScale}"
                 }
             }
         // HEATING SETPOINT
@@ -241,27 +181,11 @@ def parse(String description) {
                 def celsius = Integer.parseInt(trimvalue, 16) / 100
                 def fahrenheit = String.format("%3.1f",celsiusToFahrenheit(celsius))
                 if (tempScale == "F") {
-                    sendEvent("name": "heatingSetpoint", "value": fahrenheit, "displayed": true)
-                    log.debug "HEATING SETPOINT is : ${fahrenheit}${tempScale}"
-                    if (device.currentValue("thermostatMode") == "Heat") {
-                    	sendEvent("name": "thermostatSetpoint", "value": fahrenheit, "displayed": false)
-                        log.debug "THERMOSTAT SETPOINT for Heating is : ${fahrenheit}${tempScale}"
-                	}
-                    if (device.currentValue("thermostatMode") == "AUXHeat") {
-                    	sendEvent("name": "thermostatSetpoint", "value": fahrenheit, "displayed": false)
-                        log.debug "THERMOSTAT SETPOINT for Heating is : ${fahrenheit}${tempScale}"
-                	}
+                    sendEvent("name": "heatingSetpoint", "value": fahrenheit, "unit": temperatureScale, "displayed": true)
+                    log.debug "HEATING SETPOINT is : ${fahrenheit}${temperatureScale}"
                 } else {
-                    sendEvent("name": "heatingSetpoint", "value": celsius, "displayed": true)
-                    log.debug "HEATING SETPOINT is : ${celsius}${tempScale}"
-                    if (device.currentValue("thermostatMode") == "Heat") {
-                    	sendEvent("name": "thermostatSetpoint", "value": celsius, "displayed": false)
-                        log.debug "THERMOSTAT SETPOINT for Heating is : ${celsius}${tempScale}"
-                	}
-                    if (device.currentValue("thermostatMode") == "AUXHeat") {
-                    	sendEvent("name": "thermostatSetpoint", "value": celsius, "displayed": false)
-                        log.debug "THERMOSTAT SETPOINT for Heating is : ${celsius}${tempScale}"
-                	}
+                    sendEvent("name": "heatingSetpoint", "value": celsius, "unit": temperatureScale, "displayed": true)
+                    log.debug "HEATING SETPOINT is : ${celsius}${temperatureScale}"
                 }
             }
         // THERMOSTAT MODE
@@ -297,10 +221,8 @@ def parse(String description) {
         // POWER SOURCE
 		} else if (descMap.cluster == "0000" && descMap.attrId == "0007") {
         	getPowerSourceMap(descMap.value)
-		} else if (descMap.clusterId == "0000" && descMap.attrId == "0007") {
-        	getPowerSourceMap(descMap.value)
 		} else {
-        	log.debug "UNKNOWN Cluster and Attribute : $descMap"
+//        	log.debug "UNKNOWN Cluster and Attribute : $descMap"
         }
 	} else {
     	log.debug "UNKNOWN data from device : $description"
@@ -314,15 +236,22 @@ def getPowerSource() { //This is only used for figuring out how/where to get pow
     ]
 }
 
+def getCoolingSetpointRange() {
+	(getTemperatureScale() == "C") ? [10, 35] : [50, 95]
+}
+def getHeatingSetpointRange() {
+	(getTemperatureScale() == "C") ? [7, 32] : [45, 90]
+}
+
 def getModeMap() {
 	[
-    "00":"OFF",
-    "01":"Auto",
-    "03":"Cool",
-    "04":"Heat",
-    "05":"AUXHeat",
-    "06":"Precooling",
-    "07":"Fan Only"
+    "00":"off",
+    "01":"auto",
+    "03":"cool",
+    "04":"heat",
+    "05":"emergency heat",
+    "06":"precooling",
+    "07":"fan only"
     ]
 }
 
@@ -335,76 +264,44 @@ def getHoldModeMap() {
 
 def getPowerSourceMap(value) {
     if (value == "81") {
-        sendEvent(name: "powerSource", value: "24VAC", "displayed": true)
-        log.debug "POWER SOURCE is 24VAC"
+        sendEvent(name: "powerSource", value: "mains", "displayed": true)
+        log.debug "POWER SOURCE is mains"
     } else {
-      	sendEvent(name: "powerSource", value: "unknown", "displayed": true)
-        log.debug "POWER SOURCE is Unknown"
+      	sendEvent(name: "powerSource", value: "battery", "displayed": true)
+        log.debug "POWER SOURCE is batteries"
     }
 }
 
 def getFanModeMap() {
 	[
-    "00":"fanOff",
-    "04":"fanOn",
-    "05":"fanAuto"
+    "00":"off",
+    "04":"on",
+    "05":"auto"
     ]
 }
 
 def getThermostatOperatingState() {
 	[
-    "0000":"Mode is ${device.currentValue("thermostatMode")} and is Idle",
-    "0001":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
-    "0002":"Mode is ${device.currentValue("thermostatMode")} and is Cooling",
-    "0004":"Mode is ${device.currentValue("thermostatMode")} and the Fan is Running",
-    "0005":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
-    "0006":"Mode is ${device.currentValue("thermostatMode")} and is Cooling",
-    "0008":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
-    "0009":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
-    "000A":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
-    "000D":"Mode is ${device.currentValue("thermostatMode")} and is Heating",
-    "0010":"Mode is ${device.currentValue("thermostatMode")} and is Cooling",
-    "0012":"Mode is ${device.currentValue("thermostatMode")} and is Cooling",
-    "0014":"Mode is ${device.currentValue("thermostatMode")} and is Cooling",
-    "0015":"Mode is ${device.currentValue("thermostatMode")} and is Cooling"
+    "0000":"Idle",
+    "0001":"Heating",
+    "0002":"Cooling",
+    "0004":"Fan is Running",
+    "0005":"Heating",
+    "0006":"Cooling",
+    "0008":"Heating",
+    "0009":"Heating",
+    "000A":"Heating",
+    "000D":"Heating",
+    "0010":"Cooling",
+    "0012":"Cooling",
+    "0014":"Cooling",
+    "0015":"Cooling"
     ]
 }
 
 //********************************
 // Send commands to the thermostat
 //********************************
-
-def setLevelUp(){
-	log.debug "Adjusting temperature UP one degree"
-    if (device.currentValue("thermostatMode") == "Heat") {
-    	int nextLevel = device.currentValue("heatingSetpoint") + 1
-    	setHeatingSetpoint(nextLevel)
-	} else if (device.currentValue("thermostatMode") == "AUXHeat") {   
-        int nextLevel = device.currentValue("heatingSetpoint") + 1
-        setHeatingSetpoint(nextLevel)
-	} else if (device.currentValue("thermostatMode") == "Cool") {   
-        int nextLevel = device.currentValue("coolingSetpoint") + 1
-        setCoolingSetpoint(nextLevel)
-	} else {
-    	log.debug "Can't adjust set point when unit isn't in heat, e-heat, or cool mode."
-    }
-}
-
-def setLevelDown(){
-	log.debug "Adjusting temperature DOWN one degree"
-    if (device.currentValue("thermostatMode") == "Heat") {
-    	int nextLevel = device.currentValue("heatingSetpoint") - 1
-    	setHeatingSetpoint(nextLevel)
-	} else if (device.currentValue("thermostatMode") == "AUXHeat") {   
-        int nextLevel = device.currentValue("heatingSetpoint") - 1
-        setHeatingSetpoint(nextLevel)
-	} else if (device.currentValue("thermostatMode") == "Cool") {   
-        int nextLevel = device.currentValue("coolingSetpoint") - 1
-        setCoolingSetpoint(nextLevel)
-	} else {
-    	log.debug "Can't adjust set point when unit isn't in heat, e-heat, or cool mode."
-    }
-}
 
 //Gets executed by a SmartApp via a virtual dimmer switch.  For example, "Alexa, set Downstairs Temperature to 72"
 def setTemperature(value) {
@@ -422,69 +319,63 @@ def setTemperature(value) {
 }
 
 def setHeatingSetpoint(degrees) {
-	if (device.currentValue("thermostatMode") == "Heat" || "AUXHeat") {
-        if (degrees != null) {
-        	log.debug "Setting HEAT set point to ${degrees}"
-            def degreesInteger = Math.round(degrees)
-            sendEvent("name": "heatingSetpoint", "value": degreesInteger)
-            sendEvent("name": "thermostatSetpoint", "value": degreesInteger)
-            def celsius = (getTemperatureScale() == "C") ? degreesInteger : (fahrenheitToCelsius(degreesInteger) as Double).round(2)
-            ["st wattr 0x${device.deviceNetworkId} 1 0x201 0x12 0x29 {" + hex(celsius * 100) + "}"]
-        }
+	log.debug "Setting HEAT set point to ${degrees}"
+    if (degrees != null) {
+        def degreesInteger = Math.round(degrees)
+        sendEvent("name": "heatingSetpoint", "value": degreesInteger)
+        def celsius = (getTemperatureScale() == "C") ? degreesInteger : (fahrenheitToCelsius(degreesInteger) as Double).round(2)
+        ["st wattr 0x${device.deviceNetworkId} 1 0x201 0x12 0x29 {" + hex(celsius * 100) + "}"]
     }
 }
 
 def setCoolingSetpoint(degrees) {
-	if (device.currentValue("thermostatMode") == "Cool") {
-        if (degrees != null) {
-        	log.debug "Setting COOL set point to ${degrees}"
-            def degreesInteger = Math.round(degrees)
-            sendEvent("name": "coolingSetpoint", "value": degreesInteger)
-            sendEvent("name": "thermostatSetpoint", "value": degreesInteger)
-            def celsius = (getTemperatureScale() == "C") ? degreesInteger : (fahrenheitToCelsius(degreesInteger) as Double).round(2)
-            ["st wattr 0x${device.deviceNetworkId} 1 0x201 0x11 0x29 {" + hex(celsius * 100) + "}"]
-        }
+	log.debug "Setting COOL set point to ${degrees}"
+    if (degrees != null) {
+        def degreesInteger = Math.round(degrees)
+        sendEvent("name": "coolingSetpoint", "value": degreesInteger)
+        def celsius = (getTemperatureScale() == "C") ? degreesInteger : (fahrenheitToCelsius(degreesInteger) as Double).round(2)
+        ["st wattr 0x${device.deviceNetworkId} 1 0x201 0x11 0x29 {" + hex(celsius * 100) + "}"]
     }
 }
 
-def minusThree() {
-	int nextLevel = device.currentValue("thermostatSetpoint") - 3
-	setTemperature(nextLevel)
-}
-def minusTwo() {
-	int nextLevel = device.currentValue("thermostatSetpoint") - 2
-	setTemperature(nextLevel)
-}
-def minusOne() {
-	int nextLevel = device.currentValue("thermostatSetpoint") -1
-	setTemperature(nextLevel)
-}
-def plusThree() {
-	int nextLevel = device.currentValue("thermostatSetpoint") + 3
-	setTemperature(nextLevel)
-}
-def plusTwo() {
-	int nextLevel = device.currentValue("thermostatSetpoint") + 2
-	setTemperature(nextLevel)
-}
-def plusOne() {
-	int nextLevel = device.currentValue("thermostatSetpoint") + 1
-	setTemperature(nextLevel)
+def setThermostatFanMode(mode) {
+	if (state.supportedFanModes?.contains(mode)) {
+		switch (mode) {
+			case "on":
+				fanOn()
+				break
+			case "auto":
+				fanAuto()
+				break
+		}
+	} else {
+		log.debug "Unsupported fan mode $mode"
+	}
 }
 
-def setThermostatFanMode() {
-	def currentFanMode = device.currentState("thermostatFanMode")?.value
-	def returnCommand
-	switch (currentFanMode) {
-		case "fanAuto":
-			returnCommand = fanOn()
-			break
-		case "fanOn":
-			returnCommand = fanAuto()
-			break
+def setThermostatMode(mode) {
+	log.debug "set mode $mode (supported ${state.supportedThermostatModes})"
+	if (state.supportedThermostatModes?.contains(mode)) {
+		switch (mode) {
+			case "heat":
+				heat()
+				break
+			case "cool":
+				cool()
+				break
+			case "auto":
+				auto()
+				break
+			case "emergency heat":
+				emergencyHeat()
+				break
+			case "off":
+				offmode()
+				break
+		}
+	} else {
+		log.debug "Unsupported mode $mode"
 	}
-	if(!currentFanMode) { returnCommand = fanAuto() }
-	returnCommand
 }
 
 def setThermostatHoldMode() {
@@ -504,7 +395,7 @@ def setThermostatHoldMode() {
 
 def offmode() {
 	log.debug "Setting mode to OFF"
-	sendEvent("name":"thermostatMode", "value":"OFF")
+	sendEvent("name":"thermostatMode", "value":"off")
     [
 		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {00}"
 	]
@@ -512,8 +403,7 @@ def offmode() {
 
 def cool() {
 	log.debug "Setting mode to COOL"
-	sendEvent("name":"thermostatMode", "value":"Cool")
-    sendEvent("name": "thermostatSetpoint", "value": device.currentState("coolingSetpoint")?.value)
+	sendEvent("name":"thermostatMode", "value":"cool")
     [
 		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {03}"
 	]
@@ -521,8 +411,7 @@ def cool() {
 
 def heat() {
 	log.debug "Setting mode to HEAT"
-	sendEvent("name":"thermostatMode", "value":"Heat")
-    sendEvent("name": "thermostatSetpoint", "value": device.currentState("heatingSetpoint")?.value)
+	sendEvent("name":"thermostatMode", "value":"heat")
     [
 		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {04}"
 	]
@@ -530,8 +419,7 @@ def heat() {
 
 def emergencyHeat() {
 	log.debug "Setting mode to EMERGENCY HEAT"
-	sendEvent("name":"thermostatMode", "value":"AUXHeat")
-    sendEvent("name": "thermostatSetpoint", "value": device.currentState("heatingSetpoint")?.value)
+	sendEvent("name":"thermostatMode", "value":"emergency heat")
     [
 		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {05}"
 	]
@@ -547,7 +435,7 @@ def off() {
 
 def fanOn() {
 	log.debug "Setting fan to ON"
-	sendEvent("name":"thermostatFanMode", "value":"fanOn")
+	sendEvent("name":"thermostatFanMode", "value":"on")
     [
 		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {04}"
 	]
@@ -555,7 +443,7 @@ def fanOn() {
 
 def fanAuto() {
 	log.debug "Setting fan to AUTO"
-	sendEvent("name":"thermostatFanMode", "value":"fanAuto")
+	sendEvent("name":"thermostatFanMode", "value":"auto")
     [
 		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {05}"
 	]
@@ -594,6 +482,12 @@ def ping() {
 def configure() {
 	log.debug "Configuration starting..."
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 1 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
+	sendEvent(name: "coolingSetpointRange", value: coolingSetpointRange, displayed: false)
+	sendEvent(name: "heatingSetpointRange", value: heatingSetpointRange, displayed: false)
+	state.supportedThermostatModes = ["off", "heat", "cool", "emergency heat"]
+	state.supportedFanModes = ["on", "auto"]
+	sendEvent(name: "supportedThermostatModes", value: JsonOutput.toJson(state.supportedThermostatModes), displayed: false)
+	sendEvent(name: "supportedThermostatFanModes", value: JsonOutput.toJson(state.supportedFanModes), displayed: false)
 	[
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 1000",
         "zdo bind 0x${device.deviceNetworkId} 1 1 0x001 {${device.zigbeeId}} {}", "delay 1000",
