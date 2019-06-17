@@ -307,11 +307,11 @@ def getThermostatOperatingState() {
 def setTemperature(value) {
     log.debug "Setting Temperature by a SmartApp to ${value}"
     def int desiredTemp = value.toInteger()
-    if (device.currentValue("thermostatMode") == "Heat") {
+    if (device.currentValue("thermostatMode") == "heat") {
     	setHeatingSetpoint(desiredTemp)
-	} else if (device.currentValue("thermostatMode") == "AUXHeat") {   
+	} else if (device.currentValue("thermostatMode") == "emergency heat") {   
         setHeatingSetpoint(desiredTemp)
-	} else if (device.currentValue("thermostatMode") == "Cool") {   
+	} else if (device.currentValue("thermostatMode") == "cool") {   
         setCoolingSetpoint(desiredTemp)
 	} else {
     	log.debug "Can't adjust set point when unit isn't in heat, e-heat, or cool mode."
