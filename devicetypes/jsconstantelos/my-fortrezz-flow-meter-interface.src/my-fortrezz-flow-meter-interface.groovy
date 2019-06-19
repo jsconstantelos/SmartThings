@@ -274,6 +274,7 @@ def resetMeter() {
     sendEvent(name: "cumulativeLastReset", value: device.currentState('gpmTotal')?.doubleValue+" gal", displayed: false)
     sendEvent(name: "gpmLastUsed", value: 0, displayed: false)
     sendEvent(name: "gpmTotal", value: 0, displayed: false)
+    sendEvent(name: "energy", value: 0, unit: "kWh", displayed: false)
     def cmds = delayBetween([
 	    zwave.meterV3.meterReset().format()
     ])
@@ -362,6 +363,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
                 sendEvent(name: "gallonHighValue", value: String.format("%3.1f",prevCumulative), displayed: false)
             }
             sendEvent(name: "power", value: delta, displayed: false)  // This is only used for SmartApps that need Power capabilities.
+            sendEvent(name: "energy", value: cmd.scaledMeterValue, unit: "kWh", displayed: false) // This is only used for SmartApps that need Energy capabilities.
             sendEvent(name: "gpmTotal", value: cmd.scaledMeterValue, displayed: false)
             sendEvent(name: "gpmLastUsed", value: String.format("%3.1f",prevCumulative), displayed: true)
             sendEvent(name: "waterState", value: "none", displayed: true)
