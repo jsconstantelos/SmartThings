@@ -16,7 +16,7 @@ definition(
     name: "Virtual Thermostat Child App",
     namespace: "jsconstantelos",
     author: "jscgs350",
-    description: "Turn on a switch when humidity rises above the threshold, and off when it falls below the threshold.",
+    description: "Virtual Thermostat",
     category: "My Apps",
     parent: "jsconstantelos:Virtual Thermostat Parent App",
     iconUrl: "https://graph.api.smartthings.com/api/devices/icons/st.Weather.weather9-icn",
