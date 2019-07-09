@@ -83,12 +83,12 @@ metadata {
 def installed() {
 	log.debug "installed()..."
 	sendEvent(name: "checkInterval", value: 1860, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID, offlinePingable: "0"])
-	response(refresh())
+	response(configure())
 }
 
 def updated() {
 	log.debug "updated()..."
-	response(refresh())
+	response(configure())
 }
 
 def ping() {
@@ -106,27 +106,6 @@ def parse(String description) {
 	return result
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
-	def encapsulatedCommand = cmd.encapsulatedCommand(versions)
-	if (encapsulatedCommand) {
-		zwaveEvent(encapsulatedCommand)
-	} else {
-		log.warn "Unable to extract encapsulated cmd from $cmd"
-		createEvent(descriptionText: cmd.toString())
-	}
-}
-
-def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
-	def version = versions[cmd.commandClass as Integer]
-	def ccObj = version ? zwave.commandClass(cmd.commandClass, version) : zwave.commandClass(cmd.commandClass)
-	def encapsulatedCommand = ccObj?.command(cmd.command)?.parse(cmd.data)
-	if (encapsulatedCommand) {
-		zwaveEvent(encapsulatedCommand)
-	} else {
-		[:]
-	}
-}
-
 def zwaveEvent(physicalgraph.zwave.commands.meterv1.MeterReport cmd) {
 	meterReport(cmd.scale, cmd.scaledMeterValue)
 }
@@ -137,7 +116,7 @@ private meterReport(scale, value) {
 	} else if (scale == 1) {
 		[name: "energy", value: value, unit: "kVAh"]
 	} else {
-		[name: "power", value: Math.round(value), unit: "W"]
+		[name: "power", value: value, unit: "W"]
 	}
 }
 
@@ -149,8 +128,8 @@ def zwaveEvent(physicalgraph.zwave.Command cmd) {
 def refresh() {
 	log.debug "refresh()..."
 	delayBetween([
-			encap(zwave.meterV2.meterGet(scale: 0)),
-			encap(zwave.meterV2.meterGet(scale: 2))
+			zwave.meterV2.meterGet(scale: 0).format(),
+			zwave.meterV2.meterGet(scale: 2).format()
 	])
 }
 
@@ -158,49 +137,23 @@ def reset() {
 	log.debug "reset()..."
 	// No V1 available
 	delayBetween([
-			encap(zwave.meterV2.meterReset()),
-			encap(zwave.meterV2.meterGet(scale: 0))
+			zwave.meterV2.meterReset().format(),
+			zwave.meterV2.meterGet(scale: 0).format()
 	])
 }
 
 def configure() {
 	log.debug "configure()..."
 	delayBetween([
-		encap(zwave.configurationV1.configurationSet(parameterNumber: 255, size: 4, scaledConfigurationValue: 1)), // Reset the device to the default settings
-		encap(zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 4)), // combined power in watts
-		encap(zwave.configurationV1.configurationSet(parameterNumber: 102, size: 4, scaledConfigurationValue: 8)), // combined energy in kWh
-		encap(zwave.configurationV1.configurationSet(parameterNumber: 103, size: 4, scaledConfigurationValue: 0)), // no third report (battery reporting)
-        encap(zwave.configurationV1.configurationSet(parameterNumber: 3, size: 1, scaledConfigurationValue: reportType)), // Send watts data based on a time interval (0), or based on a change in watts (1). 0 is default. 1 enables parameters 4 and 8.
-        encap(zwave.configurationV1.configurationSet(parameterNumber: 4, size: 2, scaledConfigurationValue: wattsChanged)), // If parameter 3 is 1, don't send unless watts have changed by xx amount (50 is default) for the whole device.
-        encap(zwave.configurationV1.configurationSet(parameterNumber: 8, size: 1, scaledConfigurationValue: wattsPercent)), // If parameter 3 is 1, don't send unless watts have changed by xx% (10% is default) for the whole device.
-		encap(zwave.configurationV1.configurationSet(parameterNumber: 111, size: 4, scaledConfigurationValue: secondsWatts)), // Report watts every xx seconds (default is 5 minutes)
-		encap(zwave.configurationV1.configurationSet(parameterNumber: 112, size: 4, scaledConfigurationValue: secondsKwh)), // Report kWh every xx seconds (default is 5 minutes)
-		encap(zwave.configurationV1.configurationSet(parameterNumber: 113, size: 4, scaledConfigurationValue: 300)) // Report battery every 300 seconds (default)
+//		zwave.configurationV1.configurationSet(parameterNumber: 255, size: 4, scaledConfigurationValue: 1).format(), // Reset the device to the default settings
+        zwave.configurationV1.configurationSet(parameterNumber: 3, size: 1, scaledConfigurationValue: reportType).format(), // Send watts data based on a time interval (0), or based on a change in watts (1). 0 is default. 1 enables parameters 4 and 8.
+        zwave.configurationV1.configurationSet(parameterNumber: 4, size: 2, scaledConfigurationValue: wattsChanged).format(), // If parameter 3 is 1, don't send unless watts have changed by xx amount (50 is default) for the whole device.
+        zwave.configurationV1.configurationSet(parameterNumber: 8, size: 1, scaledConfigurationValue: wattsPercent).format(), // If parameter 3 is 1, don't send unless watts have changed by xx% (10% is default) for the whole device.
+		zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 4).format(), // combined power in watts
+		zwave.configurationV1.configurationSet(parameterNumber: 102, size: 4, scaledConfigurationValue: 8).format(), // combined energy in kWh
+		zwave.configurationV1.configurationSet(parameterNumber: 103, size: 4, scaledConfigurationValue: 0).format(), // no third report (battery reporting)
+		zwave.configurationV1.configurationSet(parameterNumber: 111, size: 4, scaledConfigurationValue: secondsWatts).format(), // Report watts every xx seconds (default is 5 minutes)
+		zwave.configurationV1.configurationSet(parameterNumber: 112, size: 4, scaledConfigurationValue: secondsKwh).format(), // Report kWh every xx seconds (default is 5 minutes)
+		zwave.configurationV1.configurationSet(parameterNumber: 113, size: 4, scaledConfigurationValue: 300).format() // Report battery every 300 seconds (default)
 	], 500)
-}
-
-private encap(physicalgraph.zwave.Command cmd) {
-	if (zwaveInfo.zw.contains("s")) {
-		secEncap(cmd)
-	} else if (zwaveInfo.cc.contains("56")){
-		crcEncap(cmd)
-	} else {
-		cmd.format()
-	}
-}
-
-private secEncap(physicalgraph.zwave.Command cmd) {
-	zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()
-}
-
-private crcEncap(physicalgraph.zwave.Command cmd) {
-	zwave.crc16EncapV1.crc16Encap().encapsulate(cmd).format()
-}
-
-private getVersions() {
-	[
-			0x32: 1,  // Meter
-			0x70: 1,  // Configuration
-			0x72: 1,  // ManufacturerSpecific
-	]
 }
