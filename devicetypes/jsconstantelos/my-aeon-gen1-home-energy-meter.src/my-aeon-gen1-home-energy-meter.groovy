@@ -32,15 +32,9 @@ metadata {
 		command "reset"
 
 		fingerprint deviceId: "0x2101", inClusters: " 0x70,0x31,0x72,0x86,0x32,0x80,0x85,0x60"
-
-	}
-
-	preferences {
-		input "reportType", "number", title: "ReportType: Send Watts data on a time interval (0), or on a change in wattage (1)? Enter a 0 or 1:", defaultValue: 1, range: "0..1", required: false, displayDuringSetup: true
-		input "wattsChanged", "number", title: "For ReportType = 1, Don't send unless watts have changed by these many watts: (range 0 - 32,000W)", defaultValue: 50, range: "0..32000", required: false, displayDuringSetup: true
-		input "wattsPercent", "number", title: "For ReportType = 1, Don't send unless watts have changed by this percent: (range 0 - 99%)", defaultValue: 10, range: "0..99", required: false, displayDuringSetup: true
-		input "secondsWatts", "number", title: "For ReportType = 0, Send Watts data every how many seconds? (range 0 - 65,000 seconds)", defaultValue: 300, range: "0..65000", required: false, displayDuringSetup: true
-		input "secondsKwh", "number", title: "Send kWh data every how many seconds? (range 0 - 65,000 seconds)", defaultValue: 300, range: "0..65000", required: false, displayDuringSetup: true
+		fingerprint mfr: "0086", prod: "0102", model: "005F", deviceJoinName: "Home Energy Meter (Gen5)" // US
+		fingerprint mfr: "0086", prod: "0002", model: "005F", deviceJoinName: "Home Energy Meter (Gen5)" // EU
+		fingerprint mfr: "0159", prod: "0007", model: "0052", deviceJoinName: "Qubino Smart Meter"
 	}
 
 	// simulator metadata
@@ -83,12 +77,12 @@ metadata {
 def installed() {
 	log.debug "installed()..."
 	sendEvent(name: "checkInterval", value: 1860, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID, offlinePingable: "0"])
-	response(configure())
+	response(refresh())
 }
 
 def updated() {
 	log.debug "updated()..."
-	response(configure())
+	response(refresh())
 }
 
 def ping() {
@@ -106,6 +100,27 @@ def parse(String description) {
 	return result
 }
 
+def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
+	def encapsulatedCommand = cmd.encapsulatedCommand(versions)
+	if (encapsulatedCommand) {
+		zwaveEvent(encapsulatedCommand)
+	} else {
+		log.warn "Unable to extract encapsulated cmd from $cmd"
+		createEvent(descriptionText: cmd.toString())
+	}
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
+	def version = versions[cmd.commandClass as Integer]
+	def ccObj = version ? zwave.commandClass(cmd.commandClass, version) : zwave.commandClass(cmd.commandClass)
+	def encapsulatedCommand = ccObj?.command(cmd.command)?.parse(cmd.data)
+	if (encapsulatedCommand) {
+		zwaveEvent(encapsulatedCommand)
+	} else {
+		[:]
+	}
+}
+
 def zwaveEvent(physicalgraph.zwave.commands.meterv1.MeterReport cmd) {
 	meterReport(cmd.scale, cmd.scaledMeterValue)
 }
@@ -116,7 +131,7 @@ private meterReport(scale, value) {
 	} else if (scale == 1) {
 		[name: "energy", value: value, unit: "kVAh"]
 	} else {
-		[name: "power", value: value, unit: "W"]
+		[name: "power", value: Math.round(value), unit: "W"]
 	}
 }
 
@@ -128,8 +143,8 @@ def zwaveEvent(physicalgraph.zwave.Command cmd) {
 def refresh() {
 	log.debug "refresh()..."
 	delayBetween([
-			zwave.meterV2.meterGet(scale: 0).format(),
-			zwave.meterV2.meterGet(scale: 2).format()
+			encap(zwave.meterV2.meterGet(scale: 0)),
+			encap(zwave.meterV2.meterGet(scale: 2))
 	])
 }
 
@@ -137,23 +152,73 @@ def reset() {
 	log.debug "reset()..."
 	// No V1 available
 	delayBetween([
-			zwave.meterV2.meterReset().format(),
-			zwave.meterV2.meterGet(scale: 0).format()
+			encap(zwave.meterV2.meterReset()),
+			encap(zwave.meterV2.meterGet(scale: 0))
 	])
 }
 
 def configure() {
 	log.debug "configure()..."
-	delayBetween([
-//		zwave.configurationV1.configurationSet(parameterNumber: 255, size: 4, scaledConfigurationValue: 1).format(), // Reset the device to the default settings
-        zwave.configurationV1.configurationSet(parameterNumber: 3, size: 1, scaledConfigurationValue: reportType).format(), // Send watts data based on a time interval (0), or based on a change in watts (1). 0 is default. 1 enables parameters 4 and 8.
-        zwave.configurationV1.configurationSet(parameterNumber: 4, size: 2, scaledConfigurationValue: wattsChanged).format(), // If parameter 3 is 1, don't send unless watts have changed by xx amount (50 is default) for the whole device.
-        zwave.configurationV1.configurationSet(parameterNumber: 8, size: 1, scaledConfigurationValue: wattsPercent).format(), // If parameter 3 is 1, don't send unless watts have changed by xx% (10% is default) for the whole device.
-		zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 4).format(), // combined power in watts
-		zwave.configurationV1.configurationSet(parameterNumber: 102, size: 4, scaledConfigurationValue: 8).format(), // combined energy in kWh
-		zwave.configurationV1.configurationSet(parameterNumber: 103, size: 4, scaledConfigurationValue: 0).format(), // no third report (battery reporting)
-		zwave.configurationV1.configurationSet(parameterNumber: 111, size: 4, scaledConfigurationValue: secondsWatts).format(), // Report watts every xx seconds (default is 5 minutes)
-		zwave.configurationV1.configurationSet(parameterNumber: 112, size: 4, scaledConfigurationValue: secondsKwh).format(), // Report kWh every xx seconds (default is 5 minutes)
-		zwave.configurationV1.configurationSet(parameterNumber: 113, size: 4, scaledConfigurationValue: 300).format() // Report battery every 300 seconds (default)
-	], 500)
+	if (isAeotecHomeEnergyMeter())
+		delayBetween([
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 255, size: 4, scaledConfigurationValue: 1)), // Reset the device to the default settings
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 1)), // report power in Watts...
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 111, size: 4, scaledConfigurationValue: 300)), // ...every 5 min
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 102, size: 4, scaledConfigurationValue: 2)), // report energy in kWh...
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 112, size: 4, scaledConfigurationValue: 300)), // ...every 5 min
+				zwave.configurationV1.configurationSet(parameterNumber: 90, size: 1, scaledConfigurationValue: 1).format(), // enabling automatic reports...
+				zwave.configurationV1.configurationSet(parameterNumber: 91, size: 2, scaledConfigurationValue: 10).format() // ...every 10W change
+		], 500)
+	else if (isQubinoSmartMeter())
+		delayBetween([
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 40, size: 1, scaledConfigurationValue: 10)), // Device will report on 10% power change
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 42, size: 2, scaledConfigurationValue: 300)), // report every 5 minutes
+		], 500)
+	else
+    	log.debug "found Aeon gen1 meter..."
+		delayBetween([
+        		encap(zwave.configurationV1.configurationSet(parameterNumber: 3, size: 1, scaledConfigurationValue: 1)), // Send watts data based on a time interval (0), or based on a change in watts (1). 0 is default. 1 enables parameters 4 and 8.
+                encap(zwave.configurationV1.configurationSet(parameterNumber: 4, size: 2, scaledConfigurationValue: 1)), // If parameter 3 is 1, don't send unless watts have changed by xx amount (50 is default) for the whole device.
+                encap(zwave.configurationV1.configurationSet(parameterNumber: 8, size: 1, scaledConfigurationValue: 1)), // If parameter 3 is 1, don't send unless watts have changed by xx% (10% is default) for the whole device.
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 4)),   // combined power in watts
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 111, size: 4, scaledConfigurationValue: 60)), // every 1 min
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 102, size: 4, scaledConfigurationValue: 8)),   // combined energy in kWh
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 112, size: 4, scaledConfigurationValue: 300)), // every 5 min
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 103, size: 4, scaledConfigurationValue: 0)),    // no third report
+				encap(zwave.configurationV1.configurationSet(parameterNumber: 113, size: 4, scaledConfigurationValue: 300)) // every 5 min
+		])
+}
+
+private encap(physicalgraph.zwave.Command cmd) {
+	if (zwaveInfo.zw.contains("s")) {
+		secEncap(cmd)
+	} else if (zwaveInfo.cc.contains("56")){
+		crcEncap(cmd)
+	} else {
+		cmd.format()
+	}
+}
+
+private secEncap(physicalgraph.zwave.Command cmd) {
+	zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()
+}
+
+private crcEncap(physicalgraph.zwave.Command cmd) {
+	zwave.crc16EncapV1.crc16Encap().encapsulate(cmd).format()
+}
+
+private getVersions() {
+	[
+			0x32: 1,  // Meter
+			0x70: 1,  // Configuration
+			0x72: 1,  // ManufacturerSpecific
+	]
+}
+
+private isAeotecHomeEnergyMeter() {
+	zwaveInfo.model.equals("005F")
+}
+
+private isQubinoSmartMeter() {
+	zwaveInfo.model.equals("0052")
 }
