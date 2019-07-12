@@ -21,7 +21,7 @@
  *	07-09-2019 : Initial commit.  Used ST's default handler and added parameters to adjust report type and intervals.
  */
 metadata {
-	definition (name: "My Aeon Gen1 Home Energy Meter", namespace: "jsconstantelos", author: "SmartThings", runLocally: true, minHubCoreVersion: '000.017.0012', executeCommandsLocally: false, ocfDeviceType: "x.com.st.d.energymeter") {
+	definition (name: "My Aeon Gen1 Home Energy Meter", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", ocfDeviceType: "x.com.st.d.energymeter", genericHandler: "Z-Wave") {
 		capability "Energy Meter"
 		capability "Power Meter"
 		capability "Configuration"
