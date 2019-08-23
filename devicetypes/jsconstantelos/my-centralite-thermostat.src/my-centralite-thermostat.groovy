@@ -25,6 +25,7 @@
  *  05-13-2019 : Added 6 "quick change" temperature tiles.
  *  05-15-2019 : Added code for Power Source reporting.  Still a work in progress.
  *  06-16-2019 : Overhauled to support new app.  Based off of ST's Zigbee Thermostat DTH.
+ *  08-23-2019 : Cleaned up code.
  *
  */
 
@@ -51,8 +52,6 @@ metadata {
 
         command "holdOn"
         command "holdOff"
-
-        command "getPowerSource"
 
 		fingerprint profileId: "0104", inClusters: "0000,0001,0003,0004,0005,0020,0201,0202,0204,0B05", outClusters: "000A, 0019",  manufacturer: "LUX", model: "KONOZ", deviceJoinName: "LUX KONOz Thermostat"
 	}
@@ -227,13 +226,6 @@ def parse(String description) {
 	} else {
     	log.debug "UNKNOWN data from device : $description"
     }
-}
-
-def getPowerSource() { //This is only used for figuring out how/where to get power source data from to determine if we're on AC or batteries.  Work in progress.
-	log.debug "Refresh power source info..."
-	[
-    "st rattr 0x${device.deviceNetworkId} 1 0x000 0x07"
-    ]
 }
 
 def getCoolingSetpointRange() {
