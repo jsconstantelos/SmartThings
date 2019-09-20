@@ -76,7 +76,7 @@ metadata {
 			}
 		}
 		valueTile("power", "device.power", width: 2, height: 2) {
-			state "default", label:'${currentValue} W'
+			state "default", label:'${currentValue} W', action:"configuration.configure"
 		}
 		valueTile("energy", "device.energy", width: 2, height: 2) {
 			state "default", label:'${currentValue} kWh'
@@ -155,7 +155,7 @@ def handleMeterReport(cmd){
 		} else if (cmd.scale == 1) {
 			createEvent(name: "energy", value: cmd.scaledMeterValue, unit: "kVAh")
 		} else if (cmd.scale == 2) {
-			createEvent(name: "power", value: Math.round(cmd.scaledMeterValue), unit: "W")
+			createEvent(name: "power", value: cmd.scaledMeterValue, unit: "W")
 		}
 	}
 }
