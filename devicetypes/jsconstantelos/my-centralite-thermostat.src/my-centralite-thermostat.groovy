@@ -26,6 +26,7 @@
  *  05-15-2019 : Added code for Power Source reporting.  Still a work in progress.
  *  06-16-2019 : Overhauled to support new app.  Based off of ST's Zigbee Thermostat DTH.
  *  08-23-2019 : Cleaned up code.
+ *  10-12-2019 : Worked on switch capabilities so that this DTH can be used better with smartapps using switches, and so that "switch" states are properly reflected.
  *
  */
 
@@ -131,6 +132,10 @@ metadata {
 		valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
 			state "battery", label:'${currentValue}% battery', unit:""
 		}
+        standardTile("switch", "device.switch", width: 1, height: 1) {
+            state "off", label: 'OFF'
+            state "on", label: 'ON'
+        }
 		main "thermostatMulti"
 		details(["thermostatMulti", "thermostatMode", "heatingSetpoint", "coolingSetpoint", "thermostatFanMode", "battery", "powerSource", "refresh"])
 	}
@@ -428,6 +433,7 @@ def off() {
 def fanOn() {
 	log.debug "Setting fan to ON"
 	sendEvent("name":"thermostatFanMode", "value":"on")
+    sendEvent("name":"switch", "value":"on")
     [
 		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {04}"
 	]
@@ -436,6 +442,7 @@ def fanOn() {
 def fanAuto() {
 	log.debug "Setting fan to AUTO"
 	sendEvent("name":"thermostatFanMode", "value":"auto")
+    sendEvent("name":"switch", "value":"off")
     [
 		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {05}"
 	]
