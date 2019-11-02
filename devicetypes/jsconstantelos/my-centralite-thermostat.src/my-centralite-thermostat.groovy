@@ -53,8 +53,6 @@ metadata {
 
         command "holdOn"
         command "holdOff"
-
-		fingerprint profileId: "0104", inClusters: "0000,0001,0003,0004,0005,0020,0201,0202,0204,0B05", outClusters: "000A, 0019",  manufacturer: "LUX", model: "KONOZ", deviceJoinName: "LUX KONOz Thermostat"
 	}
 
 	tiles {
