@@ -392,7 +392,8 @@ def offmode() {
 	log.debug "Setting mode to OFF"
 	sendEvent("name":"thermostatMode", "value":"off")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {00}"
+		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {00}", "delay 5000",
+        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 	]
 }
 
@@ -400,7 +401,8 @@ def cool() {
 	log.debug "Setting mode to COOL"
 	sendEvent("name":"thermostatMode", "value":"cool")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {03}"
+		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {03}", "delay 5000",
+        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 	]
 }
 
@@ -408,7 +410,8 @@ def heat() {
 	log.debug "Setting mode to HEAT"
 	sendEvent("name":"thermostatMode", "value":"heat")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {04}"
+		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {04}", "delay 5000",
+        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 	]
 }
 
@@ -416,7 +419,8 @@ def emergencyHeat() {
 	log.debug "Setting mode to EMERGENCY HEAT"
 	sendEvent("name":"thermostatMode", "value":"emergency heat")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {05}"
+		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {05}", "delay 5000",
+        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 	]
 }
 
@@ -433,7 +437,8 @@ def fanOn() {
 	sendEvent("name":"thermostatFanMode", "value":"on")
     sendEvent("name":"switch", "value":"on")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {04}"
+		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {04}", "delay 5000",
+        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 	]
 }
 
@@ -442,7 +447,8 @@ def fanAuto() {
 	sendEvent("name":"thermostatFanMode", "value":"auto")
     sendEvent("name":"switch", "value":"off")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {05}"
+		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {05}", "delay 5000",
+        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 	]
 }
 
@@ -485,6 +491,7 @@ def configure() {
 	state.supportedFanModes = ["on", "auto"]
 	sendEvent(name: "supportedThermostatModes", value: JsonOutput.toJson(state.supportedThermostatModes), displayed: false)
 	sendEvent(name: "supportedThermostatFanModes", value: JsonOutput.toJson(state.supportedFanModes), displayed: false)
+    log.debug "...bindings..."
 	[
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 1000",
         "zdo bind 0x${device.deviceNetworkId} 1 1 0x001 {${device.zigbeeId}} {}", "delay 1000",
@@ -493,10 +500,10 @@ def configure() {
 		"zcl global send-me-a-report 1 0x20 0x20 3600 86400 {01}", "delay 1000", // Battery report
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
+    log.debug "...reporting intervals..."
     [
-    	zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null), "delay 1000",	// Thermostat Operating State report to send whenever it changes (no min or max, or change threshold).  This is also known as Running State (Zen).
+    	zigbee.configureReporting(0x0201, 0x0029, 0x19, 5, 300, null), "delay 1000",	// Thermostat Operating State report to send whenever it changes (no min or max, or change threshold).  This is also known as Running State (Zen).
         zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
-        zigbee.configureReporting(0x0202, 0x001c, 0x30, 0, 0, null), "delay 1000",
         zigbee.configureReporting(0x0000, 0x0007, 0x30, 0, 0, null)
 	]
 }
@@ -516,9 +523,8 @@ def refresh() {
 		"st rattr 0x${device.deviceNetworkId} 1 0x202 0"
 	]
     [
-    	zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 0, null), "delay 1000",
+    	zigbee.configureReporting(0x0201, 0x0029, 0x19, 5, 300, null), "delay 1000",
         zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
-        zigbee.configureReporting(0x0202, 0x001c, 0x30, 0, 0, null), "delay 1000",
         zigbee.configureReporting(0x0000, 0x0007, 0x30, 0, 0, null)
 	]
 }
