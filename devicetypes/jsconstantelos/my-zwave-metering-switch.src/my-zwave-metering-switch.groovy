@@ -134,13 +134,13 @@ def getCommandClassVersions() {
 
 // parse events into attributes
 def parse(String description) {
-	log.debug "parse() - description: "+description
+//	log.debug "parse() - description: "+description
 	def result = null
 	if (description != "updated") {
 		def cmd = zwave.parse(description, commandClassVersions)
 		if (cmd) {
 			result = zwaveEvent(cmd)
-			log.debug("'$description' parsed to $result")
+            log.debug "Parse returned ${result?.descriptionText}"
 		} else {
 			log.debug("Couldn't zwave.parse '$description'")
 		}
@@ -161,13 +161,13 @@ def handleMeterReport(cmd){
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
-	log.debug "v3 Meter report: "+cmd
+//	log.debug "v3 Meter report: "+cmd
 	handleMeterReport(cmd)
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd)
 {
-	log.debug "Basic report: "+cmd
+//	log.debug "Basic report: "+cmd
 	def value = (cmd.value ? "on" : "off")
 	def evt = createEvent(name: "switch", value: value, type: "physical", descriptionText: "$device.displayName was turned $value")
 	if (evt.isStateChange) {
@@ -179,7 +179,7 @@ def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd)
 
 def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cmd)
 {
-	log.debug "Switch binary report: "+cmd
+//	log.debug "Switch binary report: "+cmd
 	def value = (cmd.value ? "on" : "off")
 	createEvent(name: "switch", value: value, type: "digital", descriptionText: "$device.displayName was turned $value")
 }
@@ -248,8 +248,10 @@ def configure() {
         result << response(encap(zwave.configurationV1.configurationSet(parameterNumber: 90, size: 1, scaledConfigurationValue: 1)))	// Send data based on a time interval (0), or based on a change in wattage (1).  0 is default. 1 enables parameters 91 and 92.
         result << response(encap(zwave.configurationV1.configurationSet(parameterNumber: 91, size: 1, scaledConfigurationValue: 1)))	// If parameter 90 is 1, don't send unless watts have changed by x amount
         result << response(encap(zwave.configurationV1.configurationSet(parameterNumber: 92, size: 1, scaledConfigurationValue: 1)))	// If parameter 90 is 1, don't send unless watts have changed by x percent
-		result << response(encap(zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 12)))	// report power in watts
+		result << response(encap(zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 4)))	// report power in watts
 		result << response(encap(zwave.configurationV1.configurationSet(parameterNumber: 111, size: 4, scaledConfigurationValue: 5)))	 // every 1 min (default), set to 5 seconds.
+		result << response(encap(zwave.configurationV1.configurationSet(parameterNumber: 102, size: 4, scaledConfigurationValue: 8)))	// report power in kWh
+		result << response(encap(zwave.configurationV1.configurationSet(parameterNumber: 112, size: 4, scaledConfigurationValue: 900)))	 // set to 900 seconds.
 	} else if (zwaveInfo.mfr == "010F" && zwaveInfo.prod == "1801" && zwaveInfo.model == "1000") { // Fibaro Wall Plug UK
 		result << response(encap(zwave.configurationV1.configurationSet(parameterNumber: 11, size: 1, scaledConfigurationValue: 2))) // 2% power change results in report
 		result << response(encap(zwave.configurationV1.configurationSet(parameterNumber: 13, size: 2, scaledConfigurationValue: 5*60))) // report every 5 minutes
