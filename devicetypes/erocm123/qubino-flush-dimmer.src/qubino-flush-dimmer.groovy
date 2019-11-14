@@ -36,6 +36,12 @@ metadata {
         capability "Health Check"
         
         command "reset"
+        command "presetOne"
+        command "presetTwo"
+        command "presetThree"
+        command "presetFour"
+        command "presetUpFive"
+        command "presetDownFive"
 
         fingerprint mfr: "0159", prod: "0001", model: "0051"
 		fingerprint deviceId: "0x1101", inClusters: "0x5E,0x86,0x72,0x5A,0x73,0x20,0x27,0x25,0x26,0x32,0x85,0x8E,0x59,0x70", outClusters: "0x20,0x26"
@@ -67,7 +73,7 @@ metadata {
             }
 	    }
         valueTile("presetOne", "device.level", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "presetOne", label:'Preset 1', action:"ventTwentyFive"
+            state "presetOne", label:'Preset 1', action:"presetOne"
         }
         valueTile("presetTwo", "device.level", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
             state "presetTwo", label:'Preset 2', action:"presetTwo"
