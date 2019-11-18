@@ -25,8 +25,8 @@ definition(
 		author: "SmartThings",
 		description: "Receive notifications when anything happens in your home.",
 		category: "My Apps",
-		iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/window_contact.png",
-		iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/window_contact@2x.png",
+	    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+	    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
 		pausable: true
 )
 
