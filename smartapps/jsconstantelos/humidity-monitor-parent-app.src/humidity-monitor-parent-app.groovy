@@ -5,8 +5,8 @@ definition(
     author: "jscgs350",
     description: "Humidity Monitor Parent App",
     category: "My Apps",
-    iconUrl: "https://graph.api.smartthings.com/api/devices/icons/st.Weather.weather9-icn",
-    iconX2Url: "https://graph.api.smartthings.com/api/devices/icons/st.Weather.weather9-icn?displaySize=2x")
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
 
 preferences {
     page(name: "mainPage", title: "Humidity Monitor Parent App", install: true, uninstall: true,submitOnChange: true) {
