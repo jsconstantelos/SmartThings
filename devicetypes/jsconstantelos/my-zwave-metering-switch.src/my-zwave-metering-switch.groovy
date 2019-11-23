@@ -46,24 +46,9 @@ metadata {
 		fingerprint mfr: "0159", prod: "0002", model: "0054", deviceJoinName: "Qubino Smart Plug"
 	}
 
-	// simulator metadata
-	simulator {
-		status "on":  "command: 2003, payload: FF"
-		status "off": "command: 2003, payload: 00"
-
-		for (int i = 0; i <= 10000; i += 1000) {
-			status "power  ${i} W": new physicalgraph.zwave.Zwave().meterV1.meterReport(
-				scaledMeterValue: i, precision: 3, meterType: 4, scale: 2, size: 4).incomingMessage()
-		}
-		for (int i = 0; i <= 100; i += 10) {
-			status "energy	${i} kWh": new physicalgraph.zwave.Zwave().meterV1.meterReport(
-			   scaledMeterValue: i, precision: 3, meterType: 0, scale: 0, size: 4).incomingMessage()
-		}
-
-		// reply messages
-		reply "2001FF,delay 100,2502": "command: 2503, payload: FF"
-		reply "200100,delay 100,2502": "command: 2503, payload: 00"
-	}
+    preferences {
+       input "initiateConfig", "boolean", title: "Toggle to initiate configuration, then tap back.", defaultValue: false, displayDuringSetup: false
+    }
 
 	// tile definitions
 	tiles(scale: 2) {
@@ -103,8 +88,10 @@ def installed() {
 }
 
 def updated() {
+	log.debug "updated()"
 	// Device-Watch simply pings if no device events received for 32min(checkInterval)
 	initialize()
+    response(configure())
 	if (zwaveInfo?.mfr?.equals("0063") || zwaveInfo?.mfr?.equals("014F")) { // These old GE devices have to be polled. GoControl Plug refresh status every 15 min.
 		unschedule("poll", [forceForLocallyExecuting: true])
 		runEvery15Minutes("poll", [forceForLocallyExecuting: true])
