@@ -131,7 +131,11 @@ private meterReport(scale, value) {
 	} else if (scale == 1) {
 		[name: "energy", value: value, unit: "kVAh"]
 	} else {
-		[name: "power", value: value, unit: "W"]
+    	if (value > 0) {
+        	if (value < 50000) {
+				[name: "power", value: value, unit: "W"]
+			}
+		}
 	}
 }
 
