@@ -142,7 +142,7 @@ def on() {
 	def warningDuration = state.maxDuration ? state.maxDuration : DEFAULT_MAX_DURATION
 	state.lastDuration = warningDuration
 
-	// start warning, burglar mode, no strobe, siren very high
+	// start warning, burglar mode, strobe ON, siren very high
 	zigbee.command(IAS_WD_CLUSTER, COMMAND_IAS_WD_START_WARNING, "17", DataType.pack(warningDuration, DataType.UINT16), "00", "00")
 }
 
