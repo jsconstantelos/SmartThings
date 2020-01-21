@@ -16,10 +16,10 @@
  *  Date: 2013-05-09
  */
 definition(
-    name: "Left It Open",
+    name: "Left It Unlocked",
     namespace: "jsconstantelos",
     author: "SmartThings",
-    description: "Notifies you when you have left a door or window open longer that a specified amount of time.",
+    description: "Notifies you when you have left a lock unlocked longer that a specified amount of time.",
     category: "My Apps",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
@@ -27,11 +27,11 @@ definition(
 
 preferences {
 
-  section("Monitor this door or window") {
-    input "contact", "capability.contactSensor"
+  section("Monitor this lock") {
+    input "contact", "capability.lock"
   }
 
-  section("And notify me if it's open for more than this many minutes (default 10)") {
+  section("And notify me if it's unlocked for more than this many minutes (default 10)") {
     input "openThreshold", "number", description: "Number of minutes", required: false
   }
 
@@ -58,8 +58,8 @@ def updated() {
 }
 
 def subscribe() {
-  subscribe(contact, "contact.open", doorOpen)
-  subscribe(contact, "contact.closed", doorClosed)
+  subscribe(contact, "contact.unlocked", doorOpen)
+  subscribe(contact, "contact.locked", doorClosed)
 }
 
 def doorOpen(evt) {
@@ -74,27 +74,27 @@ def doorClosed(evt) {
 }
 
 def doorOpenTooLong() {
-  def contactState = contact.currentState("contact")
+  def contactState = contact.currentState("lock")
   def freq = (frequency != null && frequency != "") ? frequency * 60 : 600
 
-  if (contactState.value == "open") {
+  if (contactState.value == "unlocked") {
     def elapsed = now() - contactState.rawDateCreated.time
     def threshold = ((openThreshold != null && openThreshold != "") ? openThreshold * 60000 : 60000) - 1000
     if (elapsed >= threshold) {
-      log.debug "Contact has stayed open long enough since last check ($elapsed ms):  calling sendMessage()"
+      log.debug "Lock has stayed unlocked long enough since last check ($elapsed ms):  calling sendMessage()"
       sendMessage()
       runIn(freq, doorOpenTooLong, [overwrite: false])
     } else {
-      log.debug "Contact has not stayed open long enough since last check ($elapsed ms):  doing nothing"
+      log.debug "Lock has not stayed unlocked long enough since last check ($elapsed ms):  doing nothing"
     }
   } else {
-    log.warn "doorOpenTooLong() called but contact is closed:  doing nothing"
+    log.warn "doorOpenTooLong() called but lock is locked:  doing nothing"
   }
 }
 
 void sendMessage() {
   def minutes = (openThreshold != null && openThreshold != "") ? openThreshold : 10
-  def msg = "${contact.displayName} has been left open for ${minutes} minutes."
+  def msg = "${contact.displayName} has been left unlocked for ${minutes} minutes."
   log.info msg
   if (location.contactBookEnabled) {
     sendNotificationToContacts(msg, recipients)
