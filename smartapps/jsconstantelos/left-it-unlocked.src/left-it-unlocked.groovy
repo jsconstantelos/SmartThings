@@ -58,8 +58,8 @@ def updated() {
 }
 
 def subscribe() {
-  subscribe(contact, "contact.unlocked", doorOpen)
-  subscribe(contact, "contact.locked", doorClosed)
+  subscribe(contact, "lock.unlocked", doorOpen)
+  subscribe(contact, "lock.locked", doorClosed)
 }
 
 def doorOpen(evt) {
