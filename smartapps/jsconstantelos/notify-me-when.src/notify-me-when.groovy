@@ -43,6 +43,8 @@ preferences {
 		input "departurePresence", "capability.presenceSensor", title: "Departure Of", required: false, multiple: true
 		input "smoke", "capability.smokeDetector", title: "Smoke Detected", required: false, multiple: true
 		input "water", "capability.waterSensor", title: "Water Sensor Wet", required: false, multiple: true
+        input "valve", "capability.valve", title: "Valve Opens", required: false, multiple: true
+        input "valveClosed", "capability.valve", title: "Valve Closes", required: false, multiple: true
         input "powerSources", "capability.powerSource", title: "Power Source Changes", required: false, multiple: true
 	}
 	section("Send this message (optional, sends standard status message if not specified)"){
@@ -85,6 +87,8 @@ def subscribeToEvents() {
 	subscribe(smoke, "smoke.tested", eventHandler)
 	subscribe(smoke, "carbonMonoxide.detected", eventHandler)
 	subscribe(water, "water.wet", eventHandler)
+	subscribe(valve, "valve.open", eventHandler)
+	subscribe(valveClosed, "valve.closed", eventHandler)
     subscribe(powerSources, "powerSource", eventHandler)
 }
 
