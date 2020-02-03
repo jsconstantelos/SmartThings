@@ -20,14 +20,12 @@
 metadata {
 	definition (name: "My SmartSense Multi (no contact)", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", vid: "generic-contact-2") {
 		capability "Three Axis"
-//		capability "Contact Sensor"
 		capability "Acceleration Sensor"
 		capability "Signal Strength"
 		capability "Temperature Measurement"
 		capability "Sensor"
+		capability "Contact Sensor"        
 		capability "Battery"
-
-//		fingerprint profileId: "FC01", deviceId: "0139"
 
 		attribute "status", "string"
 	}
@@ -60,7 +58,6 @@ metadata {
 				]
 			)
 		}
-
 		main(["acceleration"])
 		details(["acceleration", "temperature"])
 	}
@@ -186,7 +183,8 @@ private List parseContactMessage(String description) {
 	parts.each { part ->
 		part = part.trim()
 		if (part.startsWith('contactState:')) {
-			results.addAll(getContactResult(part, description))
+			log.debug "Contact sensor disabled"
+//			results.addAll(getContactResult(part, description))
 		}
 		else if (part.startsWith('accelerationState:')) {
 			results << getAccelerationResult(part, description)
@@ -305,6 +303,14 @@ private Map getAccelerationResult(part, description) {
 	def linkText = getLinkText(device)
 	def descriptionText = "$linkText was $value"
 	def isStateChange = isStateChange(device, name, value)
+
+	if (value == "active") {
+		sendEvent(name: "contact", value: "open")
+        sendEvent(name: "status", value: "open")
+    } else {
+    	sendEvent(name: "contact", value: "closed")
+        sendEvent(name: "status", value: "closed")
+	}
 
 	[
 		name: name,
