@@ -135,6 +135,16 @@ def siren() {
 	on()
 }
 
+def strobe() {
+	log.debug "strobe()"
+	on()
+}
+
+def both() {
+	log.debug "both()"
+	on()
+}
+
 def on() {
 	log.debug "on()"
 
