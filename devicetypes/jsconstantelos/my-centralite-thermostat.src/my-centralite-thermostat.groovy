@@ -27,6 +27,7 @@
  *  06-16-2019 : Overhauled to support new app.  Based off of ST's Zigbee Thermostat DTH.
  *  08-23-2019 : Cleaned up code.
  *  10-12-2019 : Worked on switch capabilities so that this DTH can be used better with smartapps using switches, and so that "switch" states are properly reflected.
+ *  03-01-2020 : Fixed power source reporting.  The value for cluster was being reported as null, but clusterId was reporting the right value, so used that instead.
  *
  */
 
@@ -151,6 +152,10 @@ def parse(String description) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
         def tempScale = location.temperatureScale
 //		log.debug "Desc Map : $descMap"
+//		log.debug "cluster: $descMap.cluster"
+//		log.debug "clusterId: $descMap.clusterId"
+//      log.debug "attribute: $descMap.attrId"
+//		log.debug "value: $descMap.value"
         // TEMPERATURE
 		if (descMap.cluster == "0201" && descMap.attrId == "0000") {
         	if (descMap.value != null) {
@@ -224,10 +229,10 @@ def parse(String description) {
             sendEvent("name": "thermostatHoldMode", "value": modeValue, "displayed": true)
             log.debug "THERMOSTAT HOLD MODE is : ${modeValue}"
         // POWER SOURCE
-		} else if (descMap.cluster == "0000" && descMap.attrId == "0007") {
+		} else if (descMap.clusterId == "0000" && descMap.attrId == "0007") {
         	getPowerSourceMap(descMap.value)
 		} else {
-//        	log.debug "UNKNOWN Cluster and Attribute : $descMap"
+        	log.debug "UNKNOWN Cluster and Attribute : $descMap"
         }
 	} else {
     	log.debug "UNKNOWN data from device : $description"
