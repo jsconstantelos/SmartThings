@@ -13,13 +13,13 @@
  */
 
 metadata {
-	definition (name: "My ZigBee Garage Door Relay", namespace: "jsconstantelos", author: "SmartThings", vid: "generic-switch", ocfDeviceType: "oic.d.garagedoor", genericHandler: "Zigbee") {
+	definition (name: "My ZigBee Garage Door Relay", namespace: "jsconstantelos", author: "SmartThings", vid: "generic-switch", ocfDeviceType: "oic.d.switch", genericHandler: "Zigbee") {
 		capability "Actuator"
 		capability "Configuration"
 		capability "Refresh"
 		capability "Switch"
-		capability "Door Control"
-		capability "Garage Door Control"
+//		capability "Door Control"
+//		capability "Garage Door Control"
 		capability "Health Check"
 		capability "Refresh"
 		capability "Sensor"
