@@ -35,7 +35,7 @@ metadata {
 			}
 		}
 		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
+			state "default", label:"", action:"configuration.configure", icon:"st.secondary.refresh"
 		}
 		main "switch"
 		details(["switch", "refresh"])
@@ -62,7 +62,7 @@ def push() {
     def cmds = delayBetween([
 		zigbee.on(),
     	zigbee.off()
-    ],300)
+    ],50)
     cmds
 }
 
