@@ -92,8 +92,8 @@ metadata {
     // UI tile definitions
     tiles {
         standardTile("button", "device.switch", width: 2, height: 2, canChangeIcon: true) {
-            state "off", label: 'Off', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff", nextState: "on"
-            state "on", label: 'On', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#79b821", nextState: "off"
+            state "off", label: 'Disarmed', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff", nextState: "on"
+            state "on", label: 'Armed', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#79b821", nextState: "off"
         }
         main "button"
             details (["button"])
