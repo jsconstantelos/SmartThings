@@ -172,14 +172,22 @@ def performOperation(operation) {
     log.info "Received request to perform operation: ${operation}"
     try {
      	def random = new Random().nextInt(99999999) + 1
-        def path = "${EYEZON_URI()}${EYEZON_PATH()}?mid=${settings.mid}&action=s&did=${settings.did}&type=18&dmdben=f&rand=${random}"
         
-        def body = "extaction=${operation}&part=${settings.part}"
-        if (operation == OPERATION_DISARM()) {
-        	body += "&type=18&dmdben=f&pin=${settings.pin}"
-        }
+        def path = "${EYEZON_URI()}${EYEZON_PATH()}?mid=${settings.mid}&action=s&did=${settings.did}&type=15&dmdben=f&rand=${random}"
+        
+        // def body = "extaction=${operation}&part=${settings.part}"
+        // def body = "extaction=${operation}&part=${settings.part}&pin=${settings.pin}"
+        // def body = "extaction=dohpincommand&hexaction=${operation}&part=${settings.part}&pin=${settings.pin}"
+        
+        def body = "extaction=${operation}&part=${settings.part}&pin=${settings.pin}"
+        
+//        if (operation == OPERATION_DISARM()) {
+//        	body += "&type=15&dmdben=f&pin=${settings.pin}"
+//        }
+
         log.info "Path: ${path}"
         log.info "Body: ${body}"
+        
         httpPost(path, body)
         log.info "Operation ${operation} performed successfully"
     } catch (e) {
