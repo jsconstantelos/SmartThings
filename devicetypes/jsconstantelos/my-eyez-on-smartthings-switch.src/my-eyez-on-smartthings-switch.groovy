@@ -53,13 +53,13 @@ def STATUS_UNKNOWN() {
 	return "Unknown"
 }
 def OPERATION_ARM_STAY() {
-	return "armstay"
+	return "harmstay"
 }
 def OPERATION_ARM_AWAY() {
-	return "armaway"
+	return "harmaway"
 }
 def OPERATION_DISARM() {
-	return "disarm"
+	return "hdisarm"
 }
 def ARM_MODE_STAY() {
 	return "Stay"
@@ -83,6 +83,11 @@ metadata {
         capability "Actuator"
         capability "Switch"
         capability "Sensor"
+        capability "Refresh"
+        capability "Polling"
+        capability "Health Check"
+        
+        command "getSystemStatus"
     }
 
     // simulator metadata
@@ -90,14 +95,38 @@ metadata {
     }
 
     // UI tile definitions
-    tiles {
-        standardTile("button", "device.switch", width: 2, height: 2, canChangeIcon: true) {
-            state "off", label: 'Disarmed', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff", nextState: "on"
-            state "on", label: 'Armed', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#79b821", nextState: "off"
-        }
-        main "button"
-            details (["button"])
-    }
+	tiles(scale: 2) {
+		multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4, canChangeIcon: true){
+			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
+				attributeState "on", label:'Armed', action:"switch.off", icon:"st.switches.light.on", backgroundColor:"#00A0DC"
+				attributeState "off", label:'Disarmed', action:"switch.on", icon:"st.switches.light.off", backgroundColor:"#ffffff"
+				attributeState "busy", label:'Busy', icon:"st.switches.light.on", backgroundColor:"#00A0DC"
+				attributeState "exiting", label:'Exiting', icon:"st.switches.light.on", backgroundColor:"#ffffff"
+			}
+		}
+		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "default", label:"", action:"getSystemStatus", icon:"st.secondary.refresh"
+		}
+		main "switch"
+		details(["switch", "refresh"])
+	}
+}
+
+def initialize() {
+	sendEvent(name: "DeviceWatch-Enroll", value: "{\"protocol\": \"LAN\", \"scheme\":\"untracked\", \"hubHardwareId\": \"${device.hub.hardwareID}\"}", displayed: false)
+    sendEvent(name: "DeviceWatch-DeviceStatus", value: "online")
+    sendEvent(name: "healthStatus", value: "online")
+
+}
+
+void installed() {
+	log.debug "installed()"
+	initialize()
+}
+
+def updated() {
+	log.debug "updated()"
+	initialize()
 }
 
 def getSystemStatus() {
@@ -118,36 +147,39 @@ def getSystemStatus() {
     	log.error 'Unable to get current system status', e
     	throw e
     }
-    
     def systemStatus = STATUS_UNKNOWN()
     if (textData.contains(STATUS_READY())) {
     	systemStatus = STATUS_READY()
+        sendEvent(name: "switch", value: "off")
     } else if (textData.contains(STATUS_BUSY())) {
     	systemStatus = STATUS_BUSY()
+        sendEvent(name: "switch", value: "busy")
     } else if (textData.contains(STATUS_EXIT_DELAY())) {
     	systemStatus = STATUS_EXIT_DELAY()
+        sendEvent(name: "switch", value: "exiting")
     } else if (textData.contains(STATUS_AWAY_ARMED())) {
     	systemStatus = STATUS_AWAY_ARMED()
+        sendEvent(name: "switch", value: "on")
     } else if (textData.contains(STATUS_STAY_ARMED())) {
     	systemStatus = STATUS_STAY_ARMED()
+        sendEvent(name: "switch", value: "on")
     }
-
     log.info "Determined system status to be ${systemStatus}"
     return systemStatus
 }
 
 def performOperation(operation) {
     log.info "Received request to perform operation: ${operation}"
-    
     try {
      	def random = new Random().nextInt(99999999) + 1
-        def path = "${EYEZON_URI()}${EYEZON_PATH()}?mid=${settings.mid}&action=s&did=${settings.did}&type=18&dmdben=f&rand=${random}"
+        def path = "${EYEZON_URI()}${EYEZON_PATH()}?mid=${settings.mid}&action=s&did=${settings.did}&type=15&dmdben=f&rand=${random}"
         
         def body = "extaction=${operation}&part=${settings.part}"
         if (operation == OPERATION_DISARM()) {
-        	body += "&type=18&dmdben=f&pin=${settings.pin}"
+        	body += "&type=15&dmdben=f&pin=${settings.pin}"
         }
-        
+        log.info "Path: ${path}"
+        log.info "Body: ${body}"
         httpPost(path, body)
         log.info "Operation ${operation} performed successfully"
     } catch (e) {
@@ -166,6 +198,7 @@ def on() {
     
     def operation = settings.mode == 'Away' ? OPERATION_ARM_AWAY() : OPERATION_ARM_STAY()
     performOperation(operation)
+//    getSystemStatus()
 }
 
 def off() {
@@ -186,4 +219,20 @@ def off() {
     }
     
     performOperation(OPERATION_DISARM())
+//    getSystemStatus()
+}
+
+def refresh() {
+	log.debug "refresh()..."
+	getSystemStatus()
+}
+
+def ping() {
+	log.debug "ping()..."
+	refresh()
+}
+
+def poll() {
+	log.debug "poll()..."
+	refresh()
 }
