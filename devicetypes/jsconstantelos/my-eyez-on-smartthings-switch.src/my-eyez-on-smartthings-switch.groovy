@@ -53,13 +53,13 @@ def STATUS_UNKNOWN() {
 	return "Unknown"
 }
 def OPERATION_ARM_STAY() {
-	return "harmstay"
+	return "armstay"
 }
 def OPERATION_ARM_AWAY() {
-	return "harmaway"
+	return "armaway"
 }
 def OPERATION_DISARM() {
-	return "hdisarm"
+	return "disarm"
 }
 def ARM_MODE_STAY() {
 	return "Stay"
@@ -172,11 +172,11 @@ def performOperation(operation) {
     log.info "Received request to perform operation: ${operation}"
     try {
      	def random = new Random().nextInt(99999999) + 1
-        def path = "${EYEZON_URI()}${EYEZON_PATH()}?mid=${settings.mid}&action=s&did=${settings.did}&type=15&dmdben=f&rand=${random}"
+        def path = "${EYEZON_URI()}${EYEZON_PATH()}?mid=${settings.mid}&action=s&did=${settings.did}&type=18&dmdben=f&rand=${random}"
         
         def body = "extaction=${operation}&part=${settings.part}"
         if (operation == OPERATION_DISARM()) {
-        	body += "&type=15&dmdben=f&pin=${settings.pin}"
+        	body += "&type=18&dmdben=f&pin=${settings.pin}"
         }
         log.info "Path: ${path}"
         log.info "Body: ${body}"
