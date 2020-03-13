@@ -92,10 +92,10 @@ metadata {
 	tiles(scale: 2) {
 		multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4, canChangeIcon: true){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "on", label:'Armed', action:"switch.off", icon:"st.switches.light.on", backgroundColor:"#00A0DC"
-				attributeState "off", label:'Disarmed', action:"switch.on", icon:"st.switches.light.off", backgroundColor:"#ffffff"
-				attributeState "busy", label:'Busy', icon:"st.switches.light.on", backgroundColor:"#ffa81e"
-				attributeState "exiting", label:'Exiting', action:"switch.off", icon:"st.switches.light.on", backgroundColor:"#ffa81e"
+				attributeState "on", label:'Armed', action:"switch.off", icon:"st.security.alarm.alarm", backgroundColor:"#00A0DC"
+				attributeState "off", label:'Disarmed', action:"switch.on", icon:"st.security.alarm.clear", backgroundColor:"#ffffff"
+				attributeState "busy", label:'Busy', icon:"st.security.alarm.alarm", backgroundColor:"#ffa81e"
+				attributeState "exiting", label:'Exiting', action:"switch.off", icon:"st.security.alarm.alarm", backgroundColor:"#ffa81e"
 			}
             tileAttribute ("device.alarmActivity", key: "SECONDARY_CONTROL") {
                 attributeState("default", label:'Updated ${currentValue}')
