@@ -148,30 +148,27 @@ def getSystemStatus() {
     if (textData.contains(STATUS_READY())) {
     	systemStatus = STATUS_READY()
         sendEvent(name: "switch", value: "off")
-        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     } else if (textData.contains(STATUS_BUSY())) {
     	systemStatus = STATUS_BUSY()
         sendEvent(name: "switch", value: "busy")
-        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     } else if (textData.contains(STATUS_EXIT_DELAY())) {
     	systemStatus = STATUS_EXIT_DELAY()
         sendEvent(name: "switch", value: "exiting")
-        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     } else if (textData.contains(STATUS_AWAY_ARMED())) {
     	systemStatus = STATUS_AWAY_ARMED()
         sendEvent(name: "switch", value: "on")
-        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     } else if (textData.contains(STATUS_STAY_ARMED())) {
     	systemStatus = STATUS_STAY_ARMED()
         sendEvent(name: "switch", value: "on")
-        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     }
     log.info "Determined system status to be ${systemStatus} at ${timeString}"
+    sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     return systemStatus
 }
 
 def performOperation(operation) {
     log.info "Received request to perform operation: ${operation}"
+    def timeString = new Date().format("MM-dd-yy h:mm a", location.timeZone)
     try {
      	def random = new Random().nextInt(99999999) + 1
         def waitTime = exitDelay
@@ -193,6 +190,7 @@ def performOperation(operation) {
         httpPost(path, body)
         log.info "Operation ${operation} successfully submitted, now waiting for system exit/disarm delay (${waitTime} seconds for exit delay, 5 seconds for disarm delay) for confirmation..."
         runIn(waitTime, getSystemStatus, [overwrite: true])  // wait for system delay and then get system status to update the tile, and overwrite any pending schedules
+        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     } catch (e) {
         log.error "Unable to perform operation ${operation}: POST failed.", e
     }
