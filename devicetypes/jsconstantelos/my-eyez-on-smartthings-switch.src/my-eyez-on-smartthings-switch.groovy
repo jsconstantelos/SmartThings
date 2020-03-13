@@ -72,7 +72,7 @@ preferences {
         input "part", "number", title: "Partition #", required: true
         input "pin", "number", title: "Disarm PIN", required: true
         input "mode", "enum", title: "Arm Mode", options: [ARM_MODE_STAY(), ARM_MODE_AWAY()]
-        input "exitDelay", "number", title: "System exit delay (in seconds)", range: "1..120", required: true
+        input "exitDelay", "number", title: "System exit delay (in seconds, default is 60)", defaultValue: 60, range: "1..120", required: true
     }
 }
 
