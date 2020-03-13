@@ -84,6 +84,7 @@ metadata {
         capability "Refresh"
         capability "Polling"
         capability "Health Check"
+        attribute "alarmActivity", "string"
         command "getSystemStatus"
     }
 
@@ -96,6 +97,9 @@ metadata {
 				attributeState "busy", label:'Busy', icon:"st.switches.light.on", backgroundColor:"#ffa81e"
 				attributeState "exiting", label:'Exiting', action:"switch.off", icon:"st.switches.light.on", backgroundColor:"#ffa81e"
 			}
+            tileAttribute ("device.alarmActivity", key: "SECONDARY_CONTROL") {
+                attributeState("default", label:'Updated ${currentValue}')
+            }
 		}
 		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
 			state "default", label:"", action:"getSystemStatus", icon:"st.secondary.refresh"
@@ -123,6 +127,7 @@ def updated() {
 
 def getSystemStatus() {
     def textData
+    def timeString = new Date().format("MM-dd-yy h:mm a", location.timeZone)
     try {
         def params = [
             uri: EYEZON_URI(),
@@ -143,20 +148,25 @@ def getSystemStatus() {
     if (textData.contains(STATUS_READY())) {
     	systemStatus = STATUS_READY()
         sendEvent(name: "switch", value: "off")
+        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     } else if (textData.contains(STATUS_BUSY())) {
     	systemStatus = STATUS_BUSY()
         sendEvent(name: "switch", value: "busy")
+        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     } else if (textData.contains(STATUS_EXIT_DELAY())) {
     	systemStatus = STATUS_EXIT_DELAY()
         sendEvent(name: "switch", value: "exiting")
+        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     } else if (textData.contains(STATUS_AWAY_ARMED())) {
     	systemStatus = STATUS_AWAY_ARMED()
         sendEvent(name: "switch", value: "on")
+        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     } else if (textData.contains(STATUS_STAY_ARMED())) {
     	systemStatus = STATUS_STAY_ARMED()
         sendEvent(name: "switch", value: "on")
+        sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     }
-    log.info "Determined system status to be ${systemStatus}"
+    log.info "Determined system status to be ${systemStatus} at ${timeString}"
     return systemStatus
 }
 
