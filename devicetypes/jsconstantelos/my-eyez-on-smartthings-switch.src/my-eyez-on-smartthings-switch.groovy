@@ -77,7 +77,7 @@ preferences {
 }
 
 metadata {
-    definition (name: "My Eyez-On SmartThings Switch", namespace: "jsconstantelos", author: "Vadim Bachmutsky") {
+    definition (name: "My Eyez-On SmartThings Switch", namespace: "jsconstantelos", author: "Vadim Bachmutsky", ocfDeviceType: "x.com.st.d.remotecontroller") {
         capability "Actuator"
         capability "Switch"
         capability "Sensor"
@@ -90,7 +90,7 @@ metadata {
 
     // UI tile definitions
 	tiles(scale: 2) {
-		multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4, canChangeIcon: true){
+		multiAttributeTile(name:"switch", type: "generic", width: 6, height: 4){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
 				attributeState "on", label:'Armed', action:"switch.off", icon:"st.security.alarm.alarm", backgroundColor:"#00A0DC"
 				attributeState "off", label:'Disarmed', action:"switch.on", icon:"st.security.alarm.clear", backgroundColor:"#ffffff"
