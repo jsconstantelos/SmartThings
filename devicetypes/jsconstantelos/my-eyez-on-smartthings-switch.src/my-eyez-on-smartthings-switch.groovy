@@ -92,7 +92,7 @@ metadata {
 	tiles(scale: 2) {
 		multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-                                attributeState "on", label:'Armed', action:"switch.off", icon:"st.security.alarm.alarm", backgroundColor:"#00A0DC", nextState: "busy"
+                attributeState "on", label:'Armed', action:"switch.off", icon:"st.security.alarm.alarm", backgroundColor:"#00A0DC", nextState: "busy"
 				attributeState "off", label:'Disarmed', action:"switch.on", icon:"st.security.alarm.clear", backgroundColor:"#ffffff", nextState: "exiting"
 				attributeState "busy", label:'Busy', icon:"st.security.alarm.alarm", backgroundColor:"#ffa81e"
 				attributeState "exiting", label:'Exiting', action:"switch.off", icon:"st.security.alarm.alarm", backgroundColor:"#ffa81e", nextState: "busy"
@@ -101,10 +101,7 @@ metadata {
                 attributeState("default", label:'Updated ${currentValue}')
             }
 		}
-//		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-//			state "default", label:"", action:"getSystemStatus", icon:"st.secondary.refresh"
-//		}
-		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
 			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
 		main "switch"
