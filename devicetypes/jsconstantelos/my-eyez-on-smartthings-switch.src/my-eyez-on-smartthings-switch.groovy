@@ -1,13 +1,13 @@
 /*
  * Author: Vadim Bachmutsky
+ * Contributors:
+ *     John Constantelos (https://github.com/jsconstantelos)
  * Program: Eyez-On SmartThings Switch
  * Version: 1.0
  *
  * Description:
  * Integrates SmartThings with EnvisaLink-enabled home security alarm system through
  * the use of the Eyez-On server to enable automation for arming/disarming system.
- *
- * TODO: Update switch state based on system status (feedback loop).
  *
  * Copyright 2020 Vadim Bachmutsky
  *
@@ -72,12 +72,12 @@ preferences {
         input "part", "number", title: "Partition #", required: true
         input "pin", "number", title: "Disarm PIN", required: true
         input "mode", "enum", title: "Arm Mode", options: [ARM_MODE_STAY(), ARM_MODE_AWAY()]
-        input "exitDelay", "number", title: "System exit delay (in seconds, default is 60)", defaultValue: 60, range: "1..120", required: true
+        input "exitDelay", "number", title: "System exit delay (in seconds, default is 60)", defaultValue: 60, range: "1..180", required: true
     }
 }
 
 metadata {
-    definition (name: "My Eyez-On SmartThings Switch", namespace: "jsconstantelos", author: "Vadim Bachmutsky", ocfDeviceType: "x.com.st.d.remotecontroller") {
+    definition (name: "My Eyez-On SmartThings Switch", namespace: "jsconstantelos", author: "Vadim Bachmutsky", ocfDeviceType: "oic.d.switch") {
         capability "Actuator"
         capability "Switch"
         capability "Sensor"
@@ -90,19 +90,22 @@ metadata {
 
     // UI tile definitions
 	tiles(scale: 2) {
-		multiAttributeTile(name:"switch", type: "generic", width: 6, height: 4){
+		multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "on", label:'Armed', action:"switch.off", icon:"st.security.alarm.alarm", backgroundColor:"#00A0DC"
-				attributeState "off", label:'Disarmed', action:"switch.on", icon:"st.security.alarm.clear", backgroundColor:"#ffffff"
+                                attributeState "on", label:'Armed', action:"switch.off", icon:"st.security.alarm.alarm", backgroundColor:"#00A0DC", nextState: "busy"
+				attributeState "off", label:'Disarmed', action:"switch.on", icon:"st.security.alarm.clear", backgroundColor:"#ffffff", nextState: "exiting"
 				attributeState "busy", label:'Busy', icon:"st.security.alarm.alarm", backgroundColor:"#ffa81e"
-				attributeState "exiting", label:'Exiting', action:"switch.off", icon:"st.security.alarm.alarm", backgroundColor:"#ffa81e"
+				attributeState "exiting", label:'Exiting', action:"switch.off", icon:"st.security.alarm.alarm", backgroundColor:"#ffa81e", nextState: "busy"
 			}
             tileAttribute ("device.alarmActivity", key: "SECONDARY_CONTROL") {
                 attributeState("default", label:'Updated ${currentValue}')
             }
 		}
+//		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+//			state "default", label:"", action:"getSystemStatus", icon:"st.secondary.refresh"
+//		}
 		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:"", action:"getSystemStatus", icon:"st.secondary.refresh"
+			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
 		main "switch"
 		details(["switch", "refresh"])
@@ -188,7 +191,7 @@ def performOperation(operation) {
         //log.info "Path: ${path}"
         //log.info "Body: ${body}"
         httpPost(path, body)
-        log.info "Operation ${operation} successfully submitted, now waiting for system exit/disarm delay (${waitTime} seconds for exit delay, 5 seconds for disarm delay) for confirmation..."
+        log.info "Operation ${operation} successfully submitted, now waiting for system exit/disarm delay (${waitTime} sec) for confirmation..."
         runIn(waitTime, getSystemStatus, [overwrite: true])  // wait for system delay and then get system status to update the tile, and overwrite any pending schedules
         sendEvent(name: "alarmActivity", value: timeString, descriptionText: text, displayed: true)
     } catch (e) {
