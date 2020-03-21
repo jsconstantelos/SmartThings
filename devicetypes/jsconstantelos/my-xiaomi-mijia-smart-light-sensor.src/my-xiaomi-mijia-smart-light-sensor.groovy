@@ -17,7 +17,7 @@ import groovy.json.JsonOutput
 import physicalgraph.zigbee.zcl.DataType
 
 metadata {
-    definition (name: "My Xiaomi Mijia Smart Light Sensor", namespace: "jsconstantelos", author: "jsconstantelos") {
+    definition (name: "My Xiaomi Mijia Smart Light Sensor", namespace: "jsconstantelos", author: "jsconstantelos", ocfDeviceType: "oic.r.sensor.illuminance") {
         capability "Illuminance Measurement"
         capability "Configuration"
         capability "Refresh"
