@@ -60,7 +60,10 @@ def parse(String description) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
 		if (descMap.cluster == "0001" && descMap.attrId == "0020") {
             def vBatt = Integer.parseInt(descMap.value,16) / 10
-            def batteryValue =  ((vBatt - 2.0) / (3.0 - 2.0) * 100) as int
+            def pct = (vBatt - 2.1) / (3 - 2.1)
+            def roundedPct = Math.round(pct * 100)
+            if (roundedPct <= 0) roundedPct = 1
+            def batteryValue = Math.min(100, roundedPct)
             sendEvent("name": "battery", "value": batteryValue, "displayed": true, isStateChange: true)
 		} else {
         	log.debug "UNKNOWN Cluster and Attribute : $descMap"
@@ -104,7 +107,8 @@ def configure() {
     log.debug "...reporting intervals..."
     [
     	zigbee.configureReporting(0x0000, 0x0005, 0xff, 5, 300, null), "delay 1000",	// basic cluster
-        zigbee.configureReporting(0x0001, 0x0020, 0x20, 30, 3600, 0x01), "delay 1000",	// power cluster (battery reporting)
+        zigbee.configureReporting(0x0001, 0x0020, 0x20, 60, 3600, 0x01), "delay 1000",	// power cluster (battery voltage)
+        zigbee.configureReporting(0x0001, 0x0021, 0x20, 60, 3600, 0x01), "delay 1000",	// power cluster (try to get battery level)
         zigbee.configureReporting(0x0003, 0x0000, 0xff, 0, 0, null), "delay 1000",		// identify cluster
         zigbee.configureReporting(0x0400, 0x0000, 0x01, 0, 0, null)						// illuminance cluster
 	]
