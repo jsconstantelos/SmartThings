@@ -45,7 +45,6 @@ metadata {
 	}
 }
 
-// Parse incoming device messages to generate events
 def parse(String description) {
 //	log.debug "DESCRIPTION: $description"
     if (description?.startsWith("catchall:")) {
@@ -68,13 +67,9 @@ def parse(String description) {
         }
 	}
     if (description?.startsWith("illuminance:")) {
-		parseIlluminance(description)
+        def lux = ((description - "illuminance: ").trim()) as int
+        sendEvent("name": "illuminance", "value": lux, "unit": "lux", "displayed": true, isStateChange: true)
 	}
-}
-
-private parseIlluminance(String description) {
-    def lux = ((description - "illuminance: ").trim()) as int
-    sendEvent("name": "illuminance", "value": lux, "unit": "lux", "displayed": true, isStateChange: true)
 }
 
 def installed() {
