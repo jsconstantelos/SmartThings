@@ -67,7 +67,7 @@ def parse(String description) {
         log.debug "data: $descMap.data"
 		if (descMap.cluster == "0001" && descMap.attrId == "0020") {
             def vBatt = Integer.parseInt(descMap.value,16) / 10
-            def batteryValue =  ((vBatt - 2.5) / (3.0 - 2.5) * 100) as int
+            def batteryValue =  ((vBatt - 2.0) / (3.0 - 2.0) * 100) as int
             sendEvent("name": "battery", "value": batteryValue, "displayed": true, isStateChange: true)
             log.debug "BATTERY LEVEL is : ${batteryValue}"
 		} else {
