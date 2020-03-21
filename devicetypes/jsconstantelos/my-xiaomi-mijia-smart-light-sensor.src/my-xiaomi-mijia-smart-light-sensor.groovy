@@ -59,17 +59,10 @@ def parse(String description) {
 	}
     if (description?.startsWith("read attr -")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
-		log.debug "Desc Map : $descMap"
-		log.debug "cluster: $descMap.cluster"
-		log.debug "clusterId: $descMap.clusterId"
-        log.debug "attribute: $descMap.attrId"
-		log.debug "value: $descMap.value"
-        log.debug "data: $descMap.data"
 		if (descMap.cluster == "0001" && descMap.attrId == "0020") {
             def vBatt = Integer.parseInt(descMap.value,16) / 10
             def batteryValue =  ((vBatt - 2.0) / (3.0 - 2.0) * 100) as int
             sendEvent("name": "battery", "value": batteryValue, "displayed": true, isStateChange: true)
-            log.debug "BATTERY LEVEL is : ${batteryValue}"
 		} else {
         	log.debug "UNKNOWN Cluster and Attribute : $descMap"
         }
@@ -100,12 +93,6 @@ def refresh() {
         "st rattr 0x${device.deviceNetworkId} 1 0x003 0", "delay 200",
         "st rattr 0x${device.deviceNetworkId} 1 0x400 0", "delay 200"
 	]
-    [
-    	zigbee.configureReporting(0x0000, 0x0005, 0xff, 5, 300, null), "delay 1000",
-        zigbee.configureReporting(0x0001, 0x0020, 0x20, 30, 3600, 0x01), "delay 1000", //battery
-        zigbee.configureReporting(0x0003, 0x0000, 0xff, 0, 0, null), "delay 1000",
-        zigbee.configureReporting(0x0400, 0x0000, 0x01, 0, 0, null)
-	]
 }
 
 def configure() {
@@ -113,17 +100,17 @@ def configure() {
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     log.debug "...bindings..."
 	[
-		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 1000",
-        "zdo bind 0x${device.deviceNetworkId} 1 1 0x001 {${device.zigbeeId}} {}", "delay 1000",
-		"zdo bind 0x${device.deviceNetworkId} 1 1 0x003 {${device.zigbeeId}} {}", "delay 1000",
-		"zdo bind 0x${device.deviceNetworkId} 1 1 0x400 {${device.zigbeeId}} {}", "delay 1000",
+		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 1000",	// basic cluster
+        "zdo bind 0x${device.deviceNetworkId} 1 1 0x001 {${device.zigbeeId}} {}", "delay 1000",	// power cluster
+		"zdo bind 0x${device.deviceNetworkId} 1 1 0x003 {${device.zigbeeId}} {}", "delay 1000",	// identify cluster
+		"zdo bind 0x${device.deviceNetworkId} 1 1 0x400 {${device.zigbeeId}} {}", "delay 1000",	// illuminance cluster
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
     log.debug "...reporting intervals..."
     [
-    	zigbee.configureReporting(0x0000, 0x0005, 0xff, 5, 300, null), "delay 1000",
-        zigbee.configureReporting(0x0001, 0x0020, 0x20, 30, 3600, 0x01), "delay 1000", //battery
-        zigbee.configureReporting(0x0003, 0x0000, 0xff, 0, 0, null), "delay 1000",
-        zigbee.configureReporting(0x0400, 0x0000, 0x01, 0, 0, null)
+    	zigbee.configureReporting(0x0000, 0x0005, 0xff, 5, 300, null), "delay 1000",	// basic cluster
+        zigbee.configureReporting(0x0001, 0x0020, 0x20, 30, 3600, 0x01), "delay 1000",	// power cluster (battery reporting)
+        zigbee.configureReporting(0x0003, 0x0000, 0xff, 0, 0, null), "delay 1000",		// identify cluster
+        zigbee.configureReporting(0x0400, 0x0000, 0x01, 0, 0, null)						// illuminance cluster
 	]
 }
