@@ -95,7 +95,7 @@ def refresh() {
 
 def configure() {
 	// Device-Watch allows 2 check-in misses from device + ping (plus 2 min lag time)
-	sendEvent(name: "checkInterval", value: 2 * 10 * 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID])
+	sendEvent(name: "checkInterval", value: 2 * 10 * 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
 	log.debug "Configuring Reporting and Bindings."
 	zigbee.onOffRefresh() + zigbee.onOffConfig()
 }
