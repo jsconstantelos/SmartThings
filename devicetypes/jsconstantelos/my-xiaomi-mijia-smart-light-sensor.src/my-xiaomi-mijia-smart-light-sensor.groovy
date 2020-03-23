@@ -28,7 +28,7 @@ metadata {
     tiles(scale: 2) {
 		multiAttributeTile(name:"illuminance", type: "generic", width: 6, height: 4){
 			tileAttribute("device.illuminance", key: "PRIMARY_CONTROL") {
-				attributeState("illuminance", label:'${currentValue} LUX')
+				attributeState("illuminance", label:'${currentValue} LUX', icon:"st.illuminance.illuminance.bright")
 			}
 		}
 		valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
