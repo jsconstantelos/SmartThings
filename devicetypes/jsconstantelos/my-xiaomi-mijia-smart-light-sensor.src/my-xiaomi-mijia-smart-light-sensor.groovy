@@ -28,7 +28,17 @@ metadata {
     tiles(scale: 2) {
 		multiAttributeTile(name:"illuminance", type: "generic", width: 6, height: 4){
 			tileAttribute("device.illuminance", key: "PRIMARY_CONTROL") {
-				attributeState("illuminance", label:'${currentValue} LUX', icon:"st.illuminance.illuminance.bright")
+				attributeState("illuminance", label:'${currentValue} LUX', icon:"st.illuminance.illuminance.bright",
+					backgroundColors: [
+						// Celsius
+						[value: 0, color: "#343d46"],
+						[value: 5000, color: "#4f5b66"],
+						[value: 10000, color: "#65737e"],
+						[value: 15000, color: "#a7adba"],
+						[value: 20000, color: "#c0c5ce"],
+						[value: 25000, color: "#f5f5f5"]
+					]
+				)
 			}
 		}
 		valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
@@ -107,9 +117,8 @@ def configure() {
     log.debug "...reporting intervals..."
     [
     	zigbee.configureReporting(0x0000, 0x0005, 0xff, 5, 300, null), "delay 1000",	// basic cluster
-        zigbee.configureReporting(0x0001, 0x0020, 0x20, 60, 3600, 0x01), "delay 1000",	// power cluster (battery voltage)
-        zigbee.configureReporting(0x0001, 0x0021, 0x20, 60, 3600, 0x01), "delay 1000",	// power cluster (try to get battery level)
+        zigbee.configureReporting(0x0001, 0x0020, 0x20, 60, 3600, 0x01), "delay 1000",	// power cluster (get battery voltage every hour, or if it changes)
         zigbee.configureReporting(0x0003, 0x0000, 0xff, 0, 0, null), "delay 1000",		// identify cluster
-        zigbee.configureReporting(0x0400, 0x0000, 0x01, 0, 0, null)						// illuminance cluster
+        zigbee.configureReporting(0x0400, 0x0000, 0x01, 0, 0, null)						// illuminance cluster (get lux value as soon as it changes)
 	]
 }
