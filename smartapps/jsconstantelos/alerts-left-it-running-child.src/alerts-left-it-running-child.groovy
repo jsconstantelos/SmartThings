@@ -41,13 +41,13 @@ preferences {
 
 def installed() {
     log.trace "installed()"
-    unschedule(sendMessage)
+    unschedule()
     subscribe()
 }
 
 def updated() {
     log.trace "updated()"
-    unschedule(sendMessage)
+    unschedule()
     unsubscribe()
     subscribe()
 }
@@ -65,7 +65,7 @@ def runningLong(evt) {
             runIn(runningTime, sendMessage, [overwrite: false]) //setting overwrite to false will cause us to use the first scheduled run vs a new schedule x minutes away every time a power value changes.  If we don't, this will never run.
       } else {
             log.debug "Power meter not running anymore, so stopping scheduled notifications."
-			unschedule(sendMessage)
+			unschedule()
       }
     }
 
@@ -85,7 +85,7 @@ def sendMessage() {
         // no need to add runIn again because it retains the original schedule.
     } else {
  	    log.debug "Scheduling repeat notifications to run in ${repeatTime} minutes."
-        unschedule(sendMessage)
+        unschedule()
 	    runIn(freq, sendMessage, [overwrite: false])
     }
 }
