@@ -1,6 +1,5 @@
 /**
  *  My Xiaomi Mijia Smart Light Sensor
- *  Version 1.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -10,7 +9,6 @@
  *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
  *  for the specific language governing permissions and limitations under the License.
- *
  */
 
 import groovy.json.JsonOutput
@@ -30,7 +28,6 @@ metadata {
 			tileAttribute("device.illuminance", key: "PRIMARY_CONTROL") {
 				attributeState("illuminance", label:'${currentValue} LUX', icon:"st.illuminance.illuminance.bright",
 					backgroundColors: [
-						// Celsius
 						[value: 0, color: "#343d46"],
 						[value: 5000, color: "#4f5b66"],
 						[value: 10000, color: "#65737e"],
@@ -56,15 +53,9 @@ metadata {
 }
 
 def parse(String description) {
-//	log.debug "DESCRIPTION: $description"
     if (description?.startsWith("catchall:")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
 		log.debug "Desc Map : $descMap"
-		log.debug "cluster: $descMap.cluster"
-		log.debug "clusterId: $descMap.clusterId"
-        log.debug "attribute: $descMap.attrId"
-		log.debug "value: $descMap.value"
-        log.debug "data: $descMap.data"
 	}
     if (description?.startsWith("read attr -")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
