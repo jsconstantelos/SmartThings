@@ -143,19 +143,11 @@ metadata {
 	}
 }
 
-//*************
-// parse events into clusters and attributes and do something with the data we received from the thermostat
-//*************
 def parse(String description) {
 //	log.debug "Parse description : $description"
     if ((description?.startsWith("catchall:")) || (description?.startsWith("read attr -"))) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
         def tempScale = location.temperatureScale
-//		log.debug "Desc Map : $descMap"
-//		log.debug "cluster: $descMap.cluster"
-//		log.debug "clusterId: $descMap.clusterId"
-//      log.debug "attribute: $descMap.attrId"
-//		log.debug "value: $descMap.value"
         // TEMPERATURE
 		if (descMap.cluster == "0201" && descMap.attrId == "0000") {
         	if (descMap.value != null) {
