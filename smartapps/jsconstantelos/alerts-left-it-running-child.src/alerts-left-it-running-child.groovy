@@ -29,7 +29,7 @@ preferences {
       input "meter", "capability.powerMeter"
     }
     section("And notify if it's been running (greater than 0 watts) for more than this many minutes (default 10)") {
-      input "openThreshold", "number", description: "Number of minutes", required: false
+      input "runThreshold", "number", description: "Number of minutes", required: false
     }
     section("Repeat notifications every how many minutes (default 15, or 0 to use running minutes above") {
       input "repeatTime", "number", title: "Number of minutes", description: "", required: false
@@ -53,12 +53,13 @@ def updated() {
 }
 
 def subscribe() {
+	log.trace "Subscribing to ${meter.displayName} metering events."
 	subscribe(meter, "power", runningLong)
 }
 
 def runningLong(evt) {
 //    log.trace "runningLong($evt.name: $evt.value)"
-    def runningTime = (openThreshold != null && openThreshold != "") ? openThreshold * 60 : 600
+    def runningTime = (runThreshold != null && runThreshold != "") ? runThreshold * 60 : 600
     def powerValue = meter.currentValue("power")
     if (powerValue > 0) {
             log.debug "Power meter is running, scheduling notifications to run if not already scheduled."
@@ -71,8 +72,7 @@ def runningLong(evt) {
 
 def sendMessage() {
     def freq = (repeatTime != null && repeatTime != "") ? repeatTime * 60 : 900
-	def minutes = (openThreshold != null && openThreshold != "") ? openThreshold : 10
-    def repeatFreq = (repeatTime != null && repeatTime != "") ? repeatTime : 15
+	def minutes = (runThreshold != null && runThreshold != "") ? runThreshold : 10
     def msg = "${meter.displayName} has been running for ${minutes} minutes."
     log.info msg
     if (phone) {
@@ -80,7 +80,7 @@ def sendMessage() {
     } else {
         sendPush msg
     }
-    if (repeatFreq == 0) {
+    if (freq == 0) {
 	    log.debug "Scheduling repeat notifications to run in ${minutes} minutes."
         // no need to add runIn again because it retains the original schedule.
     } else {
