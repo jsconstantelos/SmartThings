@@ -28,12 +28,17 @@ metadata {
 			tileAttribute("device.illuminance", key: "PRIMARY_CONTROL") {
 				attributeState("illuminance", label:'${currentValue} LUX', icon:"st.illuminance.illuminance.bright",
 					backgroundColors: [
-						[value: 0, color: "#343d46"],
-						[value: 5000, color: "#4f5b66"],
-						[value: 10000, color: "#65737e"],
-						[value: 15000, color: "#a7adba"],
-						[value: 20000, color: "#c0c5ce"],
-						[value: 25000, color: "#f5f5f5"]
+						[value: 0, color: "#141414"],
+                        [value: 3000, color: "#646464"],
+						[value: 5000, color: "#787878"],
+						[value: 10000, color: "#a0a0a0"],
+						[value: 15000, color: "#c9c9c9"],
+						[value: 20000, color: "#d9d9d9"],
+						[value: 25000, color: "#e4e4e4"],
+                        [value: 30000, color: "#eeeeee"],
+                        [value: 35000, color: "#f4f4f4"],
+                        [value: 40000, color: "#f9f9f9"],
+                        [value: 50000, color: "#ffffff"]
 					]
 				)
 			}
