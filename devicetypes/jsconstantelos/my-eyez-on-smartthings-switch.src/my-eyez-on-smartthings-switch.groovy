@@ -3,7 +3,7 @@
  * Contributors:
  *     John Constantelos (https://github.com/jsconstantelos)
  * Program: Eyez-On SmartThings Switch
- * Version: 1.0
+ * Version: 1.0 *** THIS DTH IS SPECIFICALLY FOR THE EnvisaLink3 ***
  *
  * Description:
  * Integrates SmartThings with EnvisaLink-enabled home security alarm system through
@@ -110,9 +110,13 @@ metadata {
 }
 
 def initialize() {
+	log.debug "initialize()"
 	sendEvent(name: "DeviceWatch-Enroll", value: "{\"protocol\": \"LAN\", \"scheme\":\"untracked\", \"hubHardwareId\": \"${device.hub.hardwareID}\"}", displayed: false)
     sendEvent(name: "DeviceWatch-DeviceStatus", value: "online")
     sendEvent(name: "healthStatus", value: "online")
+    log.debug "...scheduling 15 minute refreshes..."
+    runEvery15Minutes(getSystemStatus)
+    getSystemStatus()
 }
 
 void installed() {
