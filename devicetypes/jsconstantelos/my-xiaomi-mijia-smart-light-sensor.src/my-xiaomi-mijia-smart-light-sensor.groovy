@@ -23,6 +23,9 @@ metadata {
         capability "Sensor"
         capability "Health Check"
     }
+
+	fingerprint profileId: "0104", inClusters: "0000,0400,0003,0001", outClusters: "0003", manufacturer: "LUMI",  model: "lumi.sen_ill.mgl01", deviceJoinName: "Xiaomi Mijia Smart Home Light Sensor"
+    
     tiles(scale: 2) {
 		multiAttributeTile(name:"illuminance", type: "generic", width: 6, height: 4){
 			tileAttribute("device.illuminance", key: "PRIMARY_CONTROL") {
