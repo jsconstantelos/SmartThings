@@ -22,7 +22,7 @@
 import physicalgraph.zigbee.zcl.DataType
 
 metadata {
-	definition (name: "My Orbit Hose Timer Valve", namespace: "jsconstantelos", author: "John Constantelos", vid: "generic-valve") {
+	definition (name: "My Orbit Hose Timer Valve", namespace: "jsconstantelos", author: "John Constantelos", vid: "generic-valve", ocfDeviceType: "x.com.st.valve") {
 		capability "Actuator"
 		capability "Battery"
 		capability "Configuration"
@@ -31,7 +31,7 @@ metadata {
 		capability "Valve"
         capability "Health Check"
 
-        fingerprint profileId: "0104", inClusters: "0000,0001,0003,0020,0006,0201", outClusters: "000A,0019", manufacturer: "Orbit", model: "WT15ZB-12", deviceJoinName: "Orbit Hose Timer Valve", ocfDeviceType: "x.com.st.valve"
+        fingerprint profileId: "0104", inClusters: "0000,0001,0003,0020,0006,0201", outClusters: "000A,0019", manufacturer: "Orbit", model: "WT15ZB-12", deviceJoinName: "Orbit Hose Timer Valve"
 	}
 
 	tiles(scale: 2) {
@@ -128,6 +128,10 @@ def open() {
 
 def close() {
     off()
+}
+
+def ping() {
+    zigbee.onOffRefresh()
 }
 
 def refresh() {
