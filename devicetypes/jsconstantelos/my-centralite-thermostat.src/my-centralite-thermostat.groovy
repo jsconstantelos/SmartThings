@@ -147,6 +147,7 @@ def parse(String description) {
 //	log.debug "Parse description : $description"
     if ((description?.startsWith("catchall:")) || (description?.startsWith("read attr -"))) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
+//        log.debug "DescMap : $descMap"
         def tempScale = location.temperatureScale
         // TEMPERATURE
 		if (descMap.cluster == "0201" && descMap.attrId == "0000") {
@@ -220,10 +221,13 @@ def parse(String description) {
             def modeValue = getHoldModeMap()[trimvalue]
             sendEvent("name": "thermostatHoldMode", "value": modeValue, "displayed": true)
             log.debug "THERMOSTAT HOLD MODE is : ${modeValue}"
+        // Setpoint confirmation/notification from thermostat
+		} else if (descMap.clusterId == "0201" && descMap.command == "04") {
+        	log.debug "Setpoint command successfully processed by the thermostat"
         // POWER SOURCE
 		} else if (descMap.clusterId == "0000" && descMap.attrId == "0007") {
         	getPowerSourceMap(descMap.value)
-		} else {
+        } else {
         	log.debug "UNKNOWN Cluster and Attribute : $descMap"
         }
 	} else {
@@ -246,7 +250,9 @@ def getModeMap() {
     "04":"heat",
     "05":"emergency heat",
     "06":"precooling",
-    "07":"fan only"
+    "07":"fan only",
+    "08":"dry",
+    "09":"sleep"
     ]
 }
 
@@ -260,10 +266,10 @@ def getHoldModeMap() {
 def getPowerSourceMap(value) {
     if (value == "81") {
         sendEvent(name: "powerSource", value: "mains", "displayed": true)
-        log.debug "POWER SOURCE is mains"
+//        log.debug "POWER SOURCE is mains"
     } else {
       	sendEvent(name: "powerSource", value: "battery", "displayed": true)
-        log.debug "POWER SOURCE is batteries"
+//        log.debug "POWER SOURCE is batteries"
     }
 }
 
@@ -482,6 +488,27 @@ def ping() {
     "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 }
 
+def refresh() {
+	log.debug "Refreshing values..."
+	[
+		"st rattr 0x${device.deviceNetworkId} 1 0x000 0x07", "delay 200",
+		"st rattr 0x${device.deviceNetworkId} 1 0x201 0", "delay 200",
+		"st rattr 0x${device.deviceNetworkId} 1 0x201 0x11", "delay 200",
+  		"st rattr 0x${device.deviceNetworkId} 1 0x201 0x12", "delay 200",
+		"st rattr 0x${device.deviceNetworkId} 1 0x201 0x1C", "delay 200",
+		"st rattr 0x${device.deviceNetworkId} 1 0x201 0x23", "delay 200",
+        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29", "delay 200",
+		"st rattr 0x${device.deviceNetworkId} 1 0x001 0x20", "delay 200",
+        "st rattr 0x${device.deviceNetworkId} 1 0x001 0x3e", "delay 200",
+		"st rattr 0x${device.deviceNetworkId} 1 0x202 0"
+	]
+    [
+    	zigbee.configureReporting(0x0201, 0x0029, 0x19, 5, 300, null), "delay 1000",
+        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
+        zigbee.configureReporting(0x0000, 0x0007, 0x30, 0, 0, null)
+	]
+}
+
 def configure() {
 	log.debug "Configuration starting..."
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 1 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
@@ -503,27 +530,6 @@ def configure() {
     log.debug "...reporting intervals..."
     [
     	zigbee.configureReporting(0x0201, 0x0029, 0x19, 5, 300, null), "delay 1000",	// Thermostat Operating State report to send whenever it changes (no min or max, or change threshold).  This is also known as Running State (Zen).
-        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
-        zigbee.configureReporting(0x0000, 0x0007, 0x30, 0, 0, null)
-	]
-}
-
-def refresh() {
-	log.debug "Refreshing values..."
-	[
-		"st rattr 0x${device.deviceNetworkId} 1 0x000 0x07", "delay 200",
-		"st rattr 0x${device.deviceNetworkId} 1 0x201 0", "delay 200",
-		"st rattr 0x${device.deviceNetworkId} 1 0x201 0x11", "delay 200",
-  		"st rattr 0x${device.deviceNetworkId} 1 0x201 0x12", "delay 200",
-		"st rattr 0x${device.deviceNetworkId} 1 0x201 0x1C", "delay 200",
-		"st rattr 0x${device.deviceNetworkId} 1 0x201 0x23", "delay 200",
-        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29", "delay 200",
-		"st rattr 0x${device.deviceNetworkId} 1 0x001 0x20", "delay 200",
-        "st rattr 0x${device.deviceNetworkId} 1 0x001 0x3e", "delay 200",
-		"st rattr 0x${device.deviceNetworkId} 1 0x202 0"
-	]
-    [
-    	zigbee.configureReporting(0x0201, 0x0029, 0x19, 5, 300, null), "delay 1000",
         zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
         zigbee.configureReporting(0x0000, 0x0007, 0x30, 0, 0, null)
 	]
