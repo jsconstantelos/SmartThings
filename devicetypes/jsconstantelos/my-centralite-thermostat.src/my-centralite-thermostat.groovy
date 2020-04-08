@@ -221,8 +221,13 @@ def parse(String description) {
             def modeValue = getHoldModeMap()[trimvalue]
             sendEvent("name": "thermostatHoldMode", "value": modeValue, "displayed": true)
             log.debug "THERMOSTAT HOLD MODE is : ${modeValue}"
+        // Fan change confirmation/notification from thermostat
+		} else if (descMap.clusterId == "0202" && descMap.command == "04") {
+            sendEvent("name": "thermostatOperatingState", "value": "Fan Mode Changed", "displayed": true)
+        	log.debug "Fan mode command successfully processed by the thermostat"            
         // Setpoint confirmation/notification from thermostat
 		} else if (descMap.clusterId == "0201" && descMap.command == "04") {
+            //sendEvent("name": "thermostatOperatingState", "value": "Setpoint Changed Please Wait", "displayed": true)
         	log.debug "Setpoint command successfully processed by the thermostat"
         // POWER SOURCE
 		} else if (descMap.clusterId == "0000" && descMap.attrId == "0007") {
