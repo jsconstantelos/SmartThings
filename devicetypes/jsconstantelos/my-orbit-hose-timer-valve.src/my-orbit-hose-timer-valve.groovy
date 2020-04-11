@@ -37,10 +37,10 @@ metadata {
 	tiles(scale: 2) {
 		multiAttributeTile(name:"switch", type: "generic", width: 6, height: 4){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "on", label:'Open', action:"switch.off", icon:"st.Outdoor.outdoor16", backgroundColor:"#00A0DC", nextState:"turningOff"
-				attributeState "off", label:'Closed', action:"switch.on", icon:"st.Outdoor.outdoor16", backgroundColor:"#ffffff", nextState:"turningOn"
-                attributeState "turningOn", label:'Opening', icon:"st.Outdoor.outdoor16", backgroundColor:"#ffc125", nextState:"turningOff"
-                attributeState "turningOff", label:'Closing', icon:"st.Outdoor.outdoor16", backgroundColor:"#ffc125", nextState:"turningOn"
+				attributeState "on", label:'Open', action:"switch.off", icon:"st.Outdoor.outdoor12", backgroundColor:"#00A0DC", nextState:"turningOff"
+				attributeState "off", label:'Closed', action:"switch.on", icon:"st.Outdoor.outdoor12", backgroundColor:"#ffffff", nextState:"turningOn"
+                attributeState "turningOn", label:'Opening', icon:"st.Outdoor.outdoor12", backgroundColor:"#ffc125", nextState:"turningOff"
+                attributeState "turningOff", label:'Closing', icon:"st.Outdoor.outdoor12", backgroundColor:"#ffc125", nextState:"turningOn"
 			}
             tileAttribute ("device.battery", key: "SECONDARY_CONTROL") {
                 attributeState("default", label:'${currentValue}% battery', unit:"%")
@@ -145,6 +145,7 @@ def refresh() {
 
 def configure() {
 	log.debug "Configuration starting..."
+    runEvery15Minutes(refresh)
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     log.debug "...bindings..."
 	[
