@@ -16,7 +16,7 @@
  *  0x0003 - Identify
  *  0x0006 - On/Off
  *  0x0020 - Poll Control
- *  0x0201 - Thermostat
+ *  0x0201 - Thermostat (not implemented)
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -31,14 +31,16 @@ metadata {
 		capability "Valve"
         capability "Health Check"
 
-        fingerprint profileId: "0104", inClusters: "0000,0001,0003,0020,0006,0201", outClusters: "000A,0019", manufacturer: "Orbit", model: "WT15ZB-12", deviceJoinName: "Orbit Hose Timer Valve"
+		fingerprint profileId: "0104", inClusters: "0000,0001,0003,0020,0006,0201", outClusters: "000A,0019", manufacturer: "Orbit", model: "HT8-ZB", deviceJoinName: "Orbit Hose Timer Valve"
 	}
 
 	tiles(scale: 2) {
 		multiAttributeTile(name:"switch", type: "generic", width: 6, height: 4){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "on", label:'Open', action:"switch.off", icon:"st.Outdoor.outdoor16", backgroundColor:"#00A0DC"
-				attributeState "off", label:'Closed', action:"switch.on", icon:"st.Outdoor.outdoor16", backgroundColor:"#ffffff"
+				attributeState "on", label:'Open', action:"switch.off", icon:"st.Outdoor.outdoor16", backgroundColor:"#00A0DC", nextState:"turningOff"
+				attributeState "off", label:'Closed', action:"switch.on", icon:"st.Outdoor.outdoor16", backgroundColor:"#ffffff", nextState:"turningOn"
+                attributeState "turningOn", label:'Opening', icon:"st.Outdoor.outdoor16", backgroundColor:"#ffc125", nextState:"turningOff"
+                attributeState "turningOff", label:'Closing', icon:"st.Outdoor.outdoor16", backgroundColor:"#ffc125", nextState:"turningOn"
 			}
             tileAttribute ("device.battery", key: "SECONDARY_CONTROL") {
                 attributeState("default", label:'${currentValue}% battery', unit:"%")
@@ -47,14 +49,14 @@ metadata {
 		valueTile("temperature", "device.temperature", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
             state("temperature", label:'${currentValue}°')
         }
-		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 3, height: 2) {
 			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
-		standardTile("configure", "device.configuration", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+		standardTile("configure", "device.configuration", width: 3, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", action:"configuration.configure", icon:"st.secondary.configure"
 		}
 		main "switch"
-		details(["switch", "temperature", "refresh", "configure"])
+		details(["switch", "refresh", "configure"])
 	}
 }
 
@@ -67,45 +69,49 @@ def updated() {
 }
 
 def parse(String description) {
-	def result = zigbee.getEvent(description)
-    log.debug "Result Map : $result"
-    if(result?.name == "switch") {
-        if(result?.value == "off") {
-        	off()
-        } else {
-        	on()
-        }
-    }
-    if (description?.startsWith("catchall:")) {
+//	log.debug "DESCRIPTION : $description"
+    if ((description?.startsWith("catchall:")) || (description?.startsWith("read attr -"))) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
-		log.debug "Desc Map : $descMap"
-	}
-    if (description?.startsWith("read attr -")) {
-		def descMap = zigbee.parseDescriptionAsMap(description)
-		def tempScale = location.temperatureScale
-        // TEMPERATURE
-		if (descMap.cluster == "0201" && descMap.attrId == "0000") {
-        	if (descMap.value != null) {
-            	def trimvalue = descMap.value[-4..-1]
-                def celsius = Integer.parseInt(trimvalue, 16) / 100
-                def fahrenheit = String.format("%3.1f",celsiusToFahrenheit(celsius))
-                if (tempScale == "F") {
-                    sendEvent("name": "temperature", "value": fahrenheit, "unit": temperatureScale, "displayed": true)
-                    log.debug "TEMPERATURE is : ${fahrenheit}${temperatureScale}"
-                } else {
-                    sendEvent("name": "temperature", "value": celsius, "unit": temperatureScale, "displayed": true)
-                    log.debug "TEMPERATURE is : ${celsius}${temperatureScale}"
-                }
+        def result = zigbee.getEvent(description)
+//        log.debug "DESCMAP : $descMap"
+//        log.debug "RESULT : $result"
+        // SWITCH/VALVE
+        if(result?.name == "switch") {
+        	log.debug "Switch/Valve report from device..."
+            if(result?.value == "off") {
+                sendEvent(name: "switch", value: "off", displayed: true, isStateChange: true)
+                sendEvent(name: "valve", value: "closed", displayed: true, isStateChange: true)
+            } else {
+                sendEvent(name: "switch", value: "on", displayed: true, isStateChange: true)
+                sendEvent(name: "valve", value: "open", displayed: true, isStateChange: true)
             }
         }
+        // TEMPERATURE
+		if (descMap.clusterId == "0201" && descMap.attrId == "0000") {
+        	log.debug "Temperature report from device..."
+        	if (descMap.resultCode != null) {
+                def tempValue = Integer.parseInt(descMap.resultCode, 16) / 100
+                def fahrenheit = String.format("%3.1f",celsiusToFahrenheit(tempValue))
+                sendEvent(name: "temperature", value: fahrenheit, unit: "F", displayed: true)
+            }
+		}
         // BATTERY LEVEL
 		if (descMap.cluster == "0001" && descMap.attrId == "0020") {
+        	log.debug "Battery report from device..."
             def vBatt = Integer.parseInt(descMap.value,16) / 10
             def pct = (vBatt - 2.1) / (3 - 2.1)
             def roundedPct = Math.round(pct * 100)
             if (roundedPct <= 0) roundedPct = 1
             def batteryValue = Math.min(100, roundedPct)
-            sendEvent("name": "battery", "value": batteryValue, "displayed": true, isStateChange: true)
+            sendEvent(name: "battery", value: batteryValue, displayed: true, isStateChange: true)
+		}
+        // SWITCH REPORT
+		if (descMap.clusterId == "0006") {
+        	log.debug "Switch report from device not handled by Zigbee GetEvent..."
+		}
+        // POLL REPORT
+		if (descMap.clusterId == "0020") {
+        	log.debug "Poll report from device..."
 		} else {
         	log.debug "UNKNOWN Cluster and Attribute : $descMap"
         }
@@ -113,12 +119,10 @@ def parse(String description) {
 }
 
 def on() {
-    sendEvent(name: "valve", value:"open")
     zigbee.on()
 }
 
 def off() {
-    sendEvent(name: "valve", value:"closed")
     zigbee.off()
 }
 
