@@ -146,6 +146,7 @@ def refresh() {
         zigbee.readAttribute(0x0201, 0x0000)
         // "st rattr 0x${device.deviceNetworkId} 1 0x201 0"
     ]
+//    zigbee.writeAttribute(0x0006, 0x0000, 0x42, [0x00, 0x00, 0x00, 0x20, 0x01])
 }
 
 def configure() {
