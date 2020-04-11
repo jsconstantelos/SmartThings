@@ -139,14 +139,8 @@ def ping() {
 }
 
 def refresh() {
-	log.debug "Refreshing values..."
-    [
-    	zigbee.readAttribute(0x0006, 0x0000), "delay 1000",
-        zigbee.readAttribute(0x0001, 0x0020), "delay 1000",
-        zigbee.readAttribute(0x0201, 0x0000)
-        // "st rattr 0x${device.deviceNetworkId} 1 0x201 0"
-    ]
-//    zigbee.writeAttribute(0x0006, 0x0000, 0x42, [0x00, 0x00, 0x00, 0x20, 0x01])
+	log.debug "Refreshing on/off/valve state..."
+   	zigbee.readAttribute(0x0006, 0x0000)
 }
 
 def configure() {
@@ -174,6 +168,5 @@ def configure() {
     	zigbee.readAttribute(0x0006, 0x0000), "delay 1000",
         zigbee.readAttribute(0x0001, 0x0020), "delay 1000",
         zigbee.readAttribute(0x0201, 0x0000)
-        // "st rattr 0x${device.deviceNetworkId} 1 0x201 0"
     ]
 }
