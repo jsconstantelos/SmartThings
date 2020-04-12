@@ -30,6 +30,7 @@ metadata {
 		capability "Switch"
 		capability "Valve"
         capability "Health Check"
+        capability "Polling"
 
 		fingerprint profileId: "0104", inClusters: "0000,0001,0003,0020,0006,0201", outClusters: "000A,0019", manufacturer: "Orbit", model: "HT8-ZB", deviceJoinName: "Orbit Hose Timer Valve"
 	}
@@ -113,7 +114,7 @@ def parse(String description) {
 		if (descMap.clusterId == "0020") {
         	log.debug "Poll report from device..."
 		} else {
-        	log.debug "UNKNOWN Cluster and Attribute : $descMap"
+        	// log.debug "UNKNOWN Cluster and Attribute : $descMap"
         }
 	}
 }
@@ -135,17 +136,25 @@ def close() {
 }
 
 def ping() {
+	log.debug "Ping..."
     zigbee.onOffRefresh()
 }
 
 def refresh() {
-	log.debug "Refreshing on/off/valve state..."
-   	zigbee.readAttribute(0x0006, 0x0000)
+	log.debug "Refreshing on/off cluster attribute state..."
+//    log.debug "Refreshing all cluster attribute states..."
+//    [
+//        zigbee.readAttribute(0x0006, 0x0000), "delay 1000",
+//        zigbee.readAttribute(0x0001, 0x0020), "delay 1000",
+//        zigbee.readAttribute(0x0201, 0x0000)
+//    ]
+    zigbee.readAttribute(0x0006, 0x0000)
 }
 
 def configure() {
 	log.debug "Configuration starting..."
-    runEvery15Minutes(refresh)
+    unschedule()
+//    runEvery5Minutes(refresh)
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     log.debug "...bindings..."
 	[
