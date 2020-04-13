@@ -10,13 +10,10 @@
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
  *  for the specific language governing permissions and limitations under the License.
  *
- *  Zigbee Clusters
- *  0x0000 - Basic
- *  0x0001 - Power Configuration
- *  0x0003 - Identify
- *  0x0006 - On/Off
- *  0x0020 - Poll Control
- *  0x0201 - Thermostat (not implemented)
+ *  NOTES: This device is horrible and does not play well, which is probably why it's not made anymore.  Here are the issues being encountered:
+ *			- Using the timer manually won't send status updates (on/off or open/close) to the hub, regardless of the binding to cluster 0x0006.
+ *			- The device only supports Orbit's default run time of 10 minutes, and that can't be changed.
+ *			- The device does not report back any off/closed state after being turned on via the mobile app or when used via a SmartApp.  You must manually refresh or use the Pollster app.  Automating/scheduling a refesh within this DTH does not seem to work.
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -64,10 +61,12 @@ metadata {
 }
 
 def installed() {
+	log.debug "Installed..."
 	configure()
 }
 
 def updated() {
+	log.debug "Updated..."
 	configure()
 }
 
@@ -124,14 +123,11 @@ def parse(String description) {
 
 def on() {
 	log.debug "Sending ON command..."
-	unschedule()
-    zigbee.on()
-    runIn(660, sendOffEvent, [overwrite: true])
+	zigbee.on()
 }
 
 def off() {
 	log.debug "Sending OFF command..."
-    unschedule()
     zigbee.off()
 }
 
@@ -146,30 +142,23 @@ def close() {
 }
 
 def sendOffEvent() {
-	log.debug "Sending OFF event after an ON event in 11 minutes.  Orbit hard coded the timer to turn off in 10 minutes, and sometimes that event doesn't get caught.  This is a terrible workaround."
+	log.debug "Sending OFF in the event the timer doesn't send it in 10 minutes.  Orbit hard coded the timer to turn off in 10 minutes, and sometimes that event doesn't get caught.  This is a terrible workaround."
     sendEvent(name: "switch", value: "off", displayed: true, isStateChange: true)
     sendEvent(name: "valve", value: "closed", displayed: true, isStateChange: true)
 }
 
 def ping() {
 	log.debug "Ping..."
-    zigbee.onOffRefresh()
+    zigbee.readAttribute(0x0006, 0x0000)
 }
 
 def refresh() {
 	log.debug "Refreshing on/off cluster attribute state..."
-//    log.debug "Refreshing all cluster attribute states..."
-//    [
-//        zigbee.readAttribute(0x0006, 0x0000), "delay 1000",
-//        zigbee.readAttribute(0x0001, 0x0020), "delay 1000",
-//        zigbee.readAttribute(0x0201, 0x0000)
-//    ]
     zigbee.readAttribute(0x0006, 0x0000)
 }
 
 def configure() {
 	log.debug "Configuration starting..."
-    //unschedule()
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     log.debug "...bindings..."
 	[
@@ -185,7 +174,7 @@ def configure() {
     	zigbee.configureReporting(0x0000, 0x0005, 0xff, 5, 300, null), "delay 1000",	// basic cluster
         zigbee.configureReporting(0x0001, 0x0020, 0x20, 60, 3600, 0x01), "delay 1000",	// power cluster (get battery voltage every hour, or if it changes)
         zigbee.configureReporting(0x0003, 0x0000, 0xff, 0, 0, null), "delay 1000",		// identify cluster
-        zigbee.configureReporting(0x0006, 0x0000, 0x10, 0, 600, null), "delay 1000",	// on/off
+        zigbee.configureReporting(0x0006, 0x0000, 0x10, 0, 0, null), "delay 1000",	// on/off
         zigbee.configureReporting(0x0201, 0x0000, 0x01, 0, 0, null)						// thermostat (get temp value as soon as it changes)
 	]
     log.debug "...refreshing..."
