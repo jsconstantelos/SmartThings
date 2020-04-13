@@ -115,6 +115,7 @@ def initialize() {
     sendEvent(name: "DeviceWatch-DeviceStatus", value: "online")
     sendEvent(name: "healthStatus", value: "online")
     log.debug "...scheduling 15 minute refreshes..."
+    unschedule()
     runEvery15Minutes(getSystemStatus)
     getSystemStatus()
 }

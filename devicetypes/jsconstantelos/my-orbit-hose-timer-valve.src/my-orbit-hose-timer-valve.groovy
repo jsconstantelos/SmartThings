@@ -31,6 +31,8 @@ metadata {
 		capability "Valve"
         capability "Health Check"
         capability "Polling"
+        
+        command "sendOffEvent"
 
 		fingerprint profileId: "0104", inClusters: "0000,0001,0003,0020,0006,0201", outClusters: "000A,0019", manufacturer: "Orbit", model: "HT8-ZB", deviceJoinName: "Orbit Hose Timer Valve"
 	}
@@ -78,11 +80,12 @@ def parse(String description) {
 //        log.debug "RESULT : $result"
         // SWITCH/VALVE
         if(result?.name == "switch") {
-        	log.debug "Switch/Valve report from device..."
             if(result?.value == "off") {
+            	log.debug "Switch/Valve report (OFF) from device..."
                 sendEvent(name: "switch", value: "off", displayed: true, isStateChange: true)
                 sendEvent(name: "valve", value: "closed", displayed: true, isStateChange: true)
             } else {
+            	log.debug "Switch/Valve report (ON) from device..."
                 sendEvent(name: "switch", value: "on", displayed: true, isStateChange: true)
                 sendEvent(name: "valve", value: "open", displayed: true, isStateChange: true)
             }
@@ -120,10 +123,13 @@ def parse(String description) {
 }
 
 def on() {
+	unschedule()
     zigbee.on()
+    runIn(660, sendOffEvent, [overwrite: true])
 }
 
 def off() {
+    unschedule()
     zigbee.off()
 }
 
@@ -133,6 +139,12 @@ def open() {
 
 def close() {
     off()
+}
+
+def sendOffEvent() {
+	log.debug "Sending OFF event after an ON event in 11 minutes.  Orbit hard coded the timer to turn off in 10 minutes, and sometimes that event doesn't get caught.  This is a terrible workaround."
+    sendEvent(name: "switch", value: "off", displayed: true, isStateChange: true)
+    sendEvent(name: "valve", value: "closed", displayed: true, isStateChange: true)
 }
 
 def ping() {
@@ -153,8 +165,7 @@ def refresh() {
 
 def configure() {
 	log.debug "Configuration starting..."
-    unschedule()
-//    runEvery5Minutes(refresh)
+    //unschedule()
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     log.debug "...bindings..."
 	[
