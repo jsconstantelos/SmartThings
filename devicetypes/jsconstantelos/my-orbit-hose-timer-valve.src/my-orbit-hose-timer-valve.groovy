@@ -123,21 +123,25 @@ def parse(String description) {
 }
 
 def on() {
+	log.debug "Sending ON command..."
 	unschedule()
     zigbee.on()
     runIn(660, sendOffEvent, [overwrite: true])
 }
 
 def off() {
+	log.debug "Sending OFF command..."
     unschedule()
     zigbee.off()
 }
 
 def open() {
+	log.debug "Sending OPEN command..."
     on()
 }
 
 def close() {
+	log.debug "Sending CLOSE command..."
     off()
 }
 
