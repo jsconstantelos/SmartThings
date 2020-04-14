@@ -10,7 +10,8 @@ definition(
 
 preferences {
     page(name: "mainPage", title: "Orbit Smart Water Timer Manager", install: true, uninstall: true,submitOnChange: true) {
-	section {app(name: "childRules", appName: "Orbit Smart Water Timer Scheduling Child", namespace: "jsconstantelos", title: "Create schedule for a timer...", multiple: true)}
+	section {app(name: "childRules", appName: "Orbit Smart Water Timer Run Scheduler", namespace: "jsconstantelos", title: "Create schedule for a timer...", multiple: true)}
+    section {app(name: "childRules", appName: "Orbit Smart Water Timer OFF Event Sender", namespace: "jsconstantelos", title: "Force OFF events...", multiple: true)}
     }
 }
 
