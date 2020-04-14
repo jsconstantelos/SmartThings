@@ -19,13 +19,13 @@
 import physicalgraph.zigbee.zcl.DataType
 
 metadata {
-	definition (name: "My Orbit Hose Timer Valve", namespace: "jsconstantelos", author: "John Constantelos", vid: "generic-valve", ocfDeviceType: "x.com.st.valve") {
+	definition (name: "My Orbit Hose Timer Valve", namespace: "jsconstantelos", author: "John Constantelos", ocfDeviceType: "oic.d.switch", genericHandler: "Zigbee") {
 		capability "Actuator"
 		capability "Battery"
 		capability "Configuration"
 		capability "Refresh"
 		capability "Switch"
-		capability "Valve"
+		//capability "Valve"
         capability "Health Check"
         capability "Polling"
         
