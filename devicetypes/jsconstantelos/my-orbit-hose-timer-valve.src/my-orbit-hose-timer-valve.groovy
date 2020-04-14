@@ -142,7 +142,7 @@ def close() {
 }
 
 def sendOffEvent() {
-	log.debug "Sending OFF in the event the timer doesn't send it in 10 minutes.  Orbit hard coded the timer to turn off in 10 minutes, and sometimes that event doesn't get caught.  This is a terrible workaround."
+	log.debug "Sending OFF in the event the timer doesn't send it in 10 minutes.  Orbit hard coded the timer to turn off in 10 minutes, and sometimes that event doesn't get sent.  This is a terrible workaround."
     sendEvent(name: "switch", value: "off", displayed: true, isStateChange: true)
     sendEvent(name: "valve", value: "closed", displayed: true, isStateChange: true)
 }
