@@ -11,7 +11,7 @@ definition(
 
 preferences {
     section("Select the Orbit timer") {
-      input "timer", "capability.switch", multiple: false, required: true
+      input "timerdevice", "capability.switch", multiple: false, required: true
     }
 }
 
@@ -22,41 +22,29 @@ def installed() {
 
 def updated() {
     log.debug "Updated with preferences: ${settings}"
-    unschedule()
+    unsubscribe()
     initialize()
 }
 
 def initialize() {
-	log.debug "Scheduling the water timer per user preferences..."
-    schedule(timerTime, timerSchedule)
+	log.debug "Subscribe to timer events..."
+    subscribe(timerdevice, "switch", offHandler)
 }
 
-def timerSchedule() {
-    log.debug "Running timerSchedule..."
-	def turnOnTimer = false
-    Calendar timerCalendar = Calendar.getInstance(location.timeZone)
-    int currentDayOfWeek = timerCalendar.get(Calendar.DAY_OF_WEEK) // 1= Sunday...7=Saturday
-	if (timerDays.contains('Sunday') && currentDayOfWeek == 1) {
-		turnOnTimer = true
-    } else if (timerDays.contains('Monday') && currentDayOfWeek == 2) {
-    	turnOnTimer = true
-    } else if (timerDays.contains('Tuesday') && currentDayOfWeek == 3) {
-    	turnOnTimer = true
-    } else if (timerDays.contains('Wednesday') && currentDayOfWeek == 4) {
-    	turnOnTimer = true
-    } else if (timerDays.contains('Thursday') && currentDayOfWeek == 5) {
-    	turnOnTimer = true
-    } else if (timerDays.contains('Friday') && currentDayOfWeek == 6) {
-    	turnOnTimer = true
-    } else if (timerDays.contains('Saturday') && currentDayOfWeek == 7) {
-    	turnOnTimer = true
-    }
-    if(turnOnTimer == true){
-        log.debug "Turning on the water timer per schedule..."
-        settings.timer.on()
-        sendMessage()
-    }
-    else {
-        log.debug "Today is not on the schedule to turn on the water timer..."
-    }
+def offHandler(evt) {
+	log.debug "Timer was turned ${evt.value}..."
+	if (evt.value == "on") {
+    	log.debug "Scheduling OFF event to run in 10 minutes..."
+        runIn(600, sendOffEvent, [overwrite: true])  // schedule and overwrite any pending schedules
+		// timerdevice.sendOffEvent() // This is only for debugging needs
+	}  
+	if (evt.value == "off") {
+    	log.debug "Timer turned off so removing the schedule if there was one..."
+		unschedule()
+	}  
+}
+
+def sendOffEvent() {
+	log.debug "10 minutes has passed so sending OFF events to the timer..."
+	timerdevice.sendOffEvent()
 }
