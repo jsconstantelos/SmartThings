@@ -19,13 +19,12 @@
 import physicalgraph.zigbee.zcl.DataType
 
 metadata {
-	definition (name: "My Orbit Hose Timer Valve", namespace: "jsconstantelos", author: "John Constantelos", ocfDeviceType: "oic.d.switch", genericHandler: "Zigbee") {
+	definition (name: "My Orbit Hose Timer Valve", namespace: "jsconstantelos", author: "John Constantelos", vid: "generic-switch", ocfDeviceType: "oic.d.switch") {
 		capability "Actuator"
 		capability "Battery"
 		capability "Configuration"
 		capability "Refresh"
 		capability "Switch"
-		//capability "Valve"
         capability "Health Check"
         capability "Polling"
         
@@ -37,18 +36,15 @@ metadata {
 	tiles(scale: 2) {
 		multiAttributeTile(name:"switch", type: "generic", width: 6, height: 4){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "on", label:'Open', action:"switch.off", icon:"st.Outdoor.outdoor12", backgroundColor:"#00A0DC", nextState:"turningOff"
-				attributeState "off", label:'Closed', action:"switch.on", icon:"st.Outdoor.outdoor12", backgroundColor:"#ffffff", nextState:"turningOn"
-                attributeState "turningOn", label:'Opening', icon:"st.Outdoor.outdoor12", backgroundColor:"#ffc125", nextState:"turningOff"
-                attributeState "turningOff", label:'Closing', icon:"st.Outdoor.outdoor12", backgroundColor:"#ffc125", nextState:"turningOn"
+				attributeState "on", label:'On', action:"switch.off", icon:"st.Outdoor.outdoor12", backgroundColor:"#00A0DC", nextState:"turningOff"
+				attributeState "off", label:'Off', action:"switch.on", icon:"st.Outdoor.outdoor12", backgroundColor:"#ffffff", nextState:"turningOn"
+                attributeState "turningOn", label:'Turning On', icon:"st.Outdoor.outdoor12", backgroundColor:"#ffc125", nextState:"turningOff"
+                attributeState "turningOff", label:'Turning Off', icon:"st.Outdoor.outdoor12", backgroundColor:"#ffc125", nextState:"turningOn"
 			}
             tileAttribute ("device.battery", key: "SECONDARY_CONTROL") {
                 attributeState("default", label:'${currentValue}% battery', unit:"%")
             }
 		}
-		valueTile("temperature", "device.temperature", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state("temperature", label:'${currentValue}°')
-        }
 		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 3, height: 2) {
 			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
@@ -131,20 +127,9 @@ def off() {
     zigbee.off()
 }
 
-def open() {
-	log.debug "Sending OPEN command..."
-    on()
-}
-
-def close() {
-	log.debug "Sending CLOSE command..."
-    off()
-}
-
 def sendOffEvent() {
 	log.debug "Sending OFF in the event the timer doesn't send it in 10 minutes.  Orbit hard coded the timer to turn off in 10 minutes, and sometimes that event doesn't get sent.  This is a terrible workaround."
     sendEvent(name: "switch", value: "off", displayed: true, isStateChange: true)
-    sendEvent(name: "valve", value: "closed", displayed: true, isStateChange: true)
 }
 
 def ping() {
