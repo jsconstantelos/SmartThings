@@ -16,6 +16,10 @@ preferences {
         input "onMinutes", "number", title: "Stay on for how many minutes?"
         input "offMinutes", "number", title: "Stay off for how many minutes?"
     }
+    section("Only for this mode") {
+        input "activeMode", "enum", title: "Which mode?", multiple:false, 
+        metadata:[values:["Home","Away","Night"]]
+    }
 }
 
 def installed() {
@@ -32,16 +36,33 @@ def updated() {
 
 def initialize() {
 	log.debug "Initializing..."
+//    subscribe(location, "mode", changedLocationMode)
+	subscribe(location, changedLocationMode)
     onCycleTimer()
 }
 
+def changedLocationMode(evt) {
+	log.debug "changedLocationMode called..."
+    unschedule()
+	onCycleTimer()
+}
+
 def onCycleTimer() {
-	log.debug "Setting fan(s) to ON and scheduing OFF/AUTO timer..."
-	runIn(onMinutes * 60, offCycleTimer)
-	thermostats?.fanOn()
+	log.debug "onCycleTimer called..."
+	log.debug "Check to see if modes match before turning on fan(s)..."
+    def curMode = location.currentMode
+    log.debug "Checking current mode: ${curMode}..."
+	if (curMode == activeMode) {
+    	log.debug "Setting fan(s) to ON and scheduing OFF/AUTO timer because the modes matched..."
+		runIn(onMinutes * 60, offCycleTimer)
+        thermostats?.fanOn()
+    } else {
+        log.debug "We're not scheduling anything because the modes didn't match so waiting until a mode change..."
+	}
 }
 
 def offCycleTimer() {
+	log.debug "offCycleTimer called..."
 	log.debug "Setting fan(s) to AUTO and scheduing ON timer..."
     runIn(offMinutes * 60, onCycleTimer)
     thermostats?.fanAuto()
