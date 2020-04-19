@@ -30,20 +30,17 @@ def installed() {
 def updated() {
 	log.debug "Updated..  Settings: ${settings}"
 	unsubscribe()
-    unschedule()
 	initialize()
 }
 
 def initialize() {
 	log.debug "Initializing..."
-//    subscribe(location, "mode", changedLocationMode)
 	subscribe(location, changedLocationMode)
     onCycleTimer()
 }
 
 def changedLocationMode(evt) {
 	log.debug "changedLocationMode called..."
-    unschedule()
 	onCycleTimer()
 }
 
