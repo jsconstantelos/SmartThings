@@ -315,7 +315,7 @@ private def makeLevelCommand(level) {
     def rangeMax = 254
     def scaledLevel = Math.round(level * rangeMax / 100)
     log.debug "scaled level for ${level}%: ${scaledLevel}"
-
+	sendEvent(name: "level", value: level, displayed: true)
     // convert to hex string and pad to two digits
     def hexLevel = new BigInteger(scaledLevel.toString()).toString(16).padLeft(2, '0')
 
