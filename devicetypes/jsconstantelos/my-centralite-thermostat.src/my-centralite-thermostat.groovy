@@ -206,9 +206,10 @@ def parse(String description) {
         // BATTERY LEVEL
 		} else if (descMap.cluster == "0001" && descMap.attrId == "0020") {
             def vBatt = Integer.parseInt(descMap.value,16) / 10
-            def batteryValue =  ((vBatt - 2.1) / (3.0 - 2.1) * 100) as int
-            sendEvent("name": "battery", "value": batteryValue, "displayed": true)
-            log.debug "BATTERY LEVEL is : ${batteryValue}"
+            def batteryValue = ((vBatt - 2.1) / (3.0 - 2.1) * 100) as int
+            def batteryReport = Math.min(100, batteryValue)
+            sendEvent("name": "battery", "value": batteryReport, "displayed": true)
+            log.debug "BATTERY LEVEL is : ${batteryReport}"
         // THERMOSTAT OPERATING STATE
 		} else if (descMap.cluster == "0201" && descMap.attrId == "0029") {
         	def trimvalue = descMap.value[-4..-1]
@@ -508,7 +509,7 @@ def refresh() {
 		"st rattr 0x${device.deviceNetworkId} 1 0x202 0"
 	]
     [
-    	zigbee.configureReporting(0x0201, 0x0029, 0x19, 5, 300, null), "delay 1000",
+    	zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 300, null), "delay 1000",
         zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
         zigbee.configureReporting(0x0000, 0x0007, 0x30, 0, 0, null)
 	]
