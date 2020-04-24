@@ -13,7 +13,6 @@ metadata {
         command "highdemand"
         command "vacation"
         command "hybrid"
-        command "modesoff"
 	}
 
     tiles(scale: 2) {
@@ -21,41 +20,28 @@ metadata {
 			state("onECO", label:"ECO", action:"highdemand", icon:"st.Outdoor.outdoor2", backgroundColor:"#a8d170")
 			state("onHD", label:"High\nDemand", action:"eco", icon:"st.thermostat.heat", backgroundColor:"#FF0000")
             state("toggleOFF", label:"ECO/HIGH\nOFF", action:"eco", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#cccccc")
-            state("allOFF", label:"All Off", action:"eco", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#cccccc")
 		}
 		standardTile("toggleSmallView", "device.deviceSummary", inactiveLabel: false, decoration: "flat", width: 6, height: 3) {
 			state("onECO", label:"ECO", icon:"st.Outdoor.outdoor2", backgroundColor:"#a8d170")
 			state("onHD", label:"High Demand", icon:"st.thermostat.heat", backgroundColor:"#FF0000")
             state("onVAC", label:"Vacation", icon:"st.Weather.weather3", backgroundColor:"#a8d170")
             state("onHYB", label:"Hybrid", icon:"st.tesla.tesla-hvac", backgroundColor:"#a8d170")
-            state("allOFF", label:"All Off", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#cccccc")
 		}
-		standardTile("vacation", "device.vacationState", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+		standardTile("vacation", "device.vacationState", inactiveLabel: false, decoration: "flat", width: 3, height: 2) {
 			state("on", label:"Vacation\nOn", action:"vacation", icon:"st.Weather.weather3", backgroundColor:"#a8d170")
             state("off", label:"Vacation Off", action:"vacation", icon:"st.Weather.weather3")
 		}
-		standardTile("hybrid", "device.hybridState", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+		standardTile("hybrid", "device.hybridState", inactiveLabel: false, decoration: "flat", width: 3, height: 2) {
 			state("on", label:"Hybrid\nOn", action:"hybrid", icon:"st.tesla.tesla-hvac", backgroundColor:"#a8d170")
             state("off", label:"Hybrid Off", action:"hybrid", icon:"st.tesla.tesla-hvac")
 		}
-		standardTile("modesOff", "device.modesOff", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state("default", label:"All Off", action:"modesoff", backgroundColor:"#cccccc")
-		}
 		main "toggleSmallView"
-		details(["toggle", "hybrid", "modesOff", "vacation"])
+		details(["toggle", "hybrid", "vacation"])
 	}
 }
 
 def parse(String description) {
 	log.trace "parse($description)"
-}
-
-def modesoff() {
-	log.debug "Tapped on ALL OFF, so toggling all modes to off"
-    sendEvent(name: "vacationState", value: "off")
-    sendEvent(name: "hybridState", value: "off")
-    sendEvent(name: "deviceSummary", value: "allOFF")
-    sendEvent(name: "switch", value: "allOFF")
 }
 
 def eco() {
