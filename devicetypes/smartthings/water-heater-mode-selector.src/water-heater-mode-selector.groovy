@@ -14,21 +14,24 @@ metadata {
         command "hybrid"
 	}
 
-	tiles {
-		standardTile("toggle", "device.switch", inactiveLabel: true, width: 3, height: 3) {
+    tiles(scale: 2) {
+		standardTile("toggle", "device.switch", inactiveLabel: false, decoration: "flat", width: 6, height: 3) {
+			state("off", label:"ECO", action:"highdemand", icon:"st.Outdoor.outdoor2", backgroundColor:"#33FF57")
+			state("on", label:"High\nDemand", action:"eco", icon:"st.thermostat.heat", backgroundColor:"#FF0000")			
+		}
+		standardTile("toggleRoomView", "device.switch", inactiveLabel: false, decoration: "flat", width: 6, height: 3) {
 			state("off", label:"ECO", action:"highdemand", icon:"st.Outdoor.outdoor2", backgroundColor:"#33FF57")
 			state("on", label:"High Demand", action:"eco", icon:"st.thermostat.heat", backgroundColor:"#FF0000")			
 		}
-		standardTile("vacation", "device.vacationState", inactiveLabel: false, decoration: "flat") {
+		standardTile("vacation", "device.vacationState", inactiveLabel: false, decoration: "flat", width: 3, height: 2) {
 			state("on", label:"Vacation On", action:"vacation", icon:"st.Weather.weather3")
             state("off", label:"Vacation Off", action:"vacation", icon:"st.Weather.weather3")
 		}
-		standardTile("hybrid", "device.hybridState", inactiveLabel: false, decoration: "flat") {
+		standardTile("hybrid", "device.hybridState", inactiveLabel: false, decoration: "flat", width: 3, height: 2) {
 			state("on", label:"Hybrid On", action:"hybrid", icon:"st.tesla.tesla-hvac")
             state("off", label:"Hybrid Off", action:"hybrid", icon:"st.tesla.tesla-hvac")
 		}
-
-		main "toggle"
+		main "toggleRoomView"
 		details(["toggle", "hybrid", "vacation"])
 	}
 }
