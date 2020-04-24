@@ -28,7 +28,6 @@ metadata {
 			state("onHD", label:"High Demand", icon:"st.thermostat.heat", backgroundColor:"#FF0000")
             state("onVAC", label:"Vacation", icon:"st.Weather.weather3", backgroundColor:"#a8d170")
             state("onHYB", label:"Hybrid", icon:"st.tesla.tesla-hvac", backgroundColor:"#a8d170")
-            state("toggleOFF", label:"ECO/HIGH OFF", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#cccccc")
             state("allOFF", label:"All Off", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#cccccc")
 		}
 		standardTile("vacation", "device.vacationState", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
