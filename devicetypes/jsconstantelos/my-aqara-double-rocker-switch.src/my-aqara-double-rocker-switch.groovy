@@ -81,6 +81,11 @@ def parse(String description) {
                 div = div ? (div as int) : 10
                 powerValue = (eventMap.value as Integer)/div
                 sendEvent(name: "power", value: powerValue)
+				def children = getChildDevices()
+                children.each {
+                    def childDevice = "${it.deviceNetworkId}"
+                    it.sendEvent(name: "power", value: powerValue)
+                }
             }
             else {
                 sendEvent(eventMap)
