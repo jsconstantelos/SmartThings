@@ -302,7 +302,8 @@ def getThermostatOperatingState() {
     "0010":"Cooling",
     "0012":"Cooling",
     "0014":"Cooling",
-    "0015":"Cooling"
+    "0015":"Cooling",
+    "0016":"Unknown/Problem"
     ]
 }
 
