@@ -14,6 +14,7 @@ preferences {
         section {app(name: "childRules", appName: "Alerts - Left It Open Child", namespace: "jsconstantelos", title: "Create alert for something left open...", multiple: true)}
         section {app(name: "childRules", appName: "Alerts - Left It Unlocked Child", namespace: "jsconstantelos", title: "Create alert for something left unlocked...", multiple: true)}
         section {app(name: "childRules", appName: "Alerts - Left It Running Child", namespace: "jsconstantelos", title: "Create alert for something left running...", multiple: true)}
+        section {app(name: "childRules", appName: "Alerts - Thermostat Mode Monitor Child", namespace: "jsconstantelos", title: "Create alert for a stuck thermostat mode...", multiple: true)}
     }
 }
 
