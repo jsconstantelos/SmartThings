@@ -74,7 +74,7 @@ metadata {
 
 /**** PARSE METHODS ****/
 def parse(String description) {
-    log.debug "description: $description"
+//    log.debug "description: $description"
 
     Map map = [:]
     if (description?.startsWith('catchall:')) {
@@ -90,15 +90,15 @@ def parse(String description) {
         map = parseOnOffMessage(description)
     }
 
-    log.debug "Parse returned $map"
+//    log.debug "Parse returned $map"
     return map ? createEvent(map) : null
 }
 
 private Map parseCatchAllMessage(String description) {
-    log.debug "parseCatchAllMessage"
+//    log.debug "parseCatchAllMessage"
 
     def cluster = zigbee.parse(description)
-    log.debug "cluster: ${cluster}"
+//    log.debug "cluster: ${cluster}"
     if (shouldProcessMessage(cluster)) {
         log.debug "processing message"
         switch(cluster.clusterId) {
@@ -136,13 +136,13 @@ private boolean shouldProcessMessage(cluster) {
 }
 
 private Map parseReportAttributeMessage(String description) {
-    log.debug "parseReportAttributeMessage"
+//    log.debug "parseReportAttributeMessage"
 
     Map descMap = (description - "read attr - ").split(",").inject([:]) { map, param ->
         def nameAndValue = param.split(":")
         map += [(nameAndValue[0].trim()):nameAndValue[1].trim()]
     }
-    log.debug "Desc Map: $descMap"
+//    log.debug "Desc Map: $descMap"
 
     if (descMap.cluster == "0006" && descMap.attrId == "0000") {
         return makeOnOffResult(Int.parseInt(descMap.value));
@@ -189,7 +189,7 @@ private Map parseOnOffMessage(String description) {
 }
 
 private Map makeOnOffResult(rawValue) {
-    log.debug "makeOnOffResult: ${rawValue}"
+//    log.debug "makeOnOffResult: ${rawValue}"
     def linkText = getLinkText(device)
     def value = rawValue == 1 ? "on" : "off"
     return [
@@ -227,7 +227,7 @@ private Map makeLevelResult(rawValue) {
 }
 
 private Map makePressureResult(rawValue) {
-    log.debug 'makePressureResut'
+//    log.debug 'makePressureResut'
     def linkText = getLinkText(device)
 
     def pascals = rawValue / 10
@@ -297,7 +297,7 @@ private def convertTemperature(value, scale = "C") {
 }
 
 private def makeSerialResult(serial) {
-    log.debug "makeSerialResult: " + serial
+//    log.debug "makeSerialResult: " + serial
 
     def linkText = getLinkText(device)
     sendEvent([
@@ -394,7 +394,7 @@ def setLevel(value, rate = null) {
 }
 
 def getOnOff() {
-    log.debug "getOnOff()"
+//    log.debug "getOnOff()"
 
     // disallow on/off updates while vent is obstructed
     if (device.currentValue("switch") == "obstructed") {
@@ -406,7 +406,7 @@ def getOnOff() {
 }
 
 def getPressure() {
-    log.debug "getPressure()"
+//    log.debug "getPressure()"
 
     // using a Keen Home specific attribute in the pressure measurement cluster
     [
@@ -417,7 +417,7 @@ def getPressure() {
 }
 
 def getLevel() {
-    log.debug "getLevel()"
+//    log.debug "getLevel()"
 
     // disallow level updates while vent is obstructed
     if (device.currentValue("switch") == "obstructed") {
@@ -429,19 +429,19 @@ def getLevel() {
 }
 
 def getTemperature() {
-    log.debug "getTemperature()"
+//    log.debug "getTemperature()"
 
     ["st rattr 0x${device.deviceNetworkId} 1 0x0402 0"]
 }
 
 def getBattery() {
-    log.debug "getBattery()"
+//    log.debug "getBattery()"
 
     ["st rattr 0x${device.deviceNetworkId} 1 0x0001 0x0021"]
 }
 
 def setZigBeeIdTile() {
-    log.debug "setZigBeeIdTile() - ${device.zigbeeId}"
+//    log.debug "setZigBeeIdTile() - ${device.zigbeeId}"
 
     def linkText = getLinkText(device)
 
