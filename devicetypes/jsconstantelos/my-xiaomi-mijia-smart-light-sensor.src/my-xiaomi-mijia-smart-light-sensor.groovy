@@ -44,18 +44,18 @@ metadata {
 					]
 				)
 			}
-            tileAttribute ("device.battery", key: "SECONDARY_CONTROL") {
-                attributeState("default", label:'${currentValue}% battery', unit:"%")
-            }
 		}
-		standardTile("refresh", "device.illuminance", width: 3, height: 2, inactiveLabel: false, decoration: "flat") {
+		standardTile("refresh", "device.illuminance", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", label: 'Refresh', action:"refresh.refresh", icon:"st.secondary.refresh-icon"
 		}
-		standardTile("configure", "device.illuminance", width: 3, height: 2, inactiveLabel: false, decoration: "flat") {
+		standardTile("configure", "device.illuminance", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", action:"configuration.configure", icon:"st.secondary.configure"
 		}
+		standardTile("battery", "device.battery", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+			state "default", label:'${currentValue}% battery', unit:"%"
+		}
 		main(["illuminance"])
-		details(["illuminance", "refresh", "configure"])
+		details(["illuminance", "battery", "refresh", "configure"])
 	}
 }
 
