@@ -65,7 +65,7 @@ def subscribe() {
   subscribe(thermostat, "thermostatOperatingState", modeTooLong)
 }
 
-def modeTooLong() {
+def modeTooLong(evt) {
   log.debug "Checking to see if mode is stuck..."
   def freq = (frequency != null && frequency != "") ? frequency * 60 : 600
   def delay = (delayThreshold != null && delayThreshold != "") ? delayThreshold * 60 : 600
