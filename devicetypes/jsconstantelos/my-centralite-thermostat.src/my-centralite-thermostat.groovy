@@ -144,10 +144,8 @@ metadata {
 }
 
 def parse(String description) {
-//	log.debug "Parse description : $description"
     if ((description?.startsWith("catchall:")) || (description?.startsWith("read attr -"))) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
-//        log.debug "DescMap : $descMap"
         def tempScale = location.temperatureScale
         // TEMPERATURE
 		if (descMap.cluster == "0201" && descMap.attrId == "0000") {
@@ -228,7 +226,6 @@ def parse(String description) {
         	log.debug "Fan mode command successfully processed by the thermostat"            
         // Setpoint confirmation/notification from thermostat
 		} else if (descMap.clusterId == "0201" && descMap.command == "04") {
-            //sendEvent("name": "thermostatOperatingState", "value": "Setpoint Changed Please Wait", "displayed": true)
         	log.debug "Setpoint command successfully processed by the thermostat"
         // POWER SOURCE
 		} else if (descMap.clusterId == "0000" && descMap.attrId == "0007") {
@@ -272,10 +269,8 @@ def getHoldModeMap() {
 def getPowerSourceMap(value) {
     if (value == "81") {
         sendEvent(name: "powerSource", value: "mains", "displayed": true)
-//        log.debug "POWER SOURCE is mains"
     } else {
       	sendEvent(name: "powerSource", value: "battery", "displayed": true)
-//        log.debug "POWER SOURCE is batteries"
     }
 }
 
@@ -405,8 +400,7 @@ def offmode() {
 	log.debug "Setting mode to OFF"
 	sendEvent("name":"thermostatMode", "value":"off")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {00}", "delay 5000",
-//        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
+		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {00}", "delay 5000"
 	]
 }
 
@@ -414,8 +408,7 @@ def cool() {
 	log.debug "Setting mode to COOL"
 	sendEvent("name":"thermostatMode", "value":"cool")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {03}", "delay 5000",
-//        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
+		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {03}", "delay 5000"
 	]
 }
 
@@ -423,8 +416,7 @@ def heat() {
 	log.debug "Setting mode to HEAT"
 	sendEvent("name":"thermostatMode", "value":"heat")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {04}", "delay 5000",
-//        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
+		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {04}", "delay 5000"
 	]
 }
 
@@ -432,8 +424,7 @@ def emergencyHeat() {
 	log.debug "Setting mode to EMERGENCY HEAT"
 	sendEvent("name":"thermostatMode", "value":"emergency heat")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {05}", "delay 5000",
-//        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
+		"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {05}", "delay 5000"
 	]
 }
 
@@ -450,8 +441,7 @@ def fanOn() {
 	sendEvent("name":"thermostatFanMode", "value":"on")
     sendEvent("name":"switch", "value":"on")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {04}", "delay 5000",
-//        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
+		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {04}", "delay 5000"
 	]
 }
 
@@ -460,8 +450,7 @@ def fanAuto() {
 	sendEvent("name":"thermostatFanMode", "value":"auto")
     sendEvent("name":"switch", "value":"off")
     [
-		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {05}", "delay 5000",
-//        "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
+		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {05}", "delay 5000"
 	]
 }
 
@@ -481,16 +470,13 @@ def holdOff() {
 	]
 }
 
-// Commment out below if no C-wire since it will kill the batteries.
 def poll() {
-//	refresh()
 	log.debug "Poll..."
 	"st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 }
 
 // PING is used by Device-Watch in attempt to reach the Device
 def ping() {
-//	refresh()
 	log.debug "Ping..."
     "st rattr 0x${device.deviceNetworkId} 1 0x201 0x29"
 }
@@ -509,11 +495,6 @@ def refresh() {
         "st rattr 0x${device.deviceNetworkId} 1 0x001 0x3e", "delay 200",
 		"st rattr 0x${device.deviceNetworkId} 1 0x202 0"
 	]
-//  [
-//    	zigbee.configureReporting(0x0201, 0x0029, 0x19, 0, 300, null), "delay 1000",
-//      zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
-//      zigbee.configureReporting(0x0000, 0x0007, 0x30, 0, 0, null)
-//	]
 }
 
 def configure() {
