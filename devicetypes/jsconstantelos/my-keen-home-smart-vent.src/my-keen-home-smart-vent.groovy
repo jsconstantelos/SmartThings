@@ -100,7 +100,7 @@ private Map parseCatchAllMessage(String description) {
     def cluster = zigbee.parse(description)
 //    log.debug "cluster: ${cluster}"
     if (shouldProcessMessage(cluster)) {
-        log.debug "processing message"
+//        log.debug "processing message"
         switch(cluster.clusterId) {
             case 0x0001:
                 return makeBatteryResult(cluster.data.last())
