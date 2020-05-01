@@ -42,6 +42,9 @@ metadata {
 
 def parse(String description) {
 	log.trace "parse($description)"
+    
+    // Now do something with incoming data
+    
 }
 
 def eco() {
