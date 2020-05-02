@@ -28,21 +28,7 @@ metadata {
     tiles(scale: 2) {
 		multiAttributeTile(name:"illuminance", type: "generic", width: 6, height: 4){
 			tileAttribute("device.illuminance", key: "PRIMARY_CONTROL") {
-				attributeState("illuminance", label:'${currentValue} LUX', icon:"st.illuminance.illuminance.bright",
-					backgroundColors: [
-						[value: 0, color: "#141414"],
-                        [value: 3000, color: "#646464"],
-						[value: 5000, color: "#787878"],
-						[value: 10000, color: "#a0a0a0"],
-						[value: 15000, color: "#c9c9c9"],
-						[value: 20000, color: "#d9d9d9"],
-						[value: 25000, color: "#e4e4e4"],
-                        [value: 30000, color: "#eeeeee"],
-                        [value: 35000, color: "#f4f4f4"],
-                        [value: 40000, color: "#f9f9f9"],
-                        [value: 50000, color: "#ffffff"]
-					]
-				)
+				attributeState("illuminance", label:'${currentValue} LUX', icon:"st.illuminance.illuminance.bright", backgroundColor:"#999999")
 			}
 		}
 		standardTile("refresh", "device.illuminance", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
