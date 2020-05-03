@@ -16,6 +16,10 @@
  *  Original code : ZigBee Multi Switch Power, modified for the Aqare double rocker switch by JSConstantelos
  *  Community discussion : https://community.smartthings.com/t/aqara-double-rocker-wall-switch-discussion/192205
  *
+ *  Updates:
+ *  -------
+ *  04-30-2020 : Initial commit.
+ *  05-02-2020 : Added child switch tile so that both switches are controllable in this DTH.  This only works for the Classic app, but not in the new app yet.  The child switch still shows up as a separete device in both apps.
  */
 
 metadata {
@@ -46,14 +50,14 @@ metadata {
 				attributeState "power", label: '${currentValue} W'
 			}
 		}
+        childDeviceTiles("all")
 		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
 			state "default", label: "", action: "refresh.refresh", icon: "st.secondary.refresh"
 		}
-		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", action: "configuration.configure", icon: "st.secondary.configure"
-		}
+//		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+//			state "default", action: "configuration.configure", icon: "st.secondary.configure"
+//		}
 		main "switch"
-		details(["switch", "refresh"])
 	}
 }
 
