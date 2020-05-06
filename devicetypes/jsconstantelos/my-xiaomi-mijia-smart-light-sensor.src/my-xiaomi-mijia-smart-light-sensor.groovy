@@ -46,7 +46,6 @@ metadata {
 }
 
 def parse(String description) {
-	log.debug "Description : $description"
     if (description?.startsWith("catchall:")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
 		log.debug "Desc Map : $descMap"
