@@ -46,6 +46,7 @@ metadata {
 }
 
 def parse(String description) {
+	log.debug "Description : $description"
     if (description?.startsWith("catchall:")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
 		log.debug "Desc Map : $descMap"
@@ -80,9 +81,7 @@ def updated() {
 def refresh() {
 	log.debug "Refreshing values..."
 	[
-		"st rattr 0x${device.deviceNetworkId} 1 0x000 0", "delay 200",
         "st rattr 0x${device.deviceNetworkId} 1 0x001 0", "delay 200",
-        "st rattr 0x${device.deviceNetworkId} 1 0x003 0", "delay 200",
         "st rattr 0x${device.deviceNetworkId} 1 0x400 0", "delay 200"
 	]
 }
@@ -100,9 +99,7 @@ def configure() {
 	]
     log.debug "...reporting intervals..."
     [
-    	zigbee.configureReporting(0x0000, 0x0005, 0xff, 5, 300, null), "delay 1000",	// basic cluster
         zigbee.configureReporting(0x0001, 0x0020, 0x20, 60, 3600, 0x01), "delay 1000",	// power cluster (get battery voltage every hour, or if it changes)
-        zigbee.configureReporting(0x0003, 0x0000, 0xff, 0, 0, null), "delay 1000",		// identify cluster
-        zigbee.configureReporting(0x0400, 0x0000, 0x01, 0, 0, null)						// illuminance cluster (get lux value as soon as it changes)
+        zigbee.configureReporting(0x0400, 0x0000, 0x21, 0, 0, null)						// illuminance cluster
 	]
 }
