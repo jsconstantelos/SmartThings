@@ -30,8 +30,8 @@ metadata {
     }
 
 	preferences {
-    	input "minReportSeconds", "number", title: "Min Report Time (0 to 3600 sec)", description: "Minimum seconds?", defaultValue: "0", range: "0..3600"
-        input "rawChange", "number", title: "Amount of change in raw data (1 to 1000)", description: "Amount of change?", defaultValue: "25", range: "1..1000"
+    	input "minReportSeconds", "number", title: "Min Report Time (0 to 3600 sec)", description: "Minimum seconds?", defaultValue: "0", range: "0..3600", displayDuringSetup: true
+        input "rawChange", "number", title: "Amount of change in raw data (1 to 1000)", description: "Amount of change?", defaultValue: "25", range: "1..1000", displayDuringSetup: true
 	}
 
 	fingerprint profileId: "0104", inClusters: "0000,0400,0003,0001", outClusters: "0003", manufacturer: "LUMI", model: "lumi.sen_ill.mgl01", deviceJoinName: "Xiaomi Mijia Smart Home Light Sensor", ocfDeviceType: "oic.r.sensor.illuminance"    
