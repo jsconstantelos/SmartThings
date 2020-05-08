@@ -3,6 +3,7 @@
  *
  *  Copyright 2016 Daniel Kurin
  *
+ *  Updated by John Constantelos
  */
 definition(
     name: "FortrezZ Leak Detector Child",
@@ -18,13 +19,6 @@ definition(
 
 preferences {
 	page(name: "prefsPage", title: "Choose the detector behavior", install: true, uninstall: true)
-
-    // Do something here like update a message on the screen,
-    // or introduce more inputs. submitOnChange will refresh
-    // the page and allow the user to see the changes immediately.
-    // For example, you could prompt for the level of the dimmers
-    // if dimmers have been selected:
-    //log.debug "Child Settings: ${settings}"
 }
 
 def prefsPage() {
@@ -78,7 +72,7 @@ def prefsPage() {
                     }
                     break
 
-                case "Accumulated Flow":
+                case "Accumulated Gallons":
                     section("Threshold settings") {
                         input(name: "ruleName", type: "text", title: "Rule Name", required: true)
                         input(name: "gallons", type: "number", title: "Total Gallons exceeds", required: true)
@@ -132,19 +126,6 @@ def prefsPage() {
                     }
                    break
 
-                case "Switch Status":
-                    section("Threshold settings") {
-                        input(name: "ruleName", type: "text", title: "Rule Name", required: true)
-                        input(name: "gpm", type: "decimal", title: "GPM exceeds", required: true, defaultValue: 0.1)
-                    }
-                    section ("If...") {
-                        input(name: "valve", type: "capability.switch", title: "Choose a switch", required: true)
-                    }
-                    section ("...is...") {
-                        input(name: "switchStatus", type: "enum", title: "Status", options: ["On","Off"], required: true)
-                    }
-                    break
-
                 default:
                     break
             }
@@ -156,10 +137,9 @@ def ruleTypes() {
 	def types = []
     types << "Mode"
     types << "Time Period"
-    types << "Accumulated Flow"
+    types << "Accumulated Gallons"
     types << "Continuous Flow"
     types << "Water Valve Status"
-    //types << "Switch Status"
     
     return types
 }
@@ -172,40 +152,34 @@ def actionTypes() {
     return types
 }
 
-def deviceCommands(dev)
-{
+def deviceCommands(dev) {
 	def cmds = []
 	dev.supportedCommands.each { command ->
     	cmds << command.name
     }
-    
     return cmds
 }
 
 def installed() {
 	log.debug "Installed with settings: ${settings}"
 	app.updateLabel("${ruleName ? ruleName : ""} - ${type}")
-    
 	initialize()
 }
 
 def updated() {
 	log.debug "Updated with settings: ${settings}"
 	app.updateLabel("${ruleName ? ruleName : ""} - ${type}")
-
 	unsubscribe()
 	initialize()
 }
 
 def settings() {
 	def set = settings
-    if (set["dev"] != null)
-    {
+    if (set["dev"] != null) {
     	log.debug("dev set: ${set.dev}")
     	set.dev = set.dev.id
     }
-    if (set["valve"] != null)
-    {
+    if (set["valve"] != null) {
     	log.debug("valve set: ${set.valve}")
     	set.valve = set.valve.id
     }
@@ -213,23 +187,18 @@ def settings() {
 	return set
 }
 
-def devAction(action)
-{
-	if(dev)
-    {
+def devAction(action) {
+	if(dev) {
     	log.debug("device: ${dev}, action: ${action}")
 		dev."${action}"()
     }
 }
 
-def isValveStatus(status)
-{
+def isValveStatus(status) {
 	def result = false
     log.debug("Water Valve ${valve} has status ${valve.currentState("contact").value}, compared to ${status.toLowerCase()}")
-	if(valve)
-    {
-    	if(valve.currentState("contact").value == status.toLowerCase())
-        {
+	if (valve) {
+    	if(valve.currentState("contact").value == status.toLowerCase()) {
         	result = true
         }
     }
@@ -239,5 +208,3 @@ def isValveStatus(status)
 def initialize() {
 	// TODO: subscribe to attributes, devices, locations, etc.
 }
-
-// TODO: implement event handlers
