@@ -66,6 +66,7 @@ def updated() {
 }
 
 def initialize() {
+	state.startTime = 0
 	subscribe(meter, "cumulative", cumulativeHandler)
 	subscribe(meter, "gpm", gpmHandler)
     log.debug("Subscribing to events")
@@ -163,42 +164,7 @@ def cumulativeHandler(evt) {
                     state["accHistory${childAppID}"] = cumulative
                 }
             	break
-/*
-            case "Continuous Flow":
-//            	log.debug "CUMULATIVE HANDLER Start: Continuous Flow Test: ${r}"
-            	def contMinutes = 0
-                def boolMode = !r.modes || findIn(r.modes, location.currentMode)
 
-				if(gpm != 0)
-                {
-                	if(state["contHistory${childAppID}"] == [])
-                    {
-                    	state["contHistory${childAppID}"] = new Date()
-                    }
-                    else
-                    {
-                    	//def td = now() - Date.parse("yyyy-MM-dd'T'HH:mm:ss'Z'", state["contHistory${childAppID}"]).getTime()
-                        //log.debug(state["contHistory${childAppID}"])
-                        //def historyDate = new Date(state["contHistory${childAppID}"])
-                    	def historyDate = new Date().parse("yyyy-MM-dd'T'HH:mm:ssZ", state["contHistory${childAppID}"])
-                    	def td = now() - historyDate.getTime()
-                        //log.debug "CUMULATIVE HANDLER 3: Now minus then: ${td}"
-                        contMinutes = td/60000
-                        log.debug("Minutes of constant flow: ${contMinutes}, since ${state["contHistory${childAppID}"]}")
-                    }
-                }
-                
-                if(contMinutes > r.flowMinutes && boolMode)
-                {
-                    sendNotification(childAppID, Math.round(contMinutes))
-                    if(r.dev)
-                    {
-                        def activityApp = getChildById(childAppID)
-                        activityApp.devAction(r.command)
-                    }
-                }
-                break
-*/
             case "Water Valve Status":
             	log.debug("Water Valve Test: ${r}")
             	def child = getChildById(childAppID)
@@ -240,9 +206,8 @@ def gpmHandler(evt) {
 
 		case "Continuous Flow":
                 def boolMode = !r.modes || findIn(r.modes, location.currentMode)
-	            if (state["contHistory${childAppID}"] == []) {
+	            if (state.startTime == 0) {
                 	log.debug "GPM HANDLER : Start monitoring GPM for continuous flow, so set up important variables..."
-        	        state["contHistory${childAppID}"] = new Date()
                     state.startTime = now()
             	}
                 def timeDelta = (now() - state.startTime)/60000
@@ -256,8 +221,7 @@ def gpmHandler(evt) {
                 }
 				if (gpm == "0") {
                 	log.debug "GPM HANDLER : Flow stopped, so clean up and get ready for another cycle..."
-                	state["contHistory${childAppID}"] = []
-                    state.startTime = []
+                    state.startTime = 0
                 }
 
 			break
