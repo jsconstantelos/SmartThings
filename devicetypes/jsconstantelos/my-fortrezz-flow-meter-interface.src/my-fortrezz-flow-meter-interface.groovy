@@ -57,6 +57,7 @@
  *  01-12-2019 : Cleaned up a lot of code.
  *  02-05-2019 : Added/updated error checking for negative delta values, crazy high delta values, duplicate current and previous flow values, and when current flow value is less than the previous flow value.
  *  03-01-2019 : Fixed history reporting error with values when meter, high gallons used, or highest GPM was reset.
+ *  05-07-2020 : Added Water Sensor capability and supporting code so that this DTH works correctly with FortrezZ's SmartApps.
  *
  */
 metadata {
@@ -66,6 +67,7 @@ metadata {
         capability "Power Meter"
 		capability "Image Capture"
 		capability "Temperature Measurement"
+        capability "Water Sensor"
         capability "Sensor"
         capability "Configuration"
         capability "Actuator"        
@@ -79,6 +81,7 @@ metadata {
 		attribute "gpmTotal", "number"
         attribute "gpmLastUsed", "number"
 		attribute "gpmHighLastReset", "number"
+        attribute "cumulative", "number"
         attribute "cumulativeLastReset", "number"
         attribute "gallonHigh", "number"
         attribute "gallonHighValue", "number"
@@ -103,7 +106,7 @@ metadata {
     
     preferences {
        input "debugOutput", "boolean", title: "Enable debug logging?", defaultValue: false, displayDuringSetup: true
-       input "reportThreshhold", "decimal", title: "Reporting Rate Threshhold", description: "The time interval between meter reports while water is flowing. 6 = 60 seconds, 1 = 10 seconds. Options are 1, 2, 3, 4, 5, or 6.", defaultValue: 1, required: false, displayDuringSetup: true
+       input "reportThreshhold", "decimal", title: "Reporting Rate Threshhold", description: "The time interval between meter reports while water is flowing. 6 = 60 seconds, 1 = 10 seconds. Options are 1, 2, 3, 4, 5, or 6.", defaultValue: 1, range: "1..6", required: false, displayDuringSetup: true
        input "gallonThreshhold", "decimal", title: "High Flow Rate Threshhold", description: "Flow rate (in gpm) that will trigger a notification.", defaultValue: 5, required: false, displayDuringSetup: true
        input("registerEmail", type: "email", required: false, title: "Email Address", description: "Register your device with FortrezZ", displayDuringSetup: true)
        input("customID", required: false, title: "Custom ID (CAUTION: ADVANCED USERS ONLY. Causes ALL charts to reset.  Leave empty for default.)", description: "Default is empty. This will reset ALL charts!", defaultValue: "", displayDuringSetup: false)
@@ -188,6 +191,12 @@ metadata {
 			state "none", icon:"http://cdn.device-icons.smartthings.com/valves/water/closed@2x.png", backgroundColor:"#999999", label: "No Flow"
 			state "flow", icon:"http://cdn.device-icons.smartthings.com/valves/water/open@2x.png", backgroundColor:"#51afdb", label: "Flow"
 			state "highflow", icon:"http://cdn.device-icons.smartthings.com/alarm/water/wet@2x.png", backgroundColor:"#ff0000", label: "High Flow"
+		}
+		valueTile("power", "device.power", decoration:"flat", width: 2,height:2) {
+			state "default", label:'${currentValue}'
+		}
+		valueTile("energy", "device.energy", decoration:"flat", width: 2,height:2) {
+			state "default", label:'${currentValue}'
 		}
 		main (["waterState"])
 		details(["gpm", "gpmTotal", "gpmLastUsed", "gallonHigh", "gpmHigh", "powerState", "temperature", "battery", "dayChart", "weekChart", "monthChart", "chartCycle", "errorIcon", "errorHist", "errorIcon", "history", "configure", "zeroTile"])
@@ -358,17 +367,19 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
             }
 			def prevCumulative = cmd.scaledMeterValue - device.currentState('gpmTotal')?.doubleValue
             sendDataToCloud(prevCumulative)
+            sendEvent(name: "cumulative", value: cmd.scaledMeterValue, displayed: false, unit: "gal")
 			if (prevCumulative > device.currentState('gallonHighValue')?.doubleValue) {
                 sendEvent(name: "gallonHigh", value: String.format("%3.1f",prevCumulative)+" gallons on"+"\n"+timeString as String, displayed: true)
                 sendEvent(name: "gallonHighValue", value: String.format("%3.1f",prevCumulative), displayed: false)
             }
-            sendEvent(name: "power", value: delta, displayed: false)  // This is only used for SmartApps that need Power capabilities.
+            sendEvent(name: "power", value: delta, unit: "W", displayed: false)  // This is only used for SmartApps that need Power capabilities.
             sendEvent(name: "energy", value: cmd.scaledMeterValue, unit: "kWh", displayed: false) // This is only used for SmartApps that need Energy capabilities.
             sendEvent(name: "gpmTotal", value: cmd.scaledMeterValue, displayed: false)
             sendEvent(name: "gpmLastUsed", value: String.format("%3.1f",prevCumulative), displayed: true)
             sendEvent(name: "waterState", value: "none", displayed: true)
             sendEvent(name: "gpm", value: delta, displayed: false)
             sendEvent(name: "alarmState", value: "Normal Operation", descriptionText: text, displayed: true)
+            sendEvent(name: "water", value: "dry", displayed: false)
             return
     	} else {
         	sendEvent(name: "gpm", value: delta, displayed: false)
@@ -380,9 +391,11 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
             }
         	if (delta > gallonThreshhold) {
             	sendEvent(name: "waterState", value: "highflow")
+                sendEvent(name: "water", value: "wet", displayed: false)
                 sendEvent(name: "alarmState", value: "High Flow Detected!", descriptionText: text, displayed: true)
         	} else {
         		sendEvent(name: "waterState", value: "flow")
+                sendEvent(name: "water", value: "dry", displayed: false)
                 sendEvent(name: "alarmState", value: "Water is flowing", descriptionText: text, displayed: true)
 			}
             return

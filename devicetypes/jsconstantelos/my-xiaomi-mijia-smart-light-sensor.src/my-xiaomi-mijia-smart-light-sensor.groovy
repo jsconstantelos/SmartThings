@@ -77,7 +77,7 @@ def parse(String description) {
     if (description?.startsWith("illuminance:")) {
         def raw = ((description - "illuminance: ").trim()) as int
         def lux = Math.round(zigbee.lux(raw as Integer)).toString()
-        log.debug "Lux values : $raw and $lux"
+//        log.debug "Lux values : $raw and $lux"
         sendEvent("name": "illuminance", "value": lux, "unit": "lux", "displayed": true, isStateChange: true)
 	}
 }
