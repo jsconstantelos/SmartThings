@@ -14,9 +14,8 @@ definition(
     iconX2Url: "http://swiftlet.technology/wp-content/uploads/2016/05/logo-square-500.png",
     iconX3Url: "http://swiftlet.technology/wp-content/uploads/2016/05/logo-square.png")
 
-
 preferences {
-	page(name: "page2", title: "Select device and actions", install: true, uninstall: true)
+	page(name: "page2", title: "Plugin version 1.5\nSelect device and actions", install: true, uninstall: true)
 }
 
 def page2() {
@@ -119,7 +118,7 @@ def cumulativeHandler(evt) {
                 {
                     if(gpm > r.gpm)
                     {
-                        sendNotification(childAppID, gpm)
+                        sendNotification(childAppID, r.gpm)
                         if(r.dev)
                         {
                             def activityApp = getChildById(childAppID)
@@ -150,7 +149,7 @@ def cumulativeHandler(evt) {
                     
                     if(delta > r.gallons)
                     {
-                        sendNotification(childAppID, delta)
+                        sendNotification(childAppID, r.gallons)
                         if(r.dev)
                         {
                             def activityApp = getChildById(childAppID)
@@ -164,9 +163,9 @@ def cumulativeHandler(evt) {
                     state["accHistory${childAppID}"] = cumulative
                 }
             	break
-
+/*
             case "Continuous Flow":
-            	log.debug("Continuous Flow Test: ${r}")
+//            	log.debug "CUMULATIVE HANDLER Start: Continuous Flow Test: ${r}"
             	def contMinutes = 0
                 def boolMode = !r.modes || findIn(r.modes, location.currentMode)
 
@@ -183,7 +182,7 @@ def cumulativeHandler(evt) {
                         //def historyDate = new Date(state["contHistory${childAppID}"])
                     	def historyDate = new Date().parse("yyyy-MM-dd'T'HH:mm:ssZ", state["contHistory${childAppID}"])
                     	def td = now() - historyDate.getTime()
-                        //log.debug("Now minus then: ${td}")
+                        //log.debug "CUMULATIVE HANDLER 3: Now minus then: ${td}"
                         contMinutes = td/60000
                         log.debug("Minutes of constant flow: ${contMinutes}, since ${state["contHistory${childAppID}"]}")
                     }
@@ -199,7 +198,7 @@ def cumulativeHandler(evt) {
                     }
                 }
                 break
-
+*/
             case "Water Valve Status":
             	log.debug("Water Valve Test: ${r}")
             	def child = getChildById(childAppID)
@@ -231,27 +230,37 @@ def gpmHandler(evt) {
     c.setTime(today);
     int dow = c.get(Calendar.DAY_OF_WEEK);
     def dowName = daysOfTheWeek[dow-1]
-    
 	def gpm = evt.value
     def cumulative = meter.latestValue("cumulative")
-    log.debug "GPM Handler: [gpm: ${gpm}, cumulative: ${cumulative}]"
     def rules = state.rules
     rules.each { it ->
         def r = it.rules
         def childAppID = it.id
     	switch (r.type) {
 
-			// This is down here because "cumulative" never gets sent in the case of 0 change between messages
-			case "Continuous Flow":
-            	log.debug("Continuous Flow Test (GPM): ${r}")
-            	def contMinutes = 0
-
-				if(gpm == "0")
-                {
-                	state["contHistory${childAppID}"] = []
+		case "Continuous Flow":
+                def boolMode = !r.modes || findIn(r.modes, location.currentMode)
+	            if (state["contHistory${childAppID}"] == []) {
+                	log.debug "GPM HANDLER : Start monitoring GPM for continuous flow, so set up important variables..."
+        	        state["contHistory${childAppID}"] = new Date()
+                    state.startTime = now()
+            	}
+                def timeDelta = (now() - state.startTime)/60000
+                if (timeDelta > r.flowMinutes && boolMode) {
+                	log.debug "GPM HANDLER : Need to send a notification!"
+                    sendNotification(childAppID, Math.round(r.flowMinutes))
+                    if (r.dev) {
+                        def activityApp = getChildById(childAppID)
+                        activityApp.devAction(r.command)
+                    }
                 }
-                //log.debug("contHistory${childAppID} is ${state["contHistory${childAppID}"]}")
-                break
+				if (gpm == "0") {
+                	log.debug "GPM HANDLER : Flow stopped, so clean up and get ready for another cycle..."
+                	state["contHistory${childAppID}"] = []
+                    state.startTime = []
+                }
+
+			break
 
             default:
                 break
@@ -264,15 +273,15 @@ def sendNotification(device, gpm)
 	def msg = ""
     if(set.type == "Accumulated Flow")
     {
-    	msg = "Water Flow Warning: \"${set.ruleName}\" is over threshold at ${gpm} gallons"
+    	msg = "Water Flow Warning: \"${set.ruleName}\" is over gallons exceeded threshold of ${gpm} gallons"
     }
     else if(set.type == "Continuous Flow")
     {
-    	msg = "Water Flow Warning: \"${set.ruleName}\" is over threshold at ${gpm} minutes"
+    	msg = "Water Flow Warning: \"${set.ruleName}\" is over the constant flow threshold of ${gpm} minutes"
     }
     else
     {
-    	msg = "Water Flow Warning: \"${set.ruleName}\" is over threshold at ${gpm}gpm"
+    	msg = "Water Flow Warning: \"${set.ruleName}\" is over GPM exceeded threshold of ${gpm}gpm"
     }
     log.debug(msg)
     
