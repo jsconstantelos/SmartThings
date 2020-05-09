@@ -61,6 +61,7 @@ def updated() {
 
 def initialize() {
 	state.startTime = 0
+    state.startAccumulate = 0
 	subscribe(meter, "cumulative", cumulativeHandler)
 	subscribe(meter, "gpm", gpmHandler)
     log.debug("Subscribing to events and setting state variables...")
@@ -88,28 +89,28 @@ def cumulativeHandler(evt) {
 				def boolTime = timeOfDayIsBetween(r.startTime, r.endTime, new Date(), location.timeZone)
 				def boolDay = !r.days || findIn(r.days, dowName) // Truth Table of this mess: http://swiftlet.technology/wp-content/uploads/2016/05/IMG_20160523_150600.jpg
 				def boolMode = !r.modes || findIn(r.modes, location.currentMode)
-				if(boolTime && boolDay && boolMode) {
+				if (boolTime && boolDay && boolMode) {
+                	log.debug "Cumulative value received, and met rule criteria..."
 					def delta = 0
-					if(state["accHistory${childAppID}"] != null) {
-						delta = cumulative - state["accHistory${childAppID}"]
+					if(state.startAccumulate != 0) {
+						delta = cumulative - state.startAccumulate
 					} else {
-						state["accHistory${childAppID}"] = cumulative
+						state.startAccumulate = cumulative
 					}
-					log.debug("Currently in specified time, delta from beginning of time period: ${delta}")
-                    log.debug "Checking to see if a notification needs to be sent..."
-					if(delta > r.gallons) {
-                    	log.debug("Threshold:${r.gallons} gallons, Actual:${delta} gallons")
-                        log.debug "Need to send a notification!"
-                        state["accHistory${childAppID}"] = cumulative
+					log.debug("Difference from beginning of time period is ${delta} gallons, so checking to see if a notification needs to be sent...")
+					if (delta > r.gallons) {
+                    	log.debug("Need to send a notification! Threshold:${r.gallons} gallons, Actual:${delta} gallons")
 						sendNotification(childAppID, r.gallons)
 						if(r.dev) {
 							def activityApp = getChildById(childAppID)
 							activityApp.devAction(r.command)
 						}
-					}
+					} else {
+                    	log.debug "Not sending a notification because the threshold of ${r.gallons} gallons hasn't happened yet..."
+                    }
 				} else {
 					log.debug("Outside specified time, saving value")
-					state["accHistory${childAppID}"] = cumulative
+					state.startAccumulate = cumulative
 				}
 			break
 
