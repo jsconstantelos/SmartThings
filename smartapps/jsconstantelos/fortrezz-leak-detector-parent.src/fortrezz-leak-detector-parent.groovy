@@ -191,7 +191,7 @@ def gpmHandler(evt) {
                     if (timeDelta > r.flowMinutes && boolMode) {
                         log.debug("Threshold:${r.flowMinutes} minutes, Actual:${timeDelta} minutes")
                         log.debug "Need to send a notification!"
-                        sendNotification(childAppID, Math.round(r.flowMinutes), Math.round(timeDelta))
+                        sendNotification(childAppID, r.flowMinutes, timeDelta)
                         if (r.dev) {
                             def activityApp = getChildById(childAppID)
                             activityApp.devAction(r.command)
