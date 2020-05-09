@@ -60,15 +60,13 @@ def updated() {
 }
 
 def initialize() {
-	state.startTime = 0
-    state.startAccumulate = 0
 	subscribe(meter, "cumulative", cumulativeHandler)
 	subscribe(meter, "gpm", gpmHandler)
     log.debug("Subscribing to events and setting state variables...")
 }
 
 def cumulativeHandler(evt) {
-	log.debug "Dropped into Cummulative handler method (used by Accumulated Gallons rules)..."
+//	log.debug "Dropped into Cummulative handler method (used by Accumulated Gallons rules)..."
    	def daysOfTheWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     def today = new Date()
     today.clearTime()
@@ -78,7 +76,6 @@ def cumulativeHandler(evt) {
     def dowName = daysOfTheWeek[dow-1]
     def cumulative = new BigDecimal(evt.value)
     def rules = state.rules
-    state.startTime = 0	//flow stopped when this method kicks off, so clean up GPM state variable
     rules.each { it ->
         def r = it.rules
         def childAppID = it.id
@@ -92,15 +89,15 @@ def cumulativeHandler(evt) {
 				if (boolTime && boolDay && boolMode) {
                 	log.debug "Cumulative value received, and met rule criteria..."
 					def delta = 0
-					if(state.startAccumulate != 0) {
-						delta = cumulative - state.startAccumulate
+					if(state["startAccumulate${childAppID}"] != null) {
+						delta = cumulative - state["startAccumulate${childAppID}"]
 					} else {
-						state.startAccumulate = cumulative
+						state["startAccumulate${childAppID}"] = cumulative
 					}
 					log.debug("Difference from beginning of time period is ${delta} gallons, so checking to see if a notification needs to be sent...")
 					if (delta > r.gallons) {
                     	log.debug("Need to send a notification! Threshold:${r.gallons} gallons, Actual:${delta} gallons")
-						sendNotification(childAppID, r.gallons)
+						sendNotification(childAppID, r.gallons, delta)
 						if(r.dev) {
 							def activityApp = getChildById(childAppID)
 							activityApp.devAction(r.command)
@@ -110,7 +107,7 @@ def cumulativeHandler(evt) {
                     }
 				} else {
 					log.debug("Outside specified time, saving value")
-					state.startAccumulate = cumulative
+					state["startAccumulate${childAppID}"] = cumulative
 				}
 			break
 
@@ -121,7 +118,7 @@ def cumulativeHandler(evt) {
 }
 
 def gpmHandler(evt) {
-	log.debug "Dropped into GPM handler method (used by Mode, Water Valve, Continuous Flow, and Time Period rules)..."
+//	log.debug "Dropped into GPM handler method (used by Mode, Water Valve, Continuous Flow, and Time Period rules)..."
    	def daysOfTheWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     def today = new Date()
     today.clearTime()
@@ -143,7 +140,7 @@ def gpmHandler(evt) {
 					if(gpm > r.gpm) {
                     	log.debug("Threshold:${r.gpm} gpm, Actual:${gpm} gpm")
                         log.debug "Need to send a notification!"
-						sendNotification(childAppID, r.gpm)
+						sendNotification(childAppID, r.gpm, gpm)
 						if(r.dev) {
 							def activityApp = getChildById(childAppID)
 							activityApp.devAction(r.command)
@@ -162,7 +159,7 @@ def gpmHandler(evt) {
 					if(gpm > r.gpm) {
                     	log.debug("Threshold:${r.gpm} gpm, Actual:${gpm} gpm")
                         log.debug "Need to send a notification!"
-						sendNotification(childAppID, r.gpm)
+						sendNotification(childAppID, r.gpm, gpm)
 						if(r.dev) {
 							def activityApp = getChildById(childAppID)
 							activityApp.devAction(r.command)
@@ -176,18 +173,25 @@ def gpmHandler(evt) {
 				def boolMode = !r.modes || findIn(r.modes, location.currentMode)
 				if (evt.value == '0') {
 					log.debug "Flow stopped, so clean up and get ready for another evaluation when flow starts again..."
-					state.startTime = 0
+					state["startTime${childAppID}"] = 0
 				} else { 
-                    if (state.startTime == 0) {
+					if (state["startTime${childAppID}"] != null) {
+                    	if (state["startTime${childAppID}"] == 0) {
+                            log.debug "Start monitoring GPM for continuous flow, so set up important variables..."
+                            state["startTime${childAppID}"] = now()
+                        } else {
+                        	log.debug "Monitoring GPM for continuous flow (flow value detected: ${evt.value})..."
+                        }
+                    } else {
                         log.debug "Start monitoring GPM for continuous flow, so set up important variables..."
-                        state.startTime = now()
+                        state["startTime${childAppID}"] = now()
                     }
-                    def timeDelta = (now() - state.startTime)/60000
+					def timeDelta = (now() - state["startTime${childAppID}"])/60000
                     log.debug "Checking to see if a notification needs to be sent..."
                     if (timeDelta > r.flowMinutes && boolMode) {
                         log.debug("Threshold:${r.flowMinutes} minutes, Actual:${timeDelta} minutes")
                         log.debug "Need to send a notification!"
-                        sendNotification(childAppID, Math.round(r.flowMinutes))
+                        sendNotification(childAppID, Math.round(r.flowMinutes), Math.round(timeDelta))
                         if (r.dev) {
                             def activityApp = getChildById(childAppID)
                             activityApp.devAction(r.command)
@@ -204,7 +208,7 @@ def gpmHandler(evt) {
 					if(gpm > r.gpm) {
                     	log.debug("Threshold:${r.gpm} gpm, Actual:${gpm} gpm")
                         log.debug "Need to send a notification!"
-						sendNotification(childAppID, r.gpm)
+						sendNotification(childAppID, r.gpm, gpm)
 					}
 				}
 			break
@@ -215,15 +219,15 @@ def gpmHandler(evt) {
 	}
 }
 
-def sendNotification(device, gpm) {
+def sendNotification(device, gpm, actual) {
 	def set = getChildById(device).settings()
 	def msg = ""
     if(set.type == "Accumulated Gallons") {
-    	msg = "Water Meter Warning: \"${set.ruleName}\" is over gallons exceeded threshold of ${gpm} gallons"
+    	msg = "Water Meter Warning: \"${set.ruleName}\" is over gallons exceeded threshold of ${gpm} gallons, actual is ${actual} gallons"
     } else if(set.type == "Continuous Flow") {
-    	msg = "Water Meter Warning: \"${set.ruleName}\" is over the constant flow threshold of ${gpm} minutes"
+    	msg = "Water Meter Warning: \"${set.ruleName}\" is over the constant flow threshold of ${gpm} minutes, actual is ${actual} minutes"
     } else {
-    	msg = "Water Meter Warning: \"${set.ruleName}\" is over GPM exceeded threshold of ${gpm}gpm"
+    	msg = "Water Meter Warning: \"${set.ruleName}\" is over GPM exceeded threshold of ${gpm}gpm, actual is ${actual} gpm"
     }
     log.debug(msg)
     // Only send notifications as often as the user specifies
