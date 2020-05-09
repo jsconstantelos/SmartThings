@@ -50,23 +50,24 @@ def page2() {
 
 def installed() {
 	log.debug "Installed with settings: ${settings}"
+    state.cumulativeBaseline = meter.latestValue("cumulative")	// used by accumulated gallons rule
 	initialize()
 }
 
 def updated() {
 	log.debug "Updated with settings: ${settings}"
+    state.cumulativeBaseline = meter.latestValue("cumulative")	// used by accumulated gallons rule
 	unsubscribe()
 	initialize()
 }
 
 def initialize() {
+	log.debug("Subscribing to events...")
 	subscribe(meter, "cumulative", cumulativeHandler)
 	subscribe(meter, "gpm", gpmHandler)
-    log.debug("Subscribing to events and setting state variables...")
 }
 
 def cumulativeHandler(evt) {
-//	log.debug "Dropped into Cummulative handler method (used by Accumulated Gallons rules)..."
    	def daysOfTheWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     def today = new Date()
     today.clearTime()
@@ -87,26 +88,30 @@ def cumulativeHandler(evt) {
 				def boolDay = !r.days || findIn(r.days, dowName) // Truth Table of this mess: http://swiftlet.technology/wp-content/uploads/2016/05/IMG_20160523_150600.jpg
 				def boolMode = !r.modes || findIn(r.modes, location.currentMode)
 				if (boolTime && boolDay && boolMode) {
-                	log.debug "Cumulative value received, and met rule criteria..."
+                	log.debug "Cumulative value received, and met rule criteria, so let's process data points..."
 					def delta = 0
 					if(state["startAccumulate${childAppID}"] != null) {
+                    	log.debug ("Using previously saved cumulative data point : ${state["startAccumulate${childAppID}"]} and newest data point $cumulative...")
 						delta = cumulative - state["startAccumulate${childAppID}"]
 					} else {
-						state["startAccumulate${childAppID}"] = cumulative
+                    	log.debug ("Using baseline cumulative data point : ${state.cumulativeBaseline} and newest data point $cumulative...")
+                        delta = cumulative - state.cumulativeBaseline
 					}
-					log.debug("Difference from beginning of time period is ${delta} gallons, so checking to see if a notification needs to be sent...")
+					log.debug("Difference from last cumulative data point is ${delta} gallons, so checking to see if a notification needs to be sent...")
 					if (delta > r.gallons) {
-                    	log.debug("Need to send a notification! Threshold:${r.gallons} gallons, Actual:${delta} gallons")
+                    	log.debug("Need to send a notification! Threshold:${r.gallons} gallons, Actual:${delta} gallons...")
+                        state["startAccumulate${childAppID}"] = cumulative
 						sendNotification(childAppID, r.gallons, delta)
 						if(r.dev) {
 							def activityApp = getChildById(childAppID)
 							activityApp.devAction(r.command)
 						}
 					} else {
-                    	log.debug "Not sending a notification because the threshold of ${r.gallons} gallons hasn't happened yet..."
+                    	log.debug "Not sending a notification because the threshold of ${r.gallons} gallons hasn't happened, so reset and wait again..."
+                        state["startAccumulate${childAppID}"] = cumulative
                     }
 				} else {
-					log.debug("Outside specified time, saving value")
+					log.debug("Outside specified time, saving value...")
 					state["startAccumulate${childAppID}"] = cumulative
 				}
 			break
@@ -118,7 +123,6 @@ def cumulativeHandler(evt) {
 }
 
 def gpmHandler(evt) {
-//	log.debug "Dropped into GPM handler method (used by Mode, Water Valve, Continuous Flow, and Time Period rules)..."
    	def daysOfTheWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     def today = new Date()
     today.clearTime()
@@ -128,6 +132,7 @@ def gpmHandler(evt) {
     def dowName = daysOfTheWeek[dow-1]
     def gpm = new BigDecimal(evt.value)
     def rules = state.rules
+    state.cumulativeBaseline = meter.latestValue("cumulative")	// used by accumulated gallons rule
     rules.each { it ->
         def r = it.rules
         def childAppID = it.id
