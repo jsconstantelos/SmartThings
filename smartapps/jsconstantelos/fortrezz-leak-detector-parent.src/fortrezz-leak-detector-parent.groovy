@@ -77,6 +77,7 @@ def cumulativeHandler(evt) {
     def dowName = daysOfTheWeek[dow-1]
     def cumulative = new BigDecimal(evt.value)
     def rules = state.rules
+    state.startTime = 0	//flow stopped when this method kicks off, so clean up GPM state variable
     rules.each { it ->
         def r = it.rules
         def childAppID = it.id
@@ -113,7 +114,6 @@ def cumulativeHandler(evt) {
 			break
 
 			default:
-            	log.debug("No Cumulative child rules to evaluate...")
 			break
 		}
 	}
@@ -173,25 +173,26 @@ def gpmHandler(evt) {
 			case "Continuous Flow":
             	log.debug("Continuous Flow Evaluation: ${r}")
 				def boolMode = !r.modes || findIn(r.modes, location.currentMode)
-				if (state.startTime == 0) {
-					log.debug "Start monitoring GPM for continuous flow, so set up important variables..."
-					state.startTime = now()
-				}
-				def timeDelta = (now() - state.startTime)/60000
-				log.debug "Checking to see if a notification needs to be sent..."
-				if (timeDelta > r.flowMinutes && boolMode) {
-                	log.debug("Threshold:${r.flowMinutes} minutes, Actual:${timeDelta} minutes")
-					log.debug "Need to send a notification!"
-					sendNotification(childAppID, Math.round(r.flowMinutes))
-					if (r.dev) {
-						def activityApp = getChildById(childAppID)
-						activityApp.devAction(r.command)
-					}
-				}
-				if (gpm == "0") {
-				log.debug "Flow stopped, so clean up and get ready for another evaluation when flow starts again..."
+				if (evt.value == '0') {
+					log.debug "Flow stopped, so clean up and get ready for another evaluation when flow starts again..."
 					state.startTime = 0
-				}
+				} else { 
+                    if (state.startTime == 0) {
+                        log.debug "Start monitoring GPM for continuous flow, so set up important variables..."
+                        state.startTime = now()
+                    }
+                    def timeDelta = (now() - state.startTime)/60000
+                    log.debug "Checking to see if a notification needs to be sent..."
+                    if (timeDelta > r.flowMinutes && boolMode) {
+                        log.debug("Threshold:${r.flowMinutes} minutes, Actual:${timeDelta} minutes")
+                        log.debug "Need to send a notification!"
+                        sendNotification(childAppID, Math.round(r.flowMinutes))
+                        if (r.dev) {
+                            def activityApp = getChildById(childAppID)
+                            activityApp.devAction(r.command)
+                        }
+                    }
+                }
 			break
 
 			case "Water Valve Status":
@@ -208,7 +209,6 @@ def gpmHandler(evt) {
 			break
 
 			default:
-            	log.debug("No GPM child rules to evaluate...")
 			break
         }
 	}
