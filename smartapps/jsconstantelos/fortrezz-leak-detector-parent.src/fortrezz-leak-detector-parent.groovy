@@ -242,15 +242,18 @@ def sendNotification(device, gpm, actual) {
     }
     def td = now() - lastNotification
     if(td/(60*1000) > minutesBetweenNotifications.value) {
-    	log.debug("Sending Notification")
         if (pushNotification) {
+        	log.debug("Sending PUSH notification")
             sendPush(msg)
             state["notificationHistory${device}"] = new Date()
         }
         if (smsNotification) {
+        	log.debug("Sending SMS notification")
             sendSms(phone, msg)
             state["notificationHistory${device}"] = new Date()
         }
+    } else {
+    	log.debug "NOT sending notification because we haven't waited long enough since the last notifiction was sent..."
     }
     log.debug("Last Notification at ${state["notificationHistory${device}"]}... ${td/(60*1000)} minutes")
 }
