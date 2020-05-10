@@ -113,6 +113,22 @@ def prefsPage() {
                     }
                     break
 
+                case "Total Flow (Gallons since last reset)":
+                    section("Threshold settings") {
+                        input(name: "ruleName", type: "text", title: "Rule Name", required: true)
+                        input(name: "gallons", type: "number", title: "Total Gallons exceeds", required: true)
+                    }
+                    section("Only in these modes") {
+                        input(name: "modes", type: "mode", title: "select a mode(s)", multiple: false, required: true)
+                    }
+                    section ("Action") {
+                    	input(name: "dev", type: "capability.actuator", title: "Choose a device to perform the action", required: false, submitOnChange: true)
+                        if (dev) {
+                        	input(name: "command", type: "enum", title: "Command...", submitOnChange: true, options: deviceCommands(dev))
+                    	}
+                    }
+                    break
+
                 case "Water Valve Status (GPM and valve state)":
                     section("Threshold settings") {
                         input(name: "ruleName", type: "text", title: "Rule Name", required: true)
@@ -139,6 +155,7 @@ def ruleTypes() {
     types << "Time Period (GPM and time based)"
     types << "Continuous Flow (Gallons and time based)"
     types << "Continuous Flow (GPM over time)"
+    types << "Total Flow (Gallons since last reset)"
     types << "Water Valve Status (GPM and valve state)"
     
     return types

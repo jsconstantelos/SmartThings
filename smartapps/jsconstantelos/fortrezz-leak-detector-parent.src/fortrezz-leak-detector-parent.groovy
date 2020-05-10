@@ -83,7 +83,7 @@ def cumulativeHandler(evt) {
     	switch (r.type) {
 
 			case "Continuous Flow (Gallons and time based)":
-				log.debug("Accumulated Gallons Evaluation: ${r}")
+				log.debug("Continuous Flow (Gallons and time based) Evaluation: ${r}")
 				def boolTime = timeOfDayIsBetween(r.startTime, r.endTime, new Date(), location.timeZone)
 				def boolDay = !r.days || findIn(r.days, dowName) // Truth Table of this mess: http://swiftlet.technology/wp-content/uploads/2016/05/IMG_20160523_150600.jpg
 				def boolMode = !r.modes || findIn(r.modes, location.currentMode)
@@ -116,6 +116,23 @@ def cumulativeHandler(evt) {
 				}
 			break
 
+			case "Total Flow (Gallons since last reset)":
+				log.debug("Total Flow (Gallons since last reset) Evaluation: ${r}")
+                def boolMode = !r.modes || findIn(r.modes, location.currentMode)
+				if (boolMode) {
+                	log.debug "Checking to see if a notification needs to be sent..."
+					if(cumulative > r.gallons) {
+                    	log.debug("Threshold:${r.gallons} gallons, Actual:${cumulative} gallons")
+                        log.debug "Need to send a notification!"
+						sendNotification(childAppID, r.gallons, cumulative)
+						if(r.dev) {
+							def activityApp = getChildById(childAppID)
+							activityApp.devAction(r.command)
+						}
+					}
+				}
+			break
+
 			default:
 			break
 		}
@@ -139,7 +156,7 @@ def gpmHandler(evt) {
     	switch (r.type) {
 
 			case "Mode (GPM and mode based)":
-				log.debug("Mode Evaluation: ${location.currentMode} in ${r.modes}... ${findIn(r.modes, location.currentMode)}")
+				log.debug("Mode (GPM and mode based) Evaluation: ${location.currentMode} in ${r.modes}... ${findIn(r.modes, location.currentMode)}")
 				if (findIn(r.modes, location.currentMode)) {
                 	log.debug "Checking to see if a notification needs to be sent..."
 					if(gpm > r.gpm) {
@@ -155,7 +172,7 @@ def gpmHandler(evt) {
 			break
 
             case "Time Period (GPM and time based)":
-				log.debug("Time Period Evaluation: ${r}")
+				log.debug("Time Period (GPM and time based) Evaluation: ${r}")
 				def boolTime = timeOfDayIsBetween(r.startTime, r.endTime, new Date(), location.timeZone)
 				def boolDay = !r.days || findIn(r.days, dowName) // Truth Table of this mess: http://swiftlet.technology/wp-content/uploads/2016/05/IMG_20160523_150600.jpg
 				def boolMode = !r.modes || findIn(r.modes, location.currentMode)
@@ -174,7 +191,7 @@ def gpmHandler(evt) {
 			break
 
 			case "Continuous Flow (GPM over time)":
-            	log.debug("Continuous Flow Evaluation: ${r}")
+            	log.debug("Continuous Flow (GPM over time) Evaluation: ${r}")
 				def boolMode = !r.modes || findIn(r.modes, location.currentMode)
 				if (evt.value == '0') {
 					log.debug "Flow stopped, so clean up and get ready for another evaluation when flow starts again..."
@@ -206,7 +223,7 @@ def gpmHandler(evt) {
 			break
 
 			case "Water Valve Status (GPM and valve state)":
-				log.debug("Water Valve Evaluation: ${r}")
+				log.debug("Water Valve Status (GPM and valve state) Evaluation: ${r}")
 				def child = getChildById(childAppID)
 				if(child.isValveStatus(r.valveStatus)) {
                 	log.debug "Checking to see if a notification needs to be sent..."
@@ -227,10 +244,12 @@ def gpmHandler(evt) {
 def sendNotification(device, gpm, actual) {
 	def set = getChildById(device).settings()
 	def msg = ""
-    if(set.type == "Accumulated Gallons") {
+    if (set.type == "Continuous Flow (Gallons and time based)") {
     	msg = "Water Meter Warning: \"${set.ruleName}\" is over gallons exceeded threshold of ${gpm} gallons, actual is ${actual} gallons"
-    } else if(set.type == "Continuous Flow") {
+    } else if (set.type == "Continuous Flow (GPM over time)") {
     	msg = "Water Meter Warning: \"${set.ruleName}\" is over the constant flow threshold of ${gpm} minutes, actual is ${actual} minutes"
+    } else if (set.type == "Total Flow (Gallons since last reset)") {
+    	msg = "Water Meter Warning: \"${set.ruleName}\" is over gallons exceeded threshold of ${gpm} gallons since last meter reset, actual is ${actual} gallons"
     } else {
     	msg = "Water Meter Warning: \"${set.ruleName}\" is over GPM exceeded threshold of ${gpm}gpm, actual is ${actual} gpm"
     }
