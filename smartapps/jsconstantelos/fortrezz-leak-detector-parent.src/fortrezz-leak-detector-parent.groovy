@@ -16,7 +16,7 @@ definition(
     iconX3Url: "http://swiftlet.technology/wp-content/uploads/2016/05/logo-square.png")
 
 preferences {
-	page(name: "page2", title: "Plugin version 1.5\nSelect device and actions", install: true, uninstall: true)
+	page(name: "page2", title: "Plugin version 1.5\nSelect device and rules", install: true, uninstall: true)
 }
 
 def page2() {
@@ -26,7 +26,7 @@ def page2() {
         }
         if (meter) {
             section {
-                app(name: "childRules", appName: "FortrezZ Leak Detector Child", namespace: "jsconstantelos", title: "Create New Leak Detector...", multiple: true)
+                app(name: "childRules", appName: "FortrezZ Leak Detector Child", namespace: "jsconstantelos", title: "Create New Rule...", multiple: true)
             }
         }
         section("Send notifications through...") {
@@ -82,7 +82,7 @@ def cumulativeHandler(evt) {
         def childAppID = it.id
     	switch (r.type) {
 
-			case "Accumulated Gallons":
+			case "Continuous Flow (Gallons and time based)":
 				log.debug("Accumulated Gallons Evaluation: ${r}")
 				def boolTime = timeOfDayIsBetween(r.startTime, r.endTime, new Date(), location.timeZone)
 				def boolDay = !r.days || findIn(r.days, dowName) // Truth Table of this mess: http://swiftlet.technology/wp-content/uploads/2016/05/IMG_20160523_150600.jpg
@@ -138,7 +138,7 @@ def gpmHandler(evt) {
         def childAppID = it.id
     	switch (r.type) {
 
-			case "Mode":
+			case "Mode (GPM and mode based)":
 				log.debug("Mode Evaluation: ${location.currentMode} in ${r.modes}... ${findIn(r.modes, location.currentMode)}")
 				if (findIn(r.modes, location.currentMode)) {
                 	log.debug "Checking to see if a notification needs to be sent..."
@@ -154,7 +154,7 @@ def gpmHandler(evt) {
 				}
 			break
 
-            case "Time Period":
+            case "Time Period (GPM and time based)":
 				log.debug("Time Period Evaluation: ${r}")
 				def boolTime = timeOfDayIsBetween(r.startTime, r.endTime, new Date(), location.timeZone)
 				def boolDay = !r.days || findIn(r.days, dowName) // Truth Table of this mess: http://swiftlet.technology/wp-content/uploads/2016/05/IMG_20160523_150600.jpg
@@ -173,7 +173,7 @@ def gpmHandler(evt) {
 				}
 			break
 
-			case "Continuous Flow":
+			case "Continuous Flow (GPM over time)":
             	log.debug("Continuous Flow Evaluation: ${r}")
 				def boolMode = !r.modes || findIn(r.modes, location.currentMode)
 				if (evt.value == '0') {
@@ -205,7 +205,7 @@ def gpmHandler(evt) {
                 }
 			break
 
-			case "Water Valve Status":
+			case "Water Valve Status (GPM and valve state)":
 				log.debug("Water Valve Evaluation: ${r}")
 				def child = getChildById(childAppID)
 				if(child.isValveStatus(r.valveStatus)) {
@@ -253,7 +253,7 @@ def sendNotification(device, gpm, actual) {
             state["notificationHistory${device}"] = new Date()
         }
     } else {
-    	log.debug "NOT sending notification because we haven't waited long enough since the last notifiction was sent..."
+    	log.debug "NOT sending notification because we haven't waited long enough (${minutesBetweenNotifications.value} minutes) since the last notifiction was sent..."
     }
     log.debug("Last Notification at ${state["notificationHistory${device}"]}... ${td/(60*1000)} minutes")
 }
