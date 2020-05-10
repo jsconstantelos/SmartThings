@@ -283,6 +283,7 @@ def resetMeter() {
     sendEvent(name: "cumulativeLastReset", value: device.currentState('gpmTotal')?.doubleValue+" gal", displayed: false)
     sendEvent(name: "gpmLastUsed", value: 0, displayed: false)
     sendEvent(name: "gpmTotal", value: 0, displayed: false)
+    sendEvent(name: "cumulative", value: 0, displayed: false)
     sendEvent(name: "energy", value: 0, unit: "kWh", displayed: false)
     def cmds = delayBetween([
 	    zwave.meterV3.meterReset().format()
