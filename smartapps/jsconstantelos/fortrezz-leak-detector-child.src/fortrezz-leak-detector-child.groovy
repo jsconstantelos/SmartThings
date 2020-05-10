@@ -119,7 +119,7 @@ def prefsPage() {
                         input(name: "gallons", type: "number", title: "Total Gallons exceeds", required: true)
                     }
                     section("Only in these modes") {
-                        input(name: "modes", type: "mode", title: "select a mode(s)", multiple: false, required: true)
+                        input(name: "modes", type: "mode", title: "System Modes", required: false, multiple: true)
                     }
                     section ("Action") {
                     	input(name: "dev", type: "capability.actuator", title: "Choose a device to perform the action", required: false, submitOnChange: true)
