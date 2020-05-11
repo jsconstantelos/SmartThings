@@ -50,13 +50,13 @@ def page2() {
 
 def installed() {
 	log.debug "Installed with settings: ${settings}"
-    state.cumulativeBaseline = meter.latestValue("cumulative")	// used by accumulated gallons rule
+    state.cumulativeBaseline = meter.latestValue("cumulative")	// used by Continuous Flow (Gallons and time based) rule
 	initialize()
 }
 
 def updated() {
 	log.debug "Updated with settings: ${settings}"
-    state.cumulativeBaseline = meter.latestValue("cumulative")	// used by accumulated gallons rule
+    state.cumulativeBaseline = meter.latestValue("cumulative")	// used by Continuous Flow (Gallons and time based) rule
 	unsubscribe()
 	initialize()
 }
