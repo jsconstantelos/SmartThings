@@ -30,8 +30,8 @@ metadata {
     }
 
 	preferences {
-    	input "minReportSeconds", "number", title: "Min Report Time (0 to 3600 sec)", description: "Minimum seconds?", defaultValue: 0, range: "0..3600", displayDuringSetup: true
-        input "rawChange", "number", title: "Amount of change in raw data (1 to 1000)", description: "Amount of change?", defaultValue: 21, range: "1..1000", displayDuringSetup: true
+    	input "minReportSeconds", "number", title: "Min Report Time (0 to 3600 sec)", description: "Minimum seconds? (10 is default)", range: "0..3600", required: true, displayDuringSetup: true
+        input "rawChange", "number", title: "Amount of change in raw data (1 to 1000)", description: "Amount of change? (21 is default)", range: "1..1000", required: true, displayDuringSetup: true
 	}
 
 	fingerprint profileId: "0104", inClusters: "0000,0400,0003,0001", outClusters: "0003", manufacturer: "LUMI", model: "lumi.sen_ill.mgl01", deviceJoinName: "Xiaomi Mijia Smart Home Light Sensor", ocfDeviceType: "oic.r.sensor.illuminance"    
@@ -57,6 +57,7 @@ metadata {
 }
 
 def parse(String description) {
+	// log.debug "Incoming data from device : $description"
     if (description?.startsWith("catchall:")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
 		log.debug "Desc Map : $descMap"
@@ -77,7 +78,6 @@ def parse(String description) {
     if (description?.startsWith("illuminance:")) {
         def raw = ((description - "illuminance: ").trim()) as int
         def lux = Math.round(zigbee.lux(raw as Integer)).toString()
-//        log.debug "Lux values : $raw and $lux"
         sendEvent("name": "illuminance", "value": lux, "unit": "lux", "displayed": true, isStateChange: true)
 	}
 }
@@ -100,8 +100,8 @@ def refresh() {
 
 def configure() {
 	log.debug "Configuration starting..."
-    def minSeconds = minReportSeconds.intValue()
-    def delta = rawChange.intValue()
+   	def minSeconds = minReportSeconds.intValue()
+   	def delta = rawChange.intValue()
     log.debug "Pref values : $minSeconds minimum seconds and $delta amount of change"
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     log.debug "...bindings..."
