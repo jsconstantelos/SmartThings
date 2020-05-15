@@ -24,7 +24,10 @@
 		capability "Switch"
         capability "Switch Level"
         capability "Actuator"
-        capability "Valve"        
+        capability "Valve"
+        capability "Health Check"
+        capability "Sensor"
+        capability "Refresh"
         
         command "on"
         command "off"
@@ -110,9 +113,11 @@
                 state "High", label:'${name}', icon:"st.Health & Wellness.health9", backgroundColor:"#e86d13"
                 state "Error", label:'${name}', icon:"st.Health & Wellness.health9", backgroundColor:"#bc2323"
         }
-
+		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "default", label: "", action: "refresh.refresh", icon: "st.secondary.refresh"
+		}
         main (["sliderTile"])
-    	details(["sliderTile","lastwater","zone_num","amp","nozzle","soil","landscape","static","humidity","temperature","sensorName"])
+    	details(["sliderTile","lastwater","zone_num","amp","nozzle","soil","landscape","static","humidity","temperature","sensorName","refresh"])
     }
 }
 
@@ -125,10 +130,23 @@ def installed(){
 //when device preferences are changed
 def updated(){	
     log.debug "device updated"
+    sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "cloud", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
+    sendEvent(name: "DeviceWatch-Enroll", value: toJson([protocol: "cloud", scheme:"untracked"]), displayed: false)
     parent.child_zones(device.deviceNetworkId)	//get child zone settings
 }
 
 def refresh(){
+    sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "cloud", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
+    //sendEvent(name: "DeviceWatch-Enroll", value: toJson([protocol: "cloud", scheme:"untracked"]), displayed: false)
+    sendEvent(name: "DeviceWatch-Enroll", value: [protocol: "cloud", scheme:"untracked"].encodeAsJson(), displayed: false)
+	parent.getsettings()
+}
+
+def ping(){
+	parent.getsettings()
+}
+
+def poll(){
 	parent.getsettings()
 }
 
