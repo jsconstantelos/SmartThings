@@ -290,14 +290,14 @@ def switchOn(node) {
 	def cmds = []
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.basicV1.basicSet(value: 0xFF), node)))
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.switchBinaryV1.switchBinaryGet(), node)))
-    sendHubCommand(cmds)
+    sendHubCommand(cmds,1000)
 }
 
 def switchOff(node) {
     def cmds = []
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.basicV1.basicSet(value: 0x00), node)))
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.switchBinaryV1.switchBinaryGet(), node)))
-    sendHubCommand(cmds)
+    sendHubCommand(cmds,1000)
 }
 
 
@@ -327,7 +327,7 @@ def pollNode(endpoint)  {
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.switchBinaryV1.switchBinaryGet(), endpoint)))
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.meterV2.meterGet(scale:0), endpoint)))
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.meterV2.meterGet(scale:2), endpoint)))
-    sendHubCommand(cmds)
+    sendHubCommand(cmds,1000)
 }
 
 def updateChildLabel(endpoint) {
@@ -361,7 +361,7 @@ def reset() {
 	}
     cmds << new physicalgraph.device.HubAction(command(zwave.meterV2.meterReset()))
     cmds << new physicalgraph.device.HubAction(command(zwave.meterV2.meterGet(scale:0)))
-	sendHubCommand(cmds)
+	sendHubCommand(cmds,1000)
 }
 
 def resetNode(endpoint) {
@@ -369,7 +369,7 @@ def resetNode(endpoint) {
     def cmds = []
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.meterV2.meterReset(), endpoint)))
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.meterV2.meterGet(scale:0),endpoint)))
-	sendHubCommand(cmds)
+	sendHubCommand(cmds,1000)
 }
 
 
