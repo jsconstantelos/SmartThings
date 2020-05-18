@@ -57,8 +57,8 @@ metadata {
 		attribute "energy6", "string"
         attribute "lastupdate", "string"
 
-		command "on"
-		command "off"
+//		command "on"
+//		command "off"
 		command "on1"
 		command "off1"
         command "on2"
