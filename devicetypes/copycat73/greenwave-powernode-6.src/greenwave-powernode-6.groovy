@@ -73,6 +73,9 @@ metadata {
 		command "off6"
 		command "reset"
         command "pollNodes"
+        command "switchOn"
+        command "switchOff"
+        
 
 		//fingerprint inClusters: "0x25,0x32"
 		fingerprint mfr:"0099", prod:"0003", model:"0004", deviceJoinName: "GreenWave PowerNode 6"
