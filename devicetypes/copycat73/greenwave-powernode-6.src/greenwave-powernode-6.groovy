@@ -212,13 +212,20 @@ private showAlert(text,name,value) {
     )
 }
 
+/*
+param 0: Power change required to send a notification, in % from 1 to 100, default 10
+param 1: Keep alive time, in minutes from 1 to 255, default 2
+param 2: Colour wheel selection, read only
+param 3: State after power loss, 0 = all off, 1 = remember last state, 2 = all on, default 2
+param 4: Led for network error, 0 = disable, 1 = enable, default 0
+*/
 def configure() {
 	log.debug "configure()"
     def cmds = []
     cmds << zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 0, size: 1).format()	// power delta 10% default
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [255], parameterNumber: 1, size: 1).format()	// keep alive time
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 2, size: 1).format()	// power on relay after power failure 0=all off, 1=remember last state, 2=all on
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 3, size: 1).format()	// 0=Disable the LED for network error, 1=enable
+    cmds << zwave.configurationV1.configurationSet(configurationValue: [2], parameterNumber: 1, size: 1).format()	// keep alive time
+    cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 3, size: 1).format()	// power on relay after power failure 0=all off, 1=remember last state, 2=all on
+    cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 4, size: 1).format()	// 0=Disable the LED for network error, 1=enable
     delayBetween(cmds)
 }
 
