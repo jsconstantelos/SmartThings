@@ -126,7 +126,7 @@ metadata {
           				state "default", label:"Last updated: " + '${currentValue}' 		
 				}       
         main(["switch", "power", "energy"])
-        details(["switch", "power", "energy", "refresh", "lastupdate", "configure", "reset", ,childDeviceTiles("all")])
+        details(["switch", "testTile", "power", "energy", "refresh", "lastupdate", "configure", "reset", ,childDeviceTiles("all")])
     
 	}
 }
