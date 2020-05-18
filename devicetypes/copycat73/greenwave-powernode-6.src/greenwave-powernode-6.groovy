@@ -83,12 +83,8 @@ metadata {
         
 	}
 
-	simulator {
-    	//TBD
-	}
-    
     preferences {
-		// input name:"updateLight", type:"number", title:"After how many minutes the GreenWave device should start flashing if the controller didn't communicate with this device", defaultValue:255
+		input name:"updateLight", type:"number", title:"After how many minutes the GreenWave device should start flashing if the controller didn't communicate with this device", defaultValue:255
 	}
     
     tiles(scale: 2) {
@@ -225,6 +221,7 @@ param 4: Led for network error, 0 = disable, 1 = enable, default 0
 */
 def configure() {
 	log.debug "Configuring device..."
+    unschedule()
     def cmds = []
     cmds << zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 0, size: 1).format()	// power delta 10% default
     cmds << zwave.configurationV1.configurationSet(configurationValue: [255], parameterNumber: 1, size: 1).format()	// keep alive time
