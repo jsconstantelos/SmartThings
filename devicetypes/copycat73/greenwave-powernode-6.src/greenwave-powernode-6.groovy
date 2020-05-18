@@ -32,6 +32,7 @@ metadata {
 		capability "Power Meter"
 		capability "Polling"
 		capability "Refresh"
+        capability "Actuator"
 		capability "Configuration"
 	
 //		attribute "switch", "string"
