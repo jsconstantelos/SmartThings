@@ -223,7 +223,7 @@ param 3: State after power loss, 0 = all off, 1 = remember last state, 2 = all o
 param 4: Led for network error, 0 = disable, 1 = enable, default 0
 */
 def configure() {
-	log.debug "configure()"
+	log.debug "Configuring device..."
     def cmds = []
     cmds << zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 0, size: 1).format()	// power delta 10% default
     cmds << zwave.configurationV1.configurationSet(configurationValue: [255], parameterNumber: 1, size: 1).format()	// keep alive time
