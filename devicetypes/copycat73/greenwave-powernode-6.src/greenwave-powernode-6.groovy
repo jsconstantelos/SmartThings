@@ -73,12 +73,12 @@ metadata {
         command "on6"
 		command "off6"
 		command "reset"
-        command "pollNodes"
+        command "pollNode"
+        command "pollChildren"
         command "switchOn"
         command "switchOff"
         command "testCommand"
         
-
 		//fingerprint inClusters: "0x25,0x32"
 		fingerprint mfr:"0099", prod:"0003", model:"0004", deviceJoinName: "GreenWave PowerNode 6"
         
@@ -89,7 +89,6 @@ metadata {
 	}
     
     tiles(scale: 2) {
-  	
         multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4, canChangeIcon: true){
             tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
                 attributeState "off", label:'${name}', action:'switch.on', icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
@@ -101,35 +100,33 @@ metadata {
                 attributeState "statusText", label:'${currentValue}'
             }
         }
-   
         valueTile("power", "device.power", width: 2, height: 1, decoration: "flat") {
 						state "default", label:'${currentValue} W' 
 				}
 		valueTile("energy", "device.energy", width: 2, height: 1, decoration: "flat") {
 			state "default", label:'${currentValue} kWh'
 		}
-      
 		standardTile("refresh", "device.switch", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
                         state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
                 }
-                
         standardTile("reset", "device.switch", inactiveLabel: false, decoration: "flat") {
         				state "default", label:"reset kWh", action:"reset"
                 }
-        standardTile("configure", "device.switch", inactiveLabel: false, decoration: "flat") {
+        standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat") {
         				state "default", label:"", action:"configuration.configure", icon:"st.secondary.configure"
                 }
-        standardTile("testTile", "testTile", width: 4, height: 1, inactiveLabel: false, decoration: "flat") {
-        				state "default", label:"TEST", action:"testCommand", icon:"st.secondary.configure"
-                }
+//        standardTile("testTile", "testTile", width: 4, height: 1, inactiveLabel: false, decoration: "flat") {
+//        				state "default", label:"TEST", action:"testCommand", icon:"st.secondary.configure"
+//                }
 		valueTile("lastupdate", "lastupdate", width: 4, height: 1, inactiveLabel: false) { 			
           				state "default", label:"Last updated: " + '${currentValue}' 		
 				}       
         main(["switch", "power", "energy"])
-        details(["switch", "testTile", "power", "energy", "refresh", "lastupdate", "configure", "reset", ,childDeviceTiles("all")])
+        details(["switch", "power", "energy", "refresh", "lastupdate", "configure", "reset", ,childDeviceTiles("all")])
     
 	}
 }
+
 /*****************************************************************************************************************
  *  SmartThings System Commands:
  *****************************************************************************************************************/
@@ -148,12 +145,22 @@ def parse(String description) {
 
 def installed() {
     log.debug "installed"
-
+    configure()
     createChildDevices()
+}
 
-    //command(zwave.manufacturerSpecificV1.manufacturerSpecificGet())
-    //command(zwave.configurationV1.configurationSet(configurationValue: [255], parameterNumber: 1, size: 1))
+def updated() {
+	log.debug "updated()"
+	unschedule()
+    configure()
+//	runEvery15Minutes(pollChildren)
+}
 
+def initialize() {
+	log.debug "initialize()"
+	unschedule()
+    configure()
+//	runEvery15Minutes(pollChildren)
 }
 
 def uninstalled() {
@@ -171,27 +178,12 @@ private removeChildDevices(delete) {
 }
 
 def refresh() {
-	pollNodes()
-}
-
-def updated() {
-	log.debug "updated()"
-	unschedule()
-    configure()
-//	runEvery15Minutes(pollNodes)
-}
-
-
-def initialize() {
-	log.debug "initialize()"
-	unschedule()
-    configure()
-//	runEvery15Minutes(pollNodes)
+	log.debug "refresh()"
+	pollChildren()
 }
 
 def createChildDevices() {
     log.debug "creating child devices"
-        
     try {
     	for (i in 1..6) {
         	def node = i as String
@@ -207,6 +199,7 @@ def createChildDevices() {
 }
 
 private showAlert(text,name,value) {
+	log.debug "showAlert()"
     sendEvent(
         descriptionText: text,
         eventType: "ALERT",
@@ -245,7 +238,7 @@ def testCommand() {
 }
 
 def on() {
-	log.debug "on"
+	log.debug "Powerstrip on"
     [    	
         zwave.basicV1.basicSet(value: 0xFF).format(),
         zwave.switchBinaryV1.switchBinaryGet().format(),
@@ -254,7 +247,7 @@ def on() {
     ]
 }
 def off() {
-	log.debug "off"
+	log.debug "Powerstrip off"
 	[
         zwave.basicV1.basicSet(value: 0x00).format(),
         zwave.switchBinaryV1.switchBinaryGet().format(),
@@ -300,7 +293,7 @@ def off6() {
 }
 
 def switchOn(node) {
-
+	log.debug "Powerstrip Node ${node} on"
 	def cmds = []
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.basicV1.basicSet(value: 0xFF), node)))
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.switchBinaryV1.switchBinaryGet(), node)))
@@ -308,20 +301,20 @@ def switchOn(node) {
 }
 
 def switchOff(node) {
+	log.debug "Powerstrip Node ${node} off"
     def cmds = []
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.basicV1.basicSet(value: 0x00), node)))
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.switchBinaryV1.switchBinaryGet(), node)))
     sendHubCommand(cmds,1000)
 }
 
-
 def poll() {
-	pollNodes()
+	log.debug "poll()"
+	pollChildren()
 }
 
-def pollNodes() {
-
-  	log.debug "<FONT COLOR=RED>Polling Powerstrip - ${device.label}</FONT>"
+def pollChildren() {
+  	log.debug "Polling Powerstrip and all Children Devices..."
     def cmds = []
 	for ( i in 1..6 ) { 
         cmds << new physicalgraph.device.HubAction(command(encap(zwave.switchBinaryV1.switchBinaryGet(), i)))
@@ -335,8 +328,7 @@ def pollNodes() {
 }
 
 def pollNode(endpoint)  {
-
-  	log.debug "<FONT COLOR=RED>Polling Powerstrip - ${device.label} node ${endpoint}</FONT>"
+  	log.debug "Polling Powerstrip Child Device ${endpoint}"
     def cmds = []
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.switchBinaryV1.switchBinaryGet(), endpoint)))
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.meterV2.meterGet(scale:0), endpoint)))
@@ -346,7 +338,6 @@ def pollNode(endpoint)  {
 
 def updateChildLabel(endpoint) {
 	log.debug "update tile label for endpoint $endpoint"
-    // tbd
 }
 
 def lastUpdated(time) {
@@ -367,7 +358,7 @@ def ping() {
 }
 
 def reset() {
-  	log.debug "<FONT COLOR=RED>Resetting kWh for all endpoints</FONT>"
+  	log.debug "Resetting kWh for all endpoints"
     def cmds = []
 	for ( i in 1..6 ) { 
         cmds << new physicalgraph.device.HubAction(command(encap(zwave.meterV2.meterReset(), i)))
@@ -379,13 +370,12 @@ def reset() {
 }
 
 def resetNode(endpoint) {
-	log.debug "<FONT COLOR=RED>Resetting kWh for endpoint $endpoint</FONT>"
+	log.debug "Resetting kWh for endpoint $endpoint"
     def cmds = []
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.meterV2.meterReset(), endpoint)))
     cmds << new physicalgraph.device.HubAction(command(encap(zwave.meterV2.meterGet(scale:0),endpoint)))
 	sendHubCommand(cmds,1000)
 }
-
 
 private encap(cmd, endpoint) {
     if (endpoint) {
@@ -410,8 +400,6 @@ private commands(commands, delay=1000) {
 /*****************************************************************************************************************
  *  Z-wave Event Handlers.
  *****************************************************************************************************************/
-
-
 def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd, ep=null)
 {
 	//log.debug "Greenwave v1 basic report received"
@@ -424,13 +412,11 @@ def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd, ep=null)
         def cmds = []
         cmds << encap(zwave.switchBinaryV1.switchBinaryGet(), 1)
         cmds << encap(zwave.switchBinaryV1.switchBinaryGet(), 2)
-        
         return result
     }
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cmd, ep=null) {
-   
    //log.debug "Greenwave v1 switchbinary report received for endpoint $ep value $cmd.value"
    if (ep) {
         def childDevice = childDevices.find{it.deviceNetworkId == "$device.deviceNetworkId-e$ep"}
@@ -443,13 +429,11 @@ def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cm
         def cmds = []
         cmds << encap(zwave.switchBinaryV1.switchBinaryGet(), 1)
         cmds << encap(zwave.switchBinaryV1.switchBinaryGet(), 2)
-        
         return result
     }
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null)
-{
+def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 	//log.debug "Greenwave v3 meter report received for endpoint $ep scale $cmd.scale value $cmd.scaledMeterValue"
 	def result
     def cmds = []
@@ -471,22 +455,17 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null)
             cmds << encap(zwave.meterV2.meterGet(scale: 0), endpoint)
             cmds << encap(zwave.meterV2.meterGet(scale: 2), endpoint)
        }
-       
        return result
     }
 }
 
-
-
 def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap cmd) {
-	
     //log.debug "Greenwave v3 cMultiChannelCmdEncap command received"
     def encapsulatedCommand = cmd.encapsulatedCommand([0x30: 1, 0x31: 1]) 
     if (encapsulatedCommand) {
         return zwaveEvent(encapsulatedCommand,cmd.sourceEndPoint)
     }   
 }
-
 
 def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {
 	//log.debug "Greenwave v1 configuration report received"
@@ -495,7 +474,6 @@ def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport 
 def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd) {
 	//log.debug "Greenwave v2 configuration report received"
 }
-
 
 def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCapabilityReport cmd) {
 	//log.debug "Greenwave v3 multi channel capability report received"
