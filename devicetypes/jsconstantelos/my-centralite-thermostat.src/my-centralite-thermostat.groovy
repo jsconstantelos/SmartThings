@@ -518,8 +518,8 @@ def configure() {
     log.debug "...reporting intervals..."
     [
     	zigbee.configureReporting(0x0201, 0x0029, 0x19, 10, 120, null), "delay 1000",	// Thermostat Operating State report to send whenever it changes.
-        zigbee.configureReporting(0x0201, 0x001c, 0x30, 0, 0, null), "delay 1000",
-        zigbee.configureReporting(0x0000, 0x0007, 0x30, 0, 0, null)
+        zigbee.configureReporting(0x0201, 0x001c, 0x30, 900, 3600, null), "delay 1000",
+        zigbee.configureReporting(0x0000, 0x0007, 0x30, 900, 3600, null)
 	]
 }
 
