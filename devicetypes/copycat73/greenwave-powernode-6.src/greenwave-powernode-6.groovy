@@ -77,7 +77,6 @@ metadata {
         command "pollChildren"
         command "switchOn"
         command "switchOff"
-        command "testCommand"
         
 		//fingerprint inClusters: "0x25,0x32"
 		fingerprint mfr:"0099", prod:"0003", model:"0004", deviceJoinName: "GreenWave PowerNode 6"
@@ -115,9 +114,6 @@ metadata {
         standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat") {
         				state "default", label:"", action:"configuration.configure", icon:"st.secondary.configure"
                 }
-//        standardTile("testTile", "testTile", width: 4, height: 1, inactiveLabel: false, decoration: "flat") {
-//        				state "default", label:"TEST", action:"testCommand", icon:"st.secondary.configure"
-//                }
 		valueTile("lastupdate", "lastupdate", width: 4, height: 1, inactiveLabel: false) { 			
           				state "default", label:"Last updated: " + '${currentValue}' 		
 				}       
@@ -226,32 +222,20 @@ def configure() {
     cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 4, size: 1).format()	// 0=Disable the LED for network error, 1=enable
     delayBetween(cmds,1000)
 }
-def testCommand() {
-	log.debug "TEST Command : Configuring device..."
-    unschedule()
-    def cmds = []
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 0, size: 1).format()	// power delta 10% default
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [255], parameterNumber: 1, size: 1).format()	// keep alive time
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 3, size: 1).format()	// power on relay after power failure 0=all off, 1=remember last state, 2=all on
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 4, size: 1).format()	// 0=Disable the LED for network error, 1=enable
-    delayBetween(cmds,1000)
-}
 
 def on() {
 	log.debug "Powerstrip on"
     [    	
-        zwave.basicV1.basicSet(value: 0xFF).format(),
-        zwave.switchBinaryV1.switchBinaryGet().format(),
-        "delay 3000",
+        zwave.basicV1.basicSet(value: 0xFF).format(), "delay 1000",
+        zwave.switchBinaryV1.switchBinaryGet().format(), "delay 1000",
         zwave.meterV2.meterGet(scale: 2).format()
     ]
 }
 def off() {
 	log.debug "Powerstrip off"
 	[
-        zwave.basicV1.basicSet(value: 0x00).format(),
-        zwave.switchBinaryV1.switchBinaryGet().format(),
-        "delay 3000",
+        zwave.basicV1.basicSet(value: 0x00).format(), "delay 1000",
+        zwave.switchBinaryV1.switchBinaryGet().format(), "delay 1000",
         zwave.meterV2.meterGet(scale: 2).format()
     ]
 }
