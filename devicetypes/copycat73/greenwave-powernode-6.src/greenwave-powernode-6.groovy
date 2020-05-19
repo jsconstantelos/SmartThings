@@ -387,7 +387,7 @@ private commands(commands, delay=1000) {
  *****************************************************************************************************************/
 def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd, ep=null)
 {
-	//log.debug "Greenwave v1 basic report received"
+	log.debug "Greenwave v1 basic report received"
 	if (ep) {
         def childDevice = childDevices.find{it.deviceNetworkId == "$device.deviceNetworkId-e$ep"}
         if (childDevice)
@@ -402,7 +402,7 @@ def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd, ep=null)
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cmd, ep=null) {
-   //log.debug "Greenwave v1 switchbinary report received for endpoint $ep value $cmd.value"
+   log.debug "Greenwave v1 switchbinary report received for endpoint $ep value $cmd.value"
    if (ep) {
         def childDevice = childDevices.find{it.deviceNetworkId == "$device.deviceNetworkId-e$ep"}
         if (childDevice)
@@ -419,7 +419,7 @@ def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cm
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
-	//log.debug "Greenwave v3 meter report received for endpoint $ep scale $cmd.scale value $cmd.scaledMeterValue"
+	log.debug "Greenwave v3 meter report received for endpoint $ep scale $cmd.scale value $cmd.scaledMeterValue"
 	def result
     def cmds = []
     if (cmd.scale == 0) {
@@ -445,7 +445,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap cmd) {
-    //log.debug "Greenwave v3 cMultiChannelCmdEncap command received"
+    log.debug "Greenwave v3 cMultiChannelCmdEncap command received"
     def encapsulatedCommand = cmd.encapsulatedCommand([0x30: 1, 0x31: 1]) 
     if (encapsulatedCommand) {
         return zwaveEvent(encapsulatedCommand,cmd.sourceEndPoint)
@@ -453,13 +453,13 @@ def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap 
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {
-	//log.debug "Greenwave v1 configuration report received"
+	log.debug "Greenwave v1 configuration report received"
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd) {
-	//log.debug "Greenwave v2 configuration report received"
+	log.debug "Greenwave v2 configuration report received"
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCapabilityReport cmd) {
-	//log.debug "Greenwave v3 multi channel capability report received"
+	log.debug "Greenwave v3 multi channel capability report received"
 }
