@@ -216,7 +216,7 @@ def configure() {
 	log.debug "Configuring device..."
     unschedule()
     def cmds = []
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [10], parameterNumber: 0, size: 1).format()	// power delta 10% default
+    cmds << zwave.configurationV1.configurationSet(configurationValue: [20], parameterNumber: 0, size: 1).format()	// power delta %
     cmds << zwave.configurationV1.configurationSet(configurationValue: [255], parameterNumber: 1, size: 1).format()	// keep alive time
     cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 3, size: 1).format()	// power on relay after power failure 0=all off, 1=remember last state, 2=all on
     cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 4, size: 1).format()	// 0=Disable the LED for network error, 1=enable
@@ -293,8 +293,8 @@ def switchOff(node) {
 }
 
 def poll() {
-	log.debug "poll() - SKIPPING"
-	//pollChildren()
+	log.debug "poll()"
+	pollChildren()
 }
 
 def pollChildren() {
