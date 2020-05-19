@@ -30,7 +30,7 @@ metadata {
 		capability "Energy Meter"
 		capability "Switch"
 		capability "Power Meter"
-		capability "Polling"
+//		capability "Polling"
 		capability "Refresh"
         capability "Actuator"
 		capability "Configuration"
@@ -128,13 +128,14 @@ metadata {
  *****************************************************************************************************************/
 
 def parse(String description) {
+	log.debug "Raw data from device : ${description}"
     def result = null
     def cmd = zwave.parse(description)
     if (cmd) {
         result = zwaveEvent(cmd)
-        //log.debug "Parsed ${cmd} to ${result.inspect()}"
+        log.debug "Parsed ${cmd} to ${result.inspect()}"
     } else {
-        //log.debug "Non-parsed event: ${description}"
+        log.debug "Non-parsed event: ${description}"
     }
     return result
 }
@@ -171,11 +172,6 @@ private removeChildDevices(delete) {
     delete.each {
         deleteChildDevice(it.deviceNetworkId)
     }
-}
-
-def refresh() {
-	log.debug "refresh()"
-	pollChildren()
 }
 
 def createChildDevices() {
@@ -216,28 +212,28 @@ def configure() {
 	log.debug "Configuring device..."
     unschedule()
     def cmds = []
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [20], parameterNumber: 0, size: 1).format()	// power delta %
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [255], parameterNumber: 1, size: 1).format()	// keep alive time
+    cmds << zwave.configurationV1.configurationSet(configurationValue: [35], parameterNumber: 0, size: 1).format()	// power delta %
+    cmds << zwave.configurationV1.configurationSet(configurationValue: [60], parameterNumber: 1, size: 1).format()	// keep alive time
     cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 3, size: 1).format()	// power on relay after power failure 0=all off, 1=remember last state, 2=all on
     cmds << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 4, size: 1).format()	// 0=Disable the LED for network error, 1=enable
     delayBetween(cmds,1000)
 }
 
 def on() {
-	log.debug "Powerstrip on"
-    [    	
-        zwave.basicV1.basicSet(value: 0xFF).format(), "delay 1000",
-        zwave.switchBinaryV1.switchBinaryGet().format(), "delay 1000",
+	log.debug "Powerstrip on and update values..."
+	delayBetween([
+		zwave.basicV1.basicSet(value: 0xFF).format(),
+		zwave.switchBinaryV1.switchBinaryGet().format(),
         zwave.meterV2.meterGet(scale: 2).format()
-    ]
+	], 1000)
 }
 def off() {
-	log.debug "Powerstrip off"
-	[
-        zwave.basicV1.basicSet(value: 0x00).format(), "delay 1000",
-        zwave.switchBinaryV1.switchBinaryGet().format(), "delay 1000",
+	log.debug "Powerstrip off and update values..."
+	delayBetween([
+		zwave.basicV1.basicSet(value: 0x00).format(),
+		zwave.switchBinaryV1.switchBinaryGet().format(),
         zwave.meterV2.meterGet(scale: 2).format()
-    ]
+	], 1000)
 }
 def on1() {
 	switchOn(1)
@@ -292,8 +288,18 @@ def switchOff(node) {
     sendHubCommand(cmds,1000)
 }
 
-def poll() {
-	log.debug "poll()"
+//def poll() {
+//	log.debug "poll()"
+//	pollChildren()
+//}
+
+//def ping() {
+//	log.debug "ping() called"
+//	pollChildren()
+//}
+
+def refresh() {
+	log.debug "refresh()"
 	pollChildren()
 }
 
@@ -334,11 +340,6 @@ def lastUpdated(time) {
    		lastUpdate = new Date(timeNow).format("MMM dd yyyy HH:mm", location.timeZone)
     }
     return lastUpdate
-}
-
-def ping() {
-	log.debug "ping() called"
-	refresh()
 }
 
 def reset() {
