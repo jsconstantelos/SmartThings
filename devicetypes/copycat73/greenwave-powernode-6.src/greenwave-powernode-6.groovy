@@ -293,8 +293,8 @@ def switchOff(node) {
 }
 
 def poll() {
-	log.debug "poll()"
-	pollChildren()
+	log.debug "poll() - SKIPPING"
+	//pollChildren()
 }
 
 def pollChildren() {
