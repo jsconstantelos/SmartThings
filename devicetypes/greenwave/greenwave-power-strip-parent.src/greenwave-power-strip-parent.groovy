@@ -61,17 +61,47 @@ metadata {
 				attributeState "default", label:'${currentValue}'
 			}
 		}
-		valueTile("energy", "device.energy", width: 2, height: 2) {
-			state "energy", label:'${currentValue} kWh', backgroundColor: "#cccccc"
+		valueTile("ch1Name", "device.ch1Name", decoration:"flat", width:4, height: 1) {
+			state "default", label:'${currentValue}'
 		}
-		valueTile("power", "device.power", width: 2, height: 2) {
-			state "power", label:'${currentValue} W', backgroundColor: "#cccccc"
+		standardTile("ch1Switch", "device.ch1Switch", width:2, height: 1) {
+			state "on", label:'ON', action:"ch1Off", backgroundColor: "#00a0dc"
+			state "off", label:'OFF', action:"ch1On"
 		}
-		valueTile("powerHigh", "device.powerHigh", width: 2, height: 1, decoration:"flat") {
-			state "powerHigh", label:'High: ${currentValue} W'
+		valueTile("ch2Name", "device.ch2Name", decoration:"flat", width:4, height: 1) {
+			state "default", label:'${currentValue}'
 		}
-		valueTile("powerLow", "device.powerLow", width: 2, height: 1, decoration:"flat") {
-			state "powerLow", label:'Low: ${currentValue} W'
+		standardTile("ch2Switch", "device.ch2Switch", width:2, height: 1) {
+			state "on", label:'ON', action:"ch2Off", backgroundColor: "#00a0dc"
+			state "off", label:'OFF', action:"ch2On"
+		}		
+		valueTile("ch3Name", "device.ch3Name", decoration:"flat", width:4, height: 1) {
+			state "default", label:'${currentValue}'
+		}
+		standardTile("ch3Switch", "device.ch3Switch", width:2, height: 1) {
+			state "on", label:'ON', action:"ch3Off", backgroundColor: "#00a0dc"
+			state "off", label:'OFF', action:"ch3On"
+		}		
+		valueTile("ch4Name", "device.ch4Name", decoration:"flat", width:4, height: 1) {
+			state "default", label:'${currentValue}'
+		}
+		standardTile("ch4Switch", "device.ch4Switch", width:2, height: 1) {
+			state "on", label:'ON', action:"ch4Off", backgroundColor: "#00a0dc"
+			state "off", label:'OFF', action:"ch4On"
+		}		
+		valueTile("ch5Name", "device.ch5Name", decoration:"flat", width:4, height: 1) {
+			state "default", label:'${currentValue}'
+		}
+		standardTile("ch5Switch", "device.ch5Switch", width:2, height: 1) {
+			state "on", label:'ON', action:"ch5Off", backgroundColor: "#00a0dc"
+			state "off", label:'OFF', action:"ch5On"
+		}
+		valueTile("ch6Name", "device.ch6Name", decoration:"flat", width:4, height: 1) {
+			state "default", label:'${currentValue}'
+		}
+		standardTile("ch6Switch", "device.ch6Switch", width:2, height: 1) {
+			state "on", label:'ON', action:"ch6Off", backgroundColor: "#00a0dc"
+			state "off", label:'OFF', action:"ch6On"
 		}
 		standardTile("refresh", "device.refresh", width: 2, height: 2) {
 			state "default", label:'Refresh', action: "refresh", icon:"st.secondary.refresh-icon"
@@ -80,78 +110,9 @@ metadata {
 			state "default", label:'Reset', action: "reset", icon:"st.secondary.refresh-icon"
 		}
 		standardTile("configure", "device.configure", width: 2, height: 2) {
-			state "default", label:'Sync', action: "configure", icon:"st.secondary.tools"
+			state "default", label:'Config', action: "configure", icon:"st.secondary.tools"
 		}
-		valueTile("firmwareVersion", "device.firmwareVersion", decoration:"flat", width:3, height: 1) {
-			state "firmwareVersion", label:'Firmware ${currentValue}'
-		}		
-		valueTile("syncStatus", "device.syncStatus", decoration:"flat", width:3, height: 1) {
-			state "syncStatus", label:'${currentValue}'
-		}
-		
-		valueTile("ch1Name", "device.ch1Name", decoration:"flat", width:4, height: 1) {
-			state "default", label:'${currentValue}'
-		}
-		valueTile("ch1Power", "device.ch1Power", decoration:"flat", width:1, height: 1) {
-			state "default", label:'${currentValue} W'
-		}
-		standardTile("ch1Switch", "device.ch1Switch", width:1, height: 1) {
-			state "on", label:'ON', action:"ch1Off", backgroundColor: "#00a0dc"
-			state "off", label:'OFF', action:"ch1On"
-		}
-		valueTile("ch2Name", "device.ch2Name", decoration:"flat", width:4, height: 1) {
-			state "default", label:'${currentValue}'
-		}
-		valueTile("ch2Power", "device.ch2Power", decoration:"flat", width:1, height: 1) {
-			state "default", label:'${currentValue} W'
-		}
-		standardTile("ch2Switch", "device.ch2Switch", width:1, height: 1) {
-			state "on", label:'ON', action:"ch2Off", backgroundColor: "#00a0dc"
-			state "off", label:'OFF', action:"ch2On"
-		}		
-		valueTile("ch3Name", "device.ch3Name", decoration:"flat", width:4, height: 1) {
-			state "default", label:'${currentValue}'
-		}
-		valueTile("ch3Power", "device.ch3Power", decoration:"flat", width:1, height: 1) {
-			state "default", label:'${currentValue} W'
-		}
-		standardTile("ch3Switch", "device.ch3Switch", width:1, height: 1) {
-			state "on", label:'ON', action:"ch3Off", backgroundColor: "#00a0dc"
-			state "off", label:'OFF', action:"ch3On"
-		}		
-		valueTile("ch4Name", "device.ch4Name", decoration:"flat", width:4, height: 1) {
-			state "default", label:'${currentValue}'
-		}
-		valueTile("ch4Power", "device.ch4Power", decoration:"flat", width:1, height: 1) {
-			state "default", label:'${currentValue} W'
-		}
-		standardTile("ch4Switch", "device.ch4Switch", width:1, height: 1) {
-			state "on", label:'ON', action:"ch4Off", backgroundColor: "#00a0dc"
-			state "off", label:'OFF', action:"ch4On"
-		}		
-		valueTile("ch5Name", "device.ch5Name", decoration:"flat", width:4, height: 1) {
-			state "default", label:'${currentValue}'
-		}
-		valueTile("ch5Power", "device.ch5Power", decoration:"flat", width:1, height: 1) {
-			state "default", label:'${currentValue} W'
-		}
-		standardTile("ch5Switch", "device.ch5Switch", width:1, height: 1) {
-			state "on", label:'ON', action:"ch5Off", backgroundColor: "#00a0dc"
-			state "off", label:'OFF', action:"ch5On"
-		}
-		valueTile("ch6Name", "device.ch6Name", decoration:"flat", width:4, height: 1) {
-			state "default", label:'${currentValue}'
-		}
-		valueTile("ch6Power", "device.ch6Power", decoration:"flat", width:1, height: 1) {
-			state "default", label:'${currentValue} W'
-		}
-		standardTile("ch6Switch", "device.ch6Switch", width:1, height: 1) {
-			state "on", label:'ON', action:"ch6Off", backgroundColor: "#00a0dc"
-			state "off", label:'OFF', action:"ch6On"
-		}
-		
 		main (["switch"])
-		details(detailsTiles)
 	}
 	
 	
@@ -161,6 +122,7 @@ metadata {
 			title: "Main Switch Outlet Delay:",
 			defaultValue: "0",
 			required: false,
+        
 			options:mainSwitchDelayOptions
 	
 		getOptionsInput(manualControlParam)
@@ -282,7 +244,7 @@ private addChildOutlet(dni, endPoint) {
 def configure() {	
 	updateHealthCheckInterval()
 	
-	runIn(10, updateSyncStatus)
+	// runIn(10, updateSyncStatus)
 			
 	def cmds = []
 	def delay = 500
@@ -303,7 +265,22 @@ def configure() {
 	if (device.currentValue("switch")) {
 		cmds += getConfigureCmds()
 	}
-	
+
+/*
+param 0: Power change required to send a notification, in % from 1 to 100, default 10
+param 1: Keep alive time, in minutes from 1 to 255, default 2
+param 2: Colour wheel selection, read only
+param 3: State after power loss, 0 = all off, 1 = remember last state, 2 = all on, default 2
+param 4: Led for network error, 0 = disable, 1 = enable, default 0
+*/
+	log.debug "Configuring device..."
+    def cmdset = []
+    cmdset << zwave.configurationV1.configurationSet(configurationValue: [35], parameterNumber: 0, size: 1).format()	// power delta %
+    cmdset << zwave.configurationV1.configurationSet(configurationValue: [60], parameterNumber: 1, size: 1).format()	// keep alive time
+    cmdset << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 3, size: 1).format()	// power on relay after power failure 0=all off, 1=remember last state, 2=all on
+    cmdset << zwave.configurationV1.configurationSet(configurationValue: [1], parameterNumber: 4, size: 1).format()	// 0=Disable the LED for network error, 1=enable
+    delayBetween(cmdset,1000)
+
 	return cmds
 }
 
