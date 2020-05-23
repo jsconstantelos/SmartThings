@@ -16,6 +16,7 @@
  *  05-06-2020 : Cleaned up code and resolved large lux values by using zigbee.lux() to convert raw value to lux.
  *  05-06-2020 : Added a preference to adjust minimum illuminance reporting time, and a preference for the amount of change in raw lux data.
  *  05-22-2020 : Fixed issues with preference values.
+ *  05-23-2020 : Removed preferences because the sensor doesn't seem to honor them.
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -30,10 +31,10 @@ metadata {
         capability "Health Check"
     }
 
-	preferences {
-    	input "minReportSeconds", "number", title: "Min Report Time (0 to 3600 sec)", description: "Minimum seconds? (10 is default)", defaultValue: 10, range: "0..3600", required: false, displayDuringSetup: true
-        input "rawChange", "number", title: "Amount of change in raw data (1 to 1000)", description: "Amount of change? (21 is default)", defaultValue: 21, range: "1..1000", required: false, displayDuringSetup: true
-	}
+//	preferences {
+//		input "minReportSeconds", "number", title: "Min Report Time (0 to 3600 sec)", description: "Minimum seconds? (10 is default)", defaultValue: 10, range: "0..3600", required: false, displayDuringSetup: true
+//		input "rawChange", "number", title: "Amount of change in raw data (1 to 1000)", description: "Amount of change? (21 is default)", defaultValue: 21, range: "1..1000", required: false, displayDuringSetup: true
+//	}
 
 	fingerprint profileId: "0104", inClusters: "0000,0400,0003,0001", outClusters: "0003", manufacturer: "LUMI", model: "lumi.sen_ill.mgl01", deviceJoinName: "Xiaomi Mijia Smart Home Light Sensor", ocfDeviceType: "oic.r.sensor.illuminance"    
     
@@ -58,7 +59,7 @@ metadata {
 }
 
 def parse(String description) {
-	// log.debug "Incoming data from device : $description"
+//	log.debug "Incoming data from device : $description"
     if (description?.startsWith("catchall:")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
 		log.debug "Desc Map : $descMap"
@@ -101,9 +102,9 @@ def refresh() {
 
 def configure() {
 	log.debug "Configuration starting..."
-    def minSeconds = settings.minReportSeconds as int
-    def delta = settings.rawChange as int
-    log.debug "Pref values : $minSeconds minimum seconds and $delta amount of change"
+//	def minSeconds = settings.minReportSeconds as int
+//	def delta = settings.rawChange as int
+//	log.debug "Pref values : $minSeconds minimum seconds and raw change of $delta (HEX ${zigbee.convertToHexString(delta, 2)})"
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     log.debug "...bindings..."
 	[
@@ -116,6 +117,6 @@ def configure() {
     log.debug "...reporting intervals..."
     [
         zigbee.configureReporting(0x0001, 0x0020, 0x20, 60, 3600, 0x01), "delay 1000",	// power cluster (get battery voltage every hour, or if it changes)
-        zigbee.configureReporting(0x0400, 0x0000, 0x21, minSeconds, 3600, delta)		// illuminance cluster (min report time via preferences, max 3600 seconds (1 hour), raw amount of change via preferences)
+        zigbee.configureReporting(0x0400, 0x0000, 0x21, 10, 3600, 0x15)					// illuminance cluster (min report time 10 seconds, max 3600 seconds, raw amount of change 21 (0x15))
 	]
 }
