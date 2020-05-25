@@ -176,7 +176,7 @@ def performOperation(operation) {
     def timeString = new Date().format("MM-dd-yy h:mm a", location.timeZone)
     try {
      	def random = new Random().nextInt(99999999) + 1
-        def waitTime = exitDelay
+        def waitTime = settings.exitDelay as int
         def path = "${EYEZON_URI()}${EYEZON_PATH()}?mid=${settings.mid}&action=s&did=${settings.did}&type=15&dmdben=f&rand=${random}"
         def body = "part=${settings.part}&pin=${settings.pin}"
         if (operation == OPERATION_DISARM()) {
