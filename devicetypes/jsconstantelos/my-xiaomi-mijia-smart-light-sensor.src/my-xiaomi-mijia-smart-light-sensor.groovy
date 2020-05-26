@@ -22,7 +22,7 @@
 import physicalgraph.zigbee.zcl.DataType
 
 metadata {
-    definition (name: "My Xiaomi Mijia Smart Light Sensor", namespace: "jsconstantelos", author: "jsconstantelos", ocfDeviceType: "oic.r.sensor.illuminance") {
+    definition (name: "My Xiaomi Mijia Smart Light Sensor", namespace: "jsconstantelos", author: "jsconstantelos") {
         capability "Illuminance Measurement"
         capability "Configuration"
         capability "Refresh"
@@ -36,7 +36,7 @@ metadata {
 //		input "rawChange", "number", title: "Amount of change in raw data (1 to 1000)", description: "Amount of change? (21 is default)", defaultValue: 21, range: "1..1000", required: false, displayDuringSetup: true
 //	}
 
-	fingerprint profileId: "0104", inClusters: "0000,0400,0003,0001", outClusters: "0003", manufacturer: "LUMI", model: "lumi.sen_ill.mgl01", deviceJoinName: "Xiaomi Mijia Smart Home Light Sensor", ocfDeviceType: "oic.r.sensor.illuminance"    
+	fingerprint profileId: "0104", inClusters: "0000,0400,0003,0001", outClusters: "0003", manufacturer: "LUMI", model: "lumi.sen_ill.mgl01", deviceJoinName: "Xiaomi Mijia Smart Home Light Sensor"
     
     tiles(scale: 2) {
 		multiAttributeTile(name:"illuminance", type: "generic", width: 6, height: 4){
