@@ -20,19 +20,25 @@
  *  -------
  *  04-30-2020 : Initial commit.
  *  05-02-2020 : Added child switch tile so that both switches are controllable in this DTH.  This only works for the Classic app, but not in the new app yet.  The child switch still shows up as a separete device in both apps.
+ *  05-26-2020 : Added accumulated energy (kWh) since the device was joined to the hub.  There is no device reset, so used state variables to reflect a reset.  IDE shows total and total since last reset (which is what the mobile app shows).
  */
 
 metadata {
-	definition(name: "My Aqara Double Rocker Switch", namespace: "jsconstantelos", author: "SmartThings", vid: "generic-switch-power") {
+	definition(name: "My Aqara Double Rocker Switch", namespace: "jsconstantelos", author: "SmartThings", vid: "generic-switch-power-energy") {
 		capability "Actuator"
 		capability "Configuration"
 		capability "Refresh"
 		capability "Health Check"
 		capability "Switch"
 		capability "Power Meter"
+        capability "Energy Meter"
+        
+        attribute "kwhTotal", "number"		// this is value reported by the switch since joining the hub.  See change log above for details.
+        attribute "resetTotal", "number"	// used to calculate accumulated kWh after a reset by the user.  See change log above for details.
 
 		command "childOn", ["string"]
 		command "childOff", ["string"]
+        command "reset"
 
 		// Raw Description : 01 0104 0100 01 09 0000 0002 0003 0004 0005 0006 0009 0702 0B04 02 000A 0019
 		fingerprint profileId: "0104", inClusters: "0000,0002,0003,0004,0005,0006,0009,0702,0B04", outClusters: "000A,0019", manufacturer: "LUMI", model: "lumi.switch.b2naus01", deviceJoinName: "Aqara Double Rocker Switch"
@@ -51,8 +57,14 @@ metadata {
 			}
 		}
         childDeviceTiles("all")
+        standardTile("energy", "device.energy", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "default", label:'${currentValue} kWh'
+        }
+        standardTile("reset", "device.energy", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "default", label:'Reset kWh', action:"reset", icon: "st.secondary.refresh-icon"
+        }
 		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label: "", action: "refresh.refresh", icon: "st.secondary.refresh"
+			state "default", label: "Refresh", action: "refresh.refresh", icon: "st.secondary.refresh-icon"
 		}
 //		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
 //			state "default", action: "configuration.configure", icon: "st.secondary.configure"
@@ -63,6 +75,7 @@ metadata {
 
 def installed() {
 	log.debug "Installed"
+    sendEvent(name: "resetTotal", value: 0, unit: "kWh")
 	updateDataValue("onOff", "catchall")
 	createChildDevices()
 }
@@ -76,7 +89,17 @@ def updated() {
 def parse(String description) {
 	Map eventMap = zigbee.getEvent(description)
 	Map eventDescMap = zigbee.parseDescriptionAsMap(description)
+    if (device.currentState('resetTotal')?.doubleValue == null) {
+    	sendEvent(name: "resetTotal", value: 0, unit: "kWh")
+    }
 //    log.debug "eventDescMap : $eventDescMap"
+    if (eventDescMap) {
+        if (eventDescMap.cluster == "0702") {
+            def value = (zigbee.convertHexToInt(eventDescMap.value) / 1000) - device.currentState('resetTotal')?.doubleValue
+            sendEvent(name: "energy", value: value.round(3), unit: "kWh")
+            sendEvent(name: "kwhTotal", value: zigbee.convertHexToInt(eventDescMap.value) / 1000, unit: "kWh", displayed: false)
+        }
+    }
 	if (eventMap) {
 		if (eventDescMap?.sourceEndpoint == "01" || eventDescMap?.endpoint == "01") {
             if (eventMap.name == "power") {
@@ -84,11 +107,11 @@ def parse(String description) {
                 def div = device.getDataValue("divisor")
                 div = div ? (div as int) : 10
                 powerValue = (eventMap.value as Integer)/div
-                sendEvent(name: "power", value: powerValue)
+                sendEvent(name: "power", value: powerValue, unit: "W")
 				def children = getChildDevices()
                 children.each {
                     def childDevice = "${it.deviceNetworkId}"
-                    it.sendEvent(name: "power", value: powerValue)
+                    it.sendEvent(name: "power", value: powerValue, unit: "W")
                 }
             }
             else {
@@ -162,15 +185,24 @@ def refresh() {
 	return refreshCommands
 }
 
+def reset() {
+    log.debug "Resetting kWh..."
+    sendEvent(name: "resetTotal", value: device.currentState('kwhTotal')?.doubleValue, unit: "kWh")
+    sendEvent(name: "energy", value: 0, unit: "kWh")
+}
+
 def configure() {
 	log.debug "Configure..."
 	configureHealthCheck()
     log.debug "...bindings..."
 	[
-		"zdo bind 0x${device.deviceNetworkId} 1 1 0x006 {${device.zigbeeId}} {}", "delay 1000",
+		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 1000",
+        "zdo bind 0x${device.deviceNetworkId} 1 1 0x006 {${device.zigbeeId}} {}", "delay 1000",
         "zdo bind 0x${device.deviceNetworkId} 2 1 0x006 {${device.zigbeeId}} {}", "delay 1000",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0xb04 {${device.zigbeeId}} {}", "delay 1000",
 		"zdo bind 0x${device.deviceNetworkId} 2 1 0xb04 {${device.zigbeeId}} {}", "delay 1000",
+        "zdo bind 0x${device.deviceNetworkId} 1 1 0x702 {${device.zigbeeId}} {}", "delay 1000",
+
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
 	def numberOfChildDevices = modelNumberOfChildDevices[device.getDataValue("model")]
