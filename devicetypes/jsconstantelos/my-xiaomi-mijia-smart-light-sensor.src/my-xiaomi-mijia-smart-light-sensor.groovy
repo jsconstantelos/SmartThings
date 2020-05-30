@@ -17,6 +17,7 @@
  *  05-06-2020 : Added a preference to adjust minimum illuminance reporting time, and a preference for the amount of change in raw lux data.
  *  05-22-2020 : Fixed issues with preference values.
  *  05-23-2020 : Removed preferences because the sensor doesn't seem to honor them.
+ *  05-30-2020 : Added a preference/setting for the new app that will force device configuration.  This is a workaround for not having a Configure tile in the new app.
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -31,10 +32,9 @@ metadata {
         capability "Health Check"
     }
 
-//	preferences {
-//		input "minReportSeconds", "number", title: "Min Report Time (0 to 3600 sec)", description: "Minimum seconds? (10 is default)", defaultValue: 10, range: "0..3600", required: false, displayDuringSetup: true
-//		input "rawChange", "number", title: "Amount of change in raw data (1 to 1000)", description: "Amount of change? (21 is default)", defaultValue: 21, range: "1..1000", required: false, displayDuringSetup: true
-//	}
+	preferences {
+		input "forceConfig", "boolean", title: "Toggle ONCE to force device configuration (any position will force a config)"
+	}
 
 	fingerprint profileId: "0104", inClusters: "0000,0400,0003,0001", outClusters: "0003", manufacturer: "LUMI", model: "lumi.sen_ill.mgl01", deviceJoinName: "Xiaomi Mijia Smart Home Light Sensor"
     
@@ -102,9 +102,6 @@ def refresh() {
 
 def configure() {
 	log.debug "Configuration starting..."
-//	def minSeconds = settings.minReportSeconds as int
-//	def delta = settings.rawChange as int
-//	log.debug "Pref values : $minSeconds minimum seconds and raw change of $delta (HEX ${zigbee.convertToHexString(delta, 2)})"
 	sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     log.debug "...bindings..."
 	[
