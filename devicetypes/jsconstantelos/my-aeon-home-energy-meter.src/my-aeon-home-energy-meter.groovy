@@ -95,7 +95,7 @@ def parse(String description) {
 	if (cmd) {
 		result = createEvent(zwaveEvent(cmd))
 	}
-	log.debug "Parse returned ${result?.descriptionText}"
+//	log.debug "Parse returned ${result?.descriptionText}"
 	return result
 }
 
