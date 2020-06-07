@@ -75,12 +75,13 @@ def installed() {
 	log.debug "Installed"
     sendEvent(name: "resetTotal", value: 0, unit: "kWh")
 	updateDataValue("onOff", "catchall")
+    configure()
 }
 
 def updated() {
 	log.debug "Updated"
 	updateDataValue("onOff", "catchall")
-	refresh()
+    configure()
 }
 
 def parse(String description) {
