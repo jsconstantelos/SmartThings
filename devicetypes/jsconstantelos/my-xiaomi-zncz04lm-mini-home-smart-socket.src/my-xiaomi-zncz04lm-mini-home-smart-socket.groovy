@@ -39,6 +39,10 @@ metadata {
 		fingerprint profileId: "0104", inClusters: "0000,0002,0003,0004,0005,0006,0009,0702,0B04", outClusters: "000A,0019", manufacturer: "LUMI", model: "lumi.plug.mmeu01", deviceJoinName: "Xiaomi ZNCZ04LM Mini Home Smart Socket"
 	}
 
+	preferences {
+		input "forceConfig", "boolean", title: "Toggle ONCE to force device configuration (any position will force a config)"
+	}
+
 	tiles(scale: 2) {
 		multiAttributeTile(name: "switch", width: 6, height: 4, canChangeIcon: false) {
 			tileAttribute("device.switch", key: "PRIMARY_CONTROL") {
