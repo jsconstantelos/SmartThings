@@ -44,17 +44,17 @@ metadata {
 				attributeState("illuminance", label:'${currentValue} LUX', icon:"st.illuminance.illuminance.bright", backgroundColor:"#999999")
 			}
 		}
+		standardTile("battery", "device.battery", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+			state "default", label:'${currentValue}% battery', unit:"%"
+		}
 		standardTile("refresh", "device.illuminance", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", label: 'Refresh', action:"refresh.refresh", icon:"st.secondary.refresh-icon"
 		}
 		standardTile("configure", "device.illuminance", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", action:"configuration.configure", icon:"st.secondary.configure"
 		}
-		standardTile("battery", "device.battery", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-			state "default", label:'${currentValue}% battery', unit:"%"
-		}
-		main(["illuminance"])
-		details(["illuminance", "battery", "refresh", "configure"])
+//		main(["illuminance"])
+//		details(["illuminance", "battery", "refresh", "configure"])
 	}
 }
 
