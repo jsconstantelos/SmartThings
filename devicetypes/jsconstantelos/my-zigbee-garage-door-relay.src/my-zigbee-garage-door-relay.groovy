@@ -13,18 +13,12 @@
  */
 
 metadata {
-	definition (name: "My ZigBee Garage Door Relay", namespace: "jsconstantelos", author: "SmartThings", vid: "generic-switch", ocfDeviceType: "oic.d.switch", genericHandler: "Zigbee") {
+	definition (name: "My ZigBee Garage Door Relay", namespace: "jsconstantelos", author: "SmartThings", ocfDeviceType: "oic.d.switch", genericHandler: "Zigbee") {
 		capability "Actuator"
 		capability "Configuration"
 		capability "Refresh"
 		capability "Switch"
-//		capability "Door Control"
-//		capability "Garage Door Control"
 		capability "Health Check"
-		capability "Refresh"
-		capability "Sensor"
-		capability "Momentary"
-		capability "Relay Switch"
 	}
 
 	tiles(scale: 2) {
@@ -35,7 +29,7 @@ metadata {
 			}
 		}
 		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:"", action:"configuration.configure", icon:"st.secondary.refresh"
+			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
 		main "switch"
 		details(["switch", "refresh"])
