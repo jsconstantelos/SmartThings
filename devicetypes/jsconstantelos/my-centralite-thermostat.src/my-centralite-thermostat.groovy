@@ -144,6 +144,7 @@ metadata {
 }
 
 def parse(String description) {
+//	log.debug "DESCRIPTION: $description"
     if ((description?.startsWith("catchall:")) || (description?.startsWith("read attr -"))) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
         def tempScale = location.temperatureScale
