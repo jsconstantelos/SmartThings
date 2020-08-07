@@ -10,6 +10,8 @@
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
  *  for the specific language governing permissions and limitations under the License.
  *
+ *	Contributors : Graham Johnson (aka @orangebucket in the ST Community) for the VID for the new ST mobile app.
+ *
  *  Updates:
  *  -------
  *  03-20-2020 : Initial commit.
@@ -18,12 +20,13 @@
  *  05-22-2020 : Fixed issues with preference values.
  *  05-23-2020 : Removed preferences because the sensor doesn't seem to honor them.
  *  05-30-2020 : Added a preference/setting for the new app that will force device configuration.  This is a workaround for not having a Configure tile in the new app.
+ *  08-07-2020 : Added/Updated mnmn and VID values to have LUX show up properly in the new app vs. battery level or "checking status"
  */
 
 import physicalgraph.zigbee.zcl.DataType
 
 metadata {
-    definition (name: "My Xiaomi Mijia Smart Light Sensor", namespace: "jsconstantelos", author: "jsconstantelos") {
+    definition (name: "My Xiaomi Mijia Smart Light Sensor", namespace: "jsconstantelos", author: "jsconstantelos", mnmn: "SmartThingsCommunity", vid: "a3fe3c0d-1f51-3d51-9309-566ba1219b4f") {
         capability "Illuminance Measurement"
         capability "Configuration"
         capability "Refresh"
@@ -53,8 +56,8 @@ metadata {
 		standardTile("configure", "device.illuminance", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", action:"configuration.configure", icon:"st.secondary.configure"
 		}
-//		main(["illuminance"])
-//		details(["illuminance", "battery", "refresh", "configure"])
+		main(["illuminance"])
+		details(["illuminance", "battery", "refresh", "configure"])
 	}
 }
 
