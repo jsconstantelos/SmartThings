@@ -61,14 +61,14 @@
  *
  */
 metadata {
-	definition (name: "My FortrezZ Flow Meter Interface", namespace: "jsconstantelos", author: "Daniel Kurin", vid: "generic-switch-power-energy", ocfDeviceType: "x.com.st.d.energymeter", genericHandler: "Z-Wave") {
-		capability "Battery"
+	definition (name: "My FortrezZ Flow Meter Interface", namespace: "jsconstantelos", author: "John Constantelos") {
+        capability "Power Meter"        
 		capability "Energy Meter"
-        capability "Power Meter"
 		capability "Image Capture"
 		capability "Temperature Measurement"
         capability "Water Sensor"
         capability "Sensor"
+		capability "Battery"        
         capability "Configuration"
         capability "Actuator"        
         capability "Polling"
