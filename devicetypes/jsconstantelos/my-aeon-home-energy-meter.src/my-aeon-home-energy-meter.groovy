@@ -23,8 +23,8 @@
  */
 metadata {
 	definition (name: "My Aeon Home Energy Meter", namespace: "jsconstantelos", author: "jsconstantelos", vid: "generic-switch-power-energy", ocfDeviceType: "x.com.st.d.energymeter", genericHandler: "Z-Wave") {
-		capability "Energy Meter"
 		capability "Power Meter"
+		capability "Energy Meter"
 		capability "Configuration"
 		capability "Sensor"
 		capability "Health Check"
