@@ -15,7 +15,7 @@
  *	08-07-2020 : Initial commit.
  */
 metadata {
-	definition (name: "My Aeon Gen 1 Home Energy Meter", namespace: "jsconstantelos", author: "jsconstantelos", mnmn: "SmartThingsCommunity", vid: "fc19a08c-ec56-3534-b85e-594fb3b3c917") {
+	definition (name: "My Aeon Gen 1 Home Energy Meter", namespace: "jsconstantelos", author: "jsconstantelos", mnmn: "SmartThingsCommunity", vid: "373af1eb-cdc4-3246-b99a-1bba01547b68") {
 		capability "Power Meter"
 		capability "Energy Meter"
 		capability "Configuration"
