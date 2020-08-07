@@ -58,10 +58,11 @@
  *  02-05-2019 : Added/updated error checking for negative delta values, crazy high delta values, duplicate current and previous flow values, and when current flow value is less than the previous flow value.
  *  03-01-2019 : Fixed history reporting error with values when meter, high gallons used, or highest GPM was reset.
  *  05-07-2020 : Added Water Sensor capability and supporting code so that this DTH works correctly with FortrezZ's SmartApps.
+ *  08-07-2020 : Added new VID to have this DTH work properly (sort of) in the new app.  This removes the "checking status" message in the tile.  WIP is to still create custom capability called "Water Meter"
  *
  */
 metadata {
-	definition (name: "My FortrezZ Flow Meter Interface", namespace: "jsconstantelos", author: "John Constantelos") {
+	definition (name: "My FortrezZ Flow Meter Interface", namespace: "jsconstantelos", author: "John Constantelos", mnmn: "SmartThingsCommunity", vid: "e2b64271-d955-3202-a02b-99cff7a1ed34") {
         capability "Power Meter"        
 		capability "Energy Meter"
 		capability "Image Capture"
@@ -284,7 +285,7 @@ def resetMeter() {
     sendEvent(name: "gpmLastUsed", value: 0, displayed: false)
     sendEvent(name: "gpmTotal", value: 0, displayed: false)
     sendEvent(name: "cumulative", value: 0, displayed: false)
-    sendEvent(name: "energy", value: 0, unit: "kWh", displayed: false)
+    sendEvent(name: "energy", value: 0, unit: "gal", displayed: false)
     def cmds = delayBetween([
 	    zwave.meterV3.meterReset().format()
     ])
@@ -373,18 +374,18 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
                 sendEvent(name: "gallonHigh", value: String.format("%3.1f",prevCumulative)+" gallons on"+"\n"+timeString as String, displayed: true)
                 sendEvent(name: "gallonHighValue", value: String.format("%3.1f",prevCumulative), displayed: false)
             }
-            sendEvent(name: "power", value: delta, unit: "W", displayed: false)  // This is only used for SmartApps that need Power capabilities.
-            sendEvent(name: "energy", value: cmd.scaledMeterValue, unit: "kWh", displayed: false) // This is only used for SmartApps that need Energy capabilities.
+            sendEvent(name: "power", value: delta, unit: "gpm", displayed: false)  // This is only used for SmartApps that need Power capabilities.
+            sendEvent(name: "energy", value: cmd.scaledMeterValue, unit: "gal", displayed: false) // This is only used for SmartApps that need Energy capabilities.
             sendEvent(name: "gpmTotal", value: cmd.scaledMeterValue, displayed: false)
             sendEvent(name: "gpmLastUsed", value: String.format("%3.1f",prevCumulative), displayed: true)
             sendEvent(name: "waterState", value: "none", displayed: true)
-            sendEvent(name: "gpm", value: delta, displayed: false)
+            sendEvent(name: "gpm", value: delta, unit: "gal", displayed: false)
             sendEvent(name: "alarmState", value: "Normal Operation", descriptionText: text, displayed: true)
             sendEvent(name: "water", value: "dry", displayed: false)
             return
     	} else {
-        	sendEvent(name: "gpm", value: delta, displayed: false)
-            sendEvent(name: "power", value: delta, displayed: false)  // This is only used for SmartApps that need Power capabilities.
+        	sendEvent(name: "gpm", value: delta, unit: "gpm", displayed: false)
+            sendEvent(name: "power", value: delta, unit: "gpm", displayed: false)  // This is only used for SmartApps that need Power capabilities.
             if (state.debug) log.debug "flowing at ${delta}"
             if (delta > device.currentState('gpmHighValue')?.doubleValue) {
                 sendEvent(name: "gpmHigh", value: String.format("%3.1f",delta)+" gpm on"+"\n"+timeString as String, displayed: true)
