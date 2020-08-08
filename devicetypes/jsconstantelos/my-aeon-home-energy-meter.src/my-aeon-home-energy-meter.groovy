@@ -22,7 +22,7 @@
  *  05-20-2020 : Cleanup and added user configuration parameters.
  */
 metadata {
-	definition (name: "My Aeon Home Energy Meter", namespace: "jsconstantelos", author: "jsconstantelos", vid: "generic-switch-power-energy", ocfDeviceType: "x.com.st.d.energymeter", genericHandler: "Z-Wave") {
+	definition (name: "My Aeon Home Energy Meter", namespace: "jsconstantelos", author: "jsconstantelos", mnmn: "SmartThingsCommunity", vid: "373af1eb-cdc4-3246-b99a-1bba01547b68") {
 		capability "Power Meter"
 		capability "Energy Meter"
 		capability "Configuration"
