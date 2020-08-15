@@ -24,7 +24,7 @@
  */
 
 metadata {
-	definition(name: "My Aqara Double Rocker Switch", namespace: "jsconstantelos", author: "SmartThings", vid: "generic-switch-power-energy") {
+	definition(name: "My Aqara Double Rocker Switch", namespace: "jsconstantelos", author: "jsconstantelos", mnmn: "SmartThingsCommunity", vid: "fc13153b-df29-37eb-b4ff-ea0dbcc30cba") {
 		capability "Actuator"
 		capability "Configuration"
 		capability "Refresh"
