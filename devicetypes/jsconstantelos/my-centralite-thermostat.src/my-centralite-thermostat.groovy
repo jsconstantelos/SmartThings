@@ -35,7 +35,7 @@ import groovy.json.JsonOutput
 import physicalgraph.zigbee.zcl.DataType
  
 metadata {
-	definition (name: "My Centralite Thermostat", namespace: "jsconstantelos", author: "SmartThings", ocfDeviceType: "oic.d.thermostat") {
+	definition (name: "My Centralite Thermostat", namespace: "jsconstantelos", author: "SmartThings", ocfDeviceType: "oic.d.thermostat", vid: "generic-thermostat-1") {
 		capability "Actuator"
 //        capability "Switch"
 		capability "Temperature Measurement"
