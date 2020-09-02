@@ -13,34 +13,25 @@
  *  License for the specific language governing permissions and limitations
  *  under the License.
  *
- *  Original code : ZigBee Multi Switch Power, modified for the Aqare double rocker switch by JSConstantelos
  *  Community discussion : https://community.smartthings.com/t/aqara-double-rocker-wall-switch-discussion/192205
  *
  *  Updates:
  *  -------
- *  04-30-2020 : Initial commit.
- *  05-02-2020 : Added child switch tile so that both switches are controllable in this DTH.  This only works for the Classic app, but not in the new app yet.  The child switch still shows up as a separete device in both apps.
- *  05-26-2020 : Added accumulated energy (kWh) since the device was joined to the hub.  There is no device reset, so used state variables to reflect a reset.  IDE shows total and total since last reset (which is what the mobile app shows).
+ *  09-02-2020 : Initial commit.
  */
 
 metadata {
-	definition(name: "My Aqara Double Rocker Switch", namespace: "jsconstantelos", author: "jsconstantelos", vid: "generic-switch-power-energy") {
+	definition(name: "My Aqara Double Rocker Switch No Neutral", namespace: "jsconstantelos", author: "jsconstantelos", ocfDeviceType: "oic.d.switch") {
 		capability "Actuator"
 		capability "Configuration"
 		capability "Refresh"
 		capability "Health Check"
 		capability "Switch"
-		capability "Power Meter"
-        capability "Energy Meter"
         
-        attribute "kwhTotal", "number"		// this is value reported by the switch since joining the hub.  See change log above for details.
-        attribute "resetTotal", "number"	// used to calculate accumulated kWh after a reset by the user.  See change log above for details.
-
 		command "childOn", ["string"]
 		command "childOff", ["string"]
-        command "reset"
 
-		fingerprint profileId: "0104", inClusters: "0000,0002,0003,0004,0005,0006,0009,0702,0B04", outClusters: "000A,0019", manufacturer: "LUMI", model: "lumi.switch.b2naus01", deviceJoinName: "Aqara Double Rocker Switch"
+        fingerprint profileId: "0104", inClusters: "0000,0002,0003,0004,0005,0006,0009", outClusters: "000A,0019", manufacturer: "LUMI", model: "lumi.switch.b2laus01", deviceJoinName: "Aqara Double Rocker Switch No Neutral"
 	}
 
 	tiles(scale: 2) {
@@ -51,30 +42,19 @@ metadata {
 				attributeState "turningOn", label: '${name}', action: "switch.off", icon: "st.switches.light.on", backgroundColor: "#00A0DC", nextState: "turningOff"
 				attributeState "turningOff", label: '${name}', action: "switch.on", icon: "st.switches.light.off", backgroundColor: "#ffffff", nextState: "turningOn"
 			}
-			tileAttribute("power", key: "SECONDARY_CONTROL") {
-				attributeState "power", label: '${currentValue} W'
-			}
 		}
         childDeviceTiles("all")
-        standardTile("energy", "device.energy", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state "default", label:'${currentValue} kWh'
-        }
-        standardTile("reset", "device.energy", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state "default", label:'Reset kWh', action:"reset", icon: "st.secondary.refresh-icon"
-        }
 		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
 			state "default", label: "Refresh", action: "refresh.refresh", icon: "st.secondary.refresh-icon"
 		}
-//		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-//			state "default", action: "configuration.configure", icon: "st.secondary.configure"
-//		}
-//		main "switch"
+		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "default", action: "configuration.configure", icon: "st.secondary.configure"
+		}
 	}
 }
 
 def installed() {
 	log.debug "Installed"
-    sendEvent(name: "resetTotal", value: 0, unit: "kWh")
 	updateDataValue("onOff", "catchall")
 	createChildDevices()
 }
@@ -88,34 +68,13 @@ def updated() {
 def parse(String description) {
 	Map eventMap = zigbee.getEvent(description)
 	Map eventDescMap = zigbee.parseDescriptionAsMap(description)
-    if (device.currentState('resetTotal')?.doubleValue == null) {
-    	sendEvent(name: "resetTotal", value: 0, unit: "kWh")
-    }
 //    log.debug "eventDescMap : $eventDescMap"
     if (eventDescMap) {
-        if (eventDescMap.cluster == "0702") {
-            def value = (zigbee.convertHexToInt(eventDescMap.value) / 1000) - device.currentState('resetTotal')?.doubleValue
-            sendEvent(name: "energy", value: value.round(3), unit: "kWh")
-            sendEvent(name: "kwhTotal", value: zigbee.convertHexToInt(eventDescMap.value) / 1000, unit: "kWh", displayed: false)
-        }
+//    	log.debug "Switch sent something we weren't expecting: $eventDescMap"
     }
 	if (eventMap) {
 		if (eventDescMap?.sourceEndpoint == "01" || eventDescMap?.endpoint == "01") {
-            if (eventMap.name == "power") {
-                def powerValue
-                def div = device.getDataValue("divisor")
-                div = div ? (div as int) : 10
-                powerValue = (eventMap.value as Integer)/div
-                sendEvent(name: "power", value: powerValue, unit: "W")
-				def children = getChildDevices()
-                children.each {
-                    def childDevice = "${it.deviceNetworkId}"
-                    it.sendEvent(name: "power", value: powerValue, unit: "W")
-                }
-            }
-            else {
-                sendEvent(eventMap)
-            }
+			sendEvent(eventMap)
 		} else {
 			def childDevice = childDevices.find {
 				it.deviceNetworkId == "$device.deviceNetworkId:${eventDescMap.sourceEndpoint}" || it.deviceNetworkId == "$device.deviceNetworkId:${eventDescMap.endpoint}"
@@ -136,7 +95,7 @@ private void createChildDevices() {
 	for(def endpoint : 2..numberOfChildDevices) {
 		try {
 			log.debug "creating endpoint: ${endpoint}"
-			addChildDevice("smartthings","Child Switch Health Power", "${device.deviceNetworkId}:0${endpoint}", device.hubId,
+			addChildDevice("smartthings","Child Switch Health", "${device.deviceNetworkId}:0${endpoint}", device.hubId,
 				[completedSetup: true,
 				 label: "${device.displayName} Child Device${endpoint}",
 				 isComponent: false
@@ -174,20 +133,13 @@ def ping() {
 
 def refresh() {
 	log.debug "Refreshing values..."
-	def refreshCommands = zigbee.onOffRefresh() + zigbee.electricMeasurementPowerRefresh()
+	def refreshCommands = zigbee.onOffRefresh()
 	def numberOfChildDevices = modelNumberOfChildDevices[device.getDataValue("model")]
 	for(def endpoint : 2..numberOfChildDevices) {
 		refreshCommands += zigbee.readAttribute(zigbee.ONOFF_CLUSTER, 0x0000, [destEndpoint: endpoint])
-		refreshCommands += zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x050B, [destEndpoint: endpoint])
 	}
 	log.debug "refreshCommands: $refreshCommands"
 	return refreshCommands
-}
-
-def reset() {
-    log.debug "Resetting kWh..."
-    sendEvent(name: "resetTotal", value: device.currentState('kwhTotal')?.doubleValue, unit: "kWh")
-    sendEvent(name: "energy", value: 0, unit: "kWh")
 }
 
 def configure() {
@@ -198,17 +150,12 @@ def configure() {
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 1000",
         "zdo bind 0x${device.deviceNetworkId} 1 1 0x006 {${device.zigbeeId}} {}", "delay 1000",
         "zdo bind 0x${device.deviceNetworkId} 2 1 0x006 {${device.zigbeeId}} {}", "delay 1000",
-		"zdo bind 0x${device.deviceNetworkId} 1 1 0xb04 {${device.zigbeeId}} {}", "delay 1000",
-		"zdo bind 0x${device.deviceNetworkId} 2 1 0xb04 {${device.zigbeeId}} {}", "delay 1000",
-        "zdo bind 0x${device.deviceNetworkId} 1 1 0x702 {${device.zigbeeId}} {}", "delay 1000",
-
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
 	def numberOfChildDevices = modelNumberOfChildDevices[device.getDataValue("model")]
-	def configurationCommands = zigbee.onOffConfig(0, 120) + zigbee.electricMeasurementPowerConfig()
+	def configurationCommands = zigbee.onOffConfig(0, 120)
 	for(def endpoint : 2..numberOfChildDevices) {
 		configurationCommands += zigbee.configureReporting(zigbee.ONOFF_CLUSTER, 0x0000, 0x10, 0, 120, null, [destEndpoint: endpoint])
-		configurationCommands += zigbee.configureReporting(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x050B, 0x29, 1, 600, 0x0005, [destEndpoint: endpoint])
 	}
 	configurationCommands << refresh()
 	log.debug "configurationCommands: $configurationCommands"
@@ -231,6 +178,6 @@ private getChildEndpoint(String dni) {
 
 private getModelNumberOfChildDevices() {
 	[
-		"lumi.switch.b2naus01" : 2
+        "lumi.switch.b2laus01" : 2
 	]
 }
