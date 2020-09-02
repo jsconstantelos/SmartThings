@@ -232,6 +232,7 @@ private getChildEndpoint(String dni) {
 
 private getModelNumberOfChildDevices() {
 	[
-		"lumi.switch.b2naus01" : 2
+		"lumi.switch.b2naus01" : 2,
+        "lumi.switch.b2laus01" : 2
 	]
 }
