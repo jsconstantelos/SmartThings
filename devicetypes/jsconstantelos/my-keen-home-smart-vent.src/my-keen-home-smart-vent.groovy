@@ -3,7 +3,7 @@
 // SmartThings Device Handler v1.0.0
 
 metadata {
-    definition (name: "My Keen Home Smart Vent", namespace: "jsconstantelos", author: "Keen Home") {
+    definition (name: "My Keen Home Smart Vent", namespace: "jsconstantelos", author: "Keen Home", mnmn: "SmartThingsCommunity", vid: "10327bad-e926-30bd-8611-063f07763a97") {
         capability "Switch Level"
         capability "Switch"
         capability "Configuration"
