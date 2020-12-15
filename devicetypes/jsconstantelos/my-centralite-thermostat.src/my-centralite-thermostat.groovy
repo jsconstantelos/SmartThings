@@ -28,6 +28,7 @@
  *  08-23-2019 : Cleaned up code.
  *  10-12-2019 : Worked on switch capabilities so that this DTH can be used better with smartapps using switches, and so that "switch" states are properly reflected.
  *  03-01-2020 : Fixed power source reporting.  The value for cluster was being reported as null, but clusterId was reporting the right value, so used that instead.
+ *  12-14-2020 : Changed back to a VID vs ocfDeviceType, also forcing a sendevent (for operating state) for a change in fan settings through the mobile app.
  *
  */
 
@@ -35,7 +36,7 @@ import groovy.json.JsonOutput
 import physicalgraph.zigbee.zcl.DataType
  
 metadata {
-	definition (name: "My Centralite Thermostat", namespace: "jsconstantelos", author: "SmartThings", ocfDeviceType: "oic.d.thermostat") {
+	definition (name: "My Centralite Thermostat", namespace: "jsconstantelos", author: "SmartThings", mnmn: "SmartThings", vid: "generic-thermostat-1") {
 		capability "Actuator"
 //        capability "Switch"
 		capability "Temperature Measurement"
@@ -441,6 +442,8 @@ def fanOn() {
 	log.debug "Setting fan to ON"
 	sendEvent("name":"thermostatFanMode", "value":"on")
     sendEvent("name":"switch", "value":"on")
+    sendEvent("name": "thermostatOperatingState", "value": "Fan is Running", "displayed": true)
+    log.debug "THERMOSTAT OPERATING STATE is : Fan is Running"
     [
 		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {04}", "delay 5000"
 	]
@@ -450,6 +453,8 @@ def fanAuto() {
 	log.debug "Setting fan to AUTO"
 	sendEvent("name":"thermostatFanMode", "value":"auto")
     sendEvent("name":"switch", "value":"off")
+    sendEvent("name": "thermostatOperatingState", "value": "Idle", "displayed": true)
+    log.debug "THERMOSTAT OPERATING STATE is : Idle"
     [
 		"st wattr 0x${device.deviceNetworkId} 1 0x202 0 0x30 {05}", "delay 5000"
 	]
