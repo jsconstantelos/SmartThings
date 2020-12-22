@@ -160,28 +160,28 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
 			if (prevCumulative > device.currentState('gallonsHighValue')?.doubleValue) {
                 sendEvent(name: "gallonsHighValue", value: String.format("%3.1f",prevCumulative), displayed: false)
             }
-            sendEvent(name: "power", value: delta, displayed: false)
-            sendEvent(name: "energy", value: cmd.scaledMeterValue, displayed: false)
-            sendEvent(name: "gpm", value: delta, displayed: false)
-            sendEvent(name: "cumulative", value: cmd.scaledMeterValue, displayed: false)
-            sendEvent(name: "gallonsLastUsed", value: String.format("%3.1f",prevCumulative), displayed: false)
-            sendEvent(name: "water", value: "dry", displayed: false)
-            sendEvent(name: "alarmState", value: "Normal Operation", displayed: false)
+            sendEvent(name: "power", value: delta, displayed: true)
+            sendEvent(name: "energy", value: cmd.scaledMeterValue, displayed: true)
+            sendEvent(name: "gpm", value: delta, displayed: true)
+            sendEvent(name: "cumulative", value: cmd.scaledMeterValue, displayed: true)
+            sendEvent(name: "gallonsLastUsed", value: String.format("%3.1f",prevCumulative), displayed: true)
+            sendEvent(name: "water", value: "dry", displayed: true)
+            sendEvent(name: "alarmState", value: "Normal Operation", displayed: true)
             if (state.debug) log.debug "Data for the new app to display: ${delta}gpm (Power meter), ${cmd.scaledMeterValue}gals (Energy Consumption)"
             return
     	} else {
-            sendEvent(name: "power", value: delta, displayed: false)
-            sendEvent(name: "gpm", value: delta, displayed: false)
+            sendEvent(name: "power", value: delta, displayed: true)
+            sendEvent(name: "gpm", value: delta, displayed: true)
             if (state.debug) log.debug "flowing at ${delta} gpm"
             if (delta > device.currentState('flowHighValue')?.doubleValue) {
-                sendEvent(name: "flowHighValue", value: String.format("%3.1f",delta), displayed: false)
+                sendEvent(name: "flowHighValue", value: String.format("%3.1f",delta), displayed: true)
             }
         	if (delta > gallonThreshhold) {
                 sendEvent(name: "water", value: "wet", displayed: false)
-                sendEvent(name: "alarmState", value: "High Flow Detected!", displayed: false)
+                sendEvent(name: "alarmState", value: "High Flow Detected!", displayed: true)
         	} else {
                 sendEvent(name: "water", value: "dry", displayed: false)
-                sendEvent(name: "alarmState", value: "Water is currently flowing", displayed: false)
+                sendEvent(name: "alarmState", value: "Water is currently flowing", displayed: true)
 			}
             return
     }
