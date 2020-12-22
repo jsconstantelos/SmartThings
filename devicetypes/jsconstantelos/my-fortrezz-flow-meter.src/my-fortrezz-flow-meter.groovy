@@ -167,6 +167,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
             sendEvent(name: "gallonsLastUsed", value: String.format("%3.1f",prevCumulative), displayed: false)
             sendEvent(name: "water", value: "dry", displayed: false)
             sendEvent(name: "alarmState", value: "Normal Operation", displayed: false)
+            if (state.debug) log.debug "Data for the new app to display: ${delta}gpm (Power meter), ${cmd.scaledMeterValue}gals (Energy Consumption)"
             return
     	} else {
             sendEvent(name: "power", value: delta, displayed: false)
