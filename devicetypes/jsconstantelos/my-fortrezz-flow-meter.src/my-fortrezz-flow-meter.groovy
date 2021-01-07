@@ -13,6 +13,7 @@
  *  Updates:
  *  -------
  *  12-22-2020 : Original commit.
+ *  01-07-2021 : Added Power Source capability and relative code.
  *
  */
 metadata {
@@ -22,7 +23,8 @@ metadata {
 		capability "Temperature Measurement"
         capability "Water Sensor"
         capability "Sensor"
-		capability "Battery"        
+		capability "Battery"
+        capability "Power Source"
         capability "Configuration"
         capability "Actuator"        
         capability "Polling"
@@ -193,8 +195,10 @@ def zwaveEvent(physicalgraph.zwave.commands.alarmv2.AlarmReport cmd) {
     if (cmd.zwaveAlarmType == 8) { // Power Alarm
         if (cmd.zwaveAlarmEvent == 2) { // AC Mains Disconnected
             sendEvent(name: "alarmState", value: "Mains Disconnected!", descriptionText: text, displayed: true)
+            sendEvent(name: "powerSource", value: "Power Loss!", displayed: true)
         } else if (cmd.zwaveAlarmEvent == 3) { // AC Mains Reconnected
             sendEvent(name: "alarmState", value: "Mains Reconnected", descriptionText: text, displayed: true)
+            sendEvent(name: "powerSource", value: "AC Power", displayed: true)
         } else if (cmd.zwaveAlarmEvent == 0x0B) { // Replace Battery Now
             sendEvent(name: "alarmState", value: "Replace Battery Now", descriptionText: text, displayed: true)
         } else if (cmd.zwaveAlarmEvent == 0x00) { // Battery Replaced
