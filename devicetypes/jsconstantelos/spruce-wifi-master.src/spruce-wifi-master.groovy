@@ -42,6 +42,7 @@
         
 	}
     preferences {
+    	//input "debugOutput", "boolean", title: "Enable debug logging?", defaultValue: false, displayDuringSetup: false
     	input description: "1.0 5/2018 beta release", displayDuringSetup: false, type: "paragraph", element: "paragraph", title: "Spruce Connect version"
     	input description: "Zone settings are configured in the Spruce app.\n\nRefresh the configuration changes by opening the Spruce Connect SmartApp and saving.\n\nThe refresh button can be used to update the manual schedule list, but will error if a manual schedule is used in any automations.", displayDuringSetup: false, type: "paragraph", element: "paragraph", title: "Update Settings and Names"
     }
@@ -121,6 +122,10 @@ def installed(){
     setRain(off)
     
     update_settings()
+}
+
+def updated() {
+	log.debug "Updated"
 }
 
 def update_settings(){

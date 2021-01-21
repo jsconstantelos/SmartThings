@@ -43,6 +43,10 @@ metadata {
 		fingerprint profileId: "0104", inClusters: "0000,0002,0003,0004,0005,0006,0009,0702,0B04", outClusters: "000A,0019", manufacturer: "LUMI", model: "lumi.switch.b2naus01", deviceJoinName: "Aqara Double Rocker Switch"
 	}
 
+    preferences {
+       input "debugOutput", "boolean", title: "Enable debug logging?", defaultValue: false, displayDuringSetup: false
+    }
+
 	tiles(scale: 2) {
 		multiAttributeTile(name: "switch", width: 6, height: 4, canChangeIcon: false) {
 			tileAttribute("device.switch", key: "PRIMARY_CONTROL") {
@@ -77,15 +81,17 @@ def installed() {
     sendEvent(name: "resetTotal", value: 0, unit: "kWh")
 	updateDataValue("onOff", "catchall")
 	createChildDevices()
+    configure()
 }
 
 def updated() {
 	log.debug "Updated"
 	updateDataValue("onOff", "catchall")
-	refresh()
+	configure()
 }
 
 def parse(String description) {
+//	log.debug "Raw Data : $description"
 	Map eventMap = zigbee.getEvent(description)
 	Map eventDescMap = zigbee.parseDescriptionAsMap(description)
     if (device.currentState('resetTotal')?.doubleValue == null) {
@@ -205,7 +211,7 @@ def configure() {
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
 	def numberOfChildDevices = modelNumberOfChildDevices[device.getDataValue("model")]
-	def configurationCommands = zigbee.onOffConfig(0, 120) + zigbee.electricMeasurementPowerConfig()
+	def configurationCommands = zigbee.onOffConfig(0, 120) + zigbee.electricMeasurementPowerConfig() + zigbee.simpleMeteringPowerConfig()
 	for(def endpoint : 2..numberOfChildDevices) {
 		configurationCommands += zigbee.configureReporting(zigbee.ONOFF_CLUSTER, 0x0000, 0x10, 0, 120, null, [destEndpoint: endpoint])
 		configurationCommands += zigbee.configureReporting(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x050B, 0x29, 1, 600, 0x0005, [destEndpoint: endpoint])
