@@ -17,6 +17,7 @@
  * Manual Schedule tiles
  */
  
+ import groovy.json.JsonOutput
  metadata {
 	definition (name: 'Spruce wifi master', namespace: 'jsconstantelos', author: 'Plaid Systems') {
 		capability "Switch"

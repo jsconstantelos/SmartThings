@@ -19,6 +19,7 @@
  * 
  */
  
+ import groovy.json.JsonOutput
  metadata {
 	definition (name: 'Spruce wifi schedule', namespace: 'jsconstantelos', author: 'Plaid Systems') {
 		capability 'Switch'

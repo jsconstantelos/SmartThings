@@ -19,6 +19,7 @@
  * 
  */
  
+ import groovy.json.JsonOutput
  metadata {
 	definition (name: 'Spruce wifi zone', namespace: 'jsconstantelos', author: 'Plaid Systems') {
 		capability "Switch"
@@ -131,14 +132,21 @@ def installed(){
 def updated(){	
     log.debug "device updated"
     sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "cloud", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
-    sendEvent(name: "DeviceWatch-Enroll", value: toJson([protocol: "cloud", scheme:"untracked"]), displayed: false)
+//    sendEvent(name: "DeviceWatch-Enroll", value: toJson([protocol: "cloud", scheme:"untracked"]), displayed: false)
+
+	sendEvent(name: "DeviceWatch-Enroll", value: JsonOutput.toJson([protocol: "cloud", scheme:"untracked"]), displayed: false)
+	updateDataValue("EnrolledUTDH", "true")
+
     parent.child_zones(device.deviceNetworkId)	//get child zone settings
 }
 
 def refresh(){
     sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "cloud", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
-    //sendEvent(name: "DeviceWatch-Enroll", value: toJson([protocol: "cloud", scheme:"untracked"]), displayed: false)
-    sendEvent(name: "DeviceWatch-Enroll", value: [protocol: "cloud", scheme:"untracked"].encodeAsJson(), displayed: false)
+//    sendEvent(name: "DeviceWatch-Enroll", value: toJson([protocol: "cloud", scheme:"untracked"]), displayed: false)
+
+	sendEvent(name: "DeviceWatch-Enroll", value: JsonOutput.toJson([protocol: "cloud", scheme:"untracked"]), displayed: false)
+	updateDataValue("EnrolledUTDH", "true")
+
 	parent.getsettings()
 }
 
