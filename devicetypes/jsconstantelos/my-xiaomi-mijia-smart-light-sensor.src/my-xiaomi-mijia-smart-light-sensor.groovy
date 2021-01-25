@@ -66,7 +66,7 @@ def parse(String description) {
 //	log.debug "Incoming data from device : $description"
     if (description?.startsWith("catchall:")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
-		log.debug "Desc Map : $descMap"
+		log.debug "Raw Data : $description"
 	}
     if (description?.startsWith("read attr -")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
@@ -78,7 +78,7 @@ def parse(String description) {
             def batteryValue = Math.min(100, roundedPct)
             sendEvent("name": "battery", "value": batteryValue, "displayed": true, isStateChange: true)
 		} else {
-        	log.debug "UNKNOWN Cluster and Attribute : $descMap"
+        	log.debug "UNKNOWN Cluster and Attribute : $description"
         }
 	}
     if (description?.startsWith("illuminance:")) {
