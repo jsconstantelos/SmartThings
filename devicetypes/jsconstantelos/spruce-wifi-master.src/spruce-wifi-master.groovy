@@ -143,7 +143,10 @@ def update_settings(){
     catch (e) {
     	log.debug "no children"
         }
-        
+
+    sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 2 * 60, displayed: false, data: [protocol: "cloud", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
+	sendEvent(name: "DeviceWatch-Enroll", value: JsonOutput.toJson([protocol: "cloud", scheme:"untracked"]), displayed: false)
+
 	parent.child_schedules(device.deviceNetworkId)
 }
 
