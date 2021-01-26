@@ -20,7 +20,6 @@ import physicalgraph.zigbee.zcl.DataType
 metadata {
     definition (name: "My Aqara Vibration Sensor", namespace: "jsconstantelos", author: "jsconstantelos") {
     	capability "Acceleration Sensor"
-//		capability "Three Axis"
 		capability "Battery"
 		capability "Configuration"
 		capability "Sensor"
@@ -29,7 +28,7 @@ metadata {
     }
 
 	preferences {
-		input "forceConfig", "boolean", title: "This is a hack for the new app since there is no Configuration tile like there was in the old Classic app.  Toggle ONCE to force device configuration (any position will force a config)"
+        input "vibrationreset", "number", title: "", description: "Number of seconds when vibration detection restarts (default = 10 seconds)", range: "1..60"
 	}
 
 	fingerprint profileId: "0104", inClusters: "0000,0500,0003,0001", outClusters: "0003,0019", manufacturer: "LUMI", model: "lumi.vibration.agl01", deviceJoinName: "Aqara Vibration Sensor"
@@ -52,18 +51,48 @@ metadata {
 
 def parse(String description) {
 	log.debug "Incoming data from device : $description"
+    if (description?.startsWith("read attr -")) {
+		def descMap = zigbee.parseDescriptionAsMap(description)
+//        log.debug "Map Data : $descMap"
+		if (descMap.cluster == "0001" && descMap.attrId == "0020") {
+            def vBatt = Integer.parseInt(descMap.value,16) / 10
+            def pct = (vBatt - 2.1) / (3 - 2.1)
+            def roundedPct = Math.round(pct * 100)
+            if (roundedPct <= 0) roundedPct = 1
+            def batteryValue = Math.min(100, roundedPct)
+            sendEvent(name: "battery", value: batteryValue, displayed: true, isStateChange: true)
+		} else if (descMap.cluster == "0500" && descMap.attrId == "002d") {
+//        	log.debug "Vibration detected!"
+            sendEvent(name: "acceleration", value: "active", displayed: true, isStateChange: true)
+            def resetseconds = vibrationreset ? vibrationreset : 10
+//            log.debug "Vibration resetting in $resetseconds seconds"
+            runIn(resetseconds,resetvib)
+        } else {
+        	log.debug "UNKNOWN Cluster and Attribute : $descMap"
+        }
+	}
 }
 
+
 def installed() {
+	log.debug "Device installed so setting values and beginning configuration..."
+    sendEvent(name: "battery", value: "100", displayed: true, isStateChange: true)
 	configure()
 }
 
 def updated() {
+	log.debug "Device updated so validating configuration..."
 	configure()
 }
 
 def ping() {
+	log.debug "Device refresh requested..."
 	refresh()
+}
+
+def resetvib() {
+//	log.debug "Setting device to inactive (no vibration)..."
+	sendEvent(name: "acceleration", value: "inactive", displayed: true, isStateChange: true)
 }
 
 def refresh() {
@@ -92,5 +121,7 @@ def configure() {
         zigbee.readAttribute(zigbee.IAS_ZONE_CLUSTER, zigbee.ATTRIBUTE_IAS_ZONE_STATUS), "delay 1000",
         zigbee.enrollResponse()
 	]
+    def resetseconds = vibrationreset ? vibrationreset : 10
+    log.debug "...vibration reset is set to $resetseconds seconds..."
     log.debug "Configuration finished..."
 }
