@@ -25,13 +25,16 @@ metadata {
 		capability "Sensor"
 		capability "Refresh"
 		capability "Health Check"
+
+		attribute 'sensitivity', 'string'
+
+		fingerprint profileId: "0104", inClusters: "0000,0500,0003,0001", outClusters: "0003,0019", manufacturer: "LUMI", model: "lumi.vibration.agl01", deviceJoinName: "Aqara Vibration Sensor"
+
     }
 
 	preferences {
         input "vibrationreset", "number", title: "", description: "Number of seconds when vibration detection restarts (default = 10 seconds)", range: "1..60"
 	}
-
-	fingerprint profileId: "0104", inClusters: "0000,0500,0003,0001", outClusters: "0003,0019", manufacturer: "LUMI", model: "lumi.vibration.agl01", deviceJoinName: "Aqara Vibration Sensor"
     
     tiles(scale: 2) {
 		standardTile("acceleration", "device.acceleration", width: 2, height: 2) {
@@ -50,10 +53,18 @@ metadata {
 }
 
 def parse(String description) {
-	log.debug "Incoming data from device : $description"
+//	log.debug "Incoming data from device : $description"
+    if (description?.startsWith("catchall:")) {
+		def descMap = zigbee.parseDescriptionAsMap(description)
+		log.debug "Catchall Map Data : $descMap"
+        if (descMap.clusterId == "0000") {
+        	def dataElements = descMap.data.size()
+        	log.debug "Found ${dataElements} data elements for attribute ID ${descMap.attrId} : ${descMap.data}"
+        }
+	}
     if (description?.startsWith("read attr -")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
-//        log.debug "Map Data : $descMap"
+//		log.debug "Read Attr Map Data : $descMap"
 		if (descMap.cluster == "0001" && descMap.attrId == "0020") {
             def vBatt = Integer.parseInt(descMap.value,16) / 10
             def pct = (vBatt - 2.1) / (3 - 2.1)
@@ -65,14 +76,13 @@ def parse(String description) {
 //        	log.debug "Vibration detected!"
             sendEvent(name: "acceleration", value: "active", displayed: true, isStateChange: true)
             def resetseconds = vibrationreset ? vibrationreset : 10
-//            log.debug "Vibration resetting in $resetseconds seconds"
+//          log.debug "Vibration resetting in $resetseconds seconds"
             runIn(resetseconds,resetvib)
         } else {
         	log.debug "UNKNOWN Cluster and Attribute : $descMap"
         }
 	}
 }
-
 
 def installed() {
 	log.debug "Device installed so setting values and beginning configuration..."
@@ -98,9 +108,11 @@ def resetvib() {
 def refresh() {
 	log.debug "Refreshing values..."
 	[
+        "st rattr 0x${device.deviceNetworkId} 1 0x000 0", "delay 200",
         "st rattr 0x${device.deviceNetworkId} 1 0x001 0", "delay 200",
         "st rattr 0x${device.deviceNetworkId} 1 0x500 0", "delay 200"
 	]
+    zigbee.readAttribute( 0x0000, 0xFF0D)
 }
 
 def configure() {
@@ -115,6 +127,12 @@ def configure() {
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x500 {${device.zigbeeId}} {}", "delay 1000",	// IAS Zone cluster
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
+    log.debug "...other Zigbee commands for the device..."
+    [
+    	zigbee.configureReporting(0x0001, 0x0020, DataType.UINT8, 60, 3600, 0x01), "delay 5000",	// get battery voltage
+        zigbee.configureReporting(0x0001, 0x0021, DataType.UINT8, 60, 3600, 0x01), "delay 5000",	// get battery %
+        zigbee.writeAttribute(0x0000, 0xFF0D, DataType.UINT8, 0x01)									// set sensitivity level (0x15=low, 0x0B=medium, 0x01=high) data type 0x20
+    ]
     def resetseconds = vibrationreset ? vibrationreset : 10
     log.debug "...vibration reset is set to $resetseconds seconds..."
     log.debug "Configuration (${device.deviceNetworkId} ${device.zigbeeId}) finished..."
