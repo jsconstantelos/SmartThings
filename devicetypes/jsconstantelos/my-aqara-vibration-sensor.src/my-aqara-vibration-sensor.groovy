@@ -115,13 +115,7 @@ def configure() {
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x500 {${device.zigbeeId}} {}", "delay 1000",	// IAS Zone cluster
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
-    log.debug "...sending additional Zigbee commmands..."
-    [
-        zigbee.configureReporting(0x0001, 0x0020, 0x20, 60, 3600, 0x01), "delay 1000",	// power cluster (get battery voltage every hour, or if it changes)
-        zigbee.readAttribute(zigbee.IAS_ZONE_CLUSTER, zigbee.ATTRIBUTE_IAS_ZONE_STATUS), "delay 1000",
-        zigbee.enrollResponse()
-	]
     def resetseconds = vibrationreset ? vibrationreset : 10
     log.debug "...vibration reset is set to $resetseconds seconds..."
-    log.debug "Configuration finished..."
+    log.debug "Configuration (${device.deviceNetworkId} ${device.zigbeeId}) finished..."
 }
