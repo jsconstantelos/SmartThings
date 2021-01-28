@@ -32,12 +32,12 @@ metadata {
 
 	preferences {
         input "vibrationreset", "number", title: "Reporting Interval (in seconds)", description: "Reporting interval to keep showing vibration before resetting to inactive (default = 10 seconds)", range: "1..60"
-        input("sensitivity", "number",
+        input("sensitivity", "enum",
               title: "Sensitivity Level",
               description: "What should the sensitivity level be (default = high)?",
-              options: ["0x01": "High",
-                        "0x0B": "Medium",
-                        "0x15": "Low"])
+              options: [1: "High",
+                        11: "Medium",
+                        21: "Low"])
 	}
     
     tiles(scale: 2) {
@@ -132,7 +132,8 @@ def configure() {
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
     log.debug "...other Zigbee commands for the device..."
-    def senselevel = sensitivity ? sensitivity : "0x01"
+    def senselevel = sensitivity ? sensitivity : 1
+    // def test = toHexString(senselevel)
     log.debug "...sensitivity level to send to the device : ${senselevel}..."
     [
     	zigbee.configureReporting(0x0001, 0x0020, DataType.UINT8, 60, 3600, 0x01), "delay 5000",	// get battery voltage
