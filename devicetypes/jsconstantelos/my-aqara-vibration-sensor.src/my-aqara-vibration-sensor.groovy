@@ -26,14 +26,18 @@ metadata {
 		capability "Refresh"
 		capability "Health Check"
 
-		attribute 'sensitivity', 'string'
-
 		fingerprint profileId: "0104", inClusters: "0000,0500,0003,0001", outClusters: "0003,0019", manufacturer: "LUMI", model: "lumi.vibration.agl01", deviceJoinName: "Aqara Vibration Sensor"
 
     }
 
 	preferences {
-        input "vibrationreset", "number", title: "", description: "Reporting interval to keep showing vibration before resetting to inactive (default = 10 seconds)", range: "1..60"
+        input "vibrationreset", "number", title: "Reporting Interval (in seconds)", description: "Reporting interval to keep showing vibration before resetting to inactive (default = 10 seconds)", range: "1..60"
+        input("sensitivity", "number",
+              title: "Sensitivity Level",
+              description: "What should the sensitivity level be (default = high)?",
+              options: ["0x01": "High",
+                        "0x0B": "Medium",
+                        "0x15": "Low"])
 	}
     
     tiles(scale: 2) {
@@ -117,7 +121,7 @@ def refresh() {
 
 def configure() {
 	log.debug "Configuration starting..."
-	sendEvent(name: "checkInterval", value: 720, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
+	sendEvent(name: "checkInterval", value: 86400, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     sendEvent(name: "acceleration", value: "inactive", descriptionText: "{{ device.displayName }} was $value", displayed: false)
     log.debug "...bindings..."
 	[
@@ -128,6 +132,8 @@ def configure() {
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
     log.debug "...other Zigbee commands for the device..."
+    def senselevel = sensitivity ? sensitivity : "0x01"
+    log.debug "...sensitivity level to send to the device : ${senselevel}..."
     [
     	zigbee.configureReporting(0x0001, 0x0020, DataType.UINT8, 60, 3600, 0x01), "delay 5000",	// get battery voltage
         zigbee.configureReporting(0x0001, 0x0021, DataType.UINT8, 60, 3600, 0x01), "delay 5000",	// get battery %
