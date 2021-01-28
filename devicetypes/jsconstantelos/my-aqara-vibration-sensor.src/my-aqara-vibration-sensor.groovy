@@ -33,7 +33,7 @@ metadata {
     }
 
 	preferences {
-        input "vibrationreset", "number", title: "", description: "Number of seconds when vibration detection restarts (default = 10 seconds)", range: "1..60"
+        input "vibrationreset", "number", title: "", description: "Reporting interval to keep showing vibration before resetting to inactive (default = 10 seconds)", range: "1..60"
 	}
     
     tiles(scale: 2) {
