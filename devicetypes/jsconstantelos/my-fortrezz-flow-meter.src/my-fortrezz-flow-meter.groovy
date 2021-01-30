@@ -134,6 +134,8 @@ def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelR
 	        map.value = cmd.scaledSensorValue
         }
         map.unit = location.temperatureScale
+        map.displayed = "true"
+        // log.debug "sendEvent should look like this: ${map}"
 	}
 	return map
 }

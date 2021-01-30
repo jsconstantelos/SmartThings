@@ -12,7 +12,7 @@
  *
  *  Updates:
  *  -------
- *  01-26-2020 : Initial commit.
+ *  01-30-2021 : Initial commit.
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -24,10 +24,9 @@ metadata {
 		capability "Configuration"
 		capability "Sensor"
 		capability "Refresh"
-		capability "Health Check"
+//		capability "Health Check"	// This sensor does not send data to "keep it alive" (aka online) unless there is activity.  Since that may not happen for a very long time, this capability is not used.
 
 		fingerprint profileId: "0104", inClusters: "0000,0500,0003,0001", outClusters: "0003,0019", manufacturer: "LUMI", model: "lumi.vibration.agl01", deviceJoinName: "Aqara Vibration Sensor"
-
     }
 
 	preferences {
@@ -40,6 +39,7 @@ metadata {
                         21: "Low"])
 	}
     
+    // These tiles are not needed for the new ST mobile app.  R.I.P. ST Classic app.
     tiles(scale: 2) {
 		standardTile("acceleration", "device.acceleration", width: 2, height: 2) {
 			state("active", label:'${name}', icon:"st.motion.acceleration.active", backgroundColor:"#00a0dc")
@@ -77,10 +77,8 @@ def parse(String description) {
             def batteryValue = Math.min(100, roundedPct)
             sendEvent(name: "battery", value: batteryValue, displayed: true, isStateChange: true)
 		} else if (descMap.cluster == "0500" && descMap.attrId == "002d") {
-//        	log.debug "Vibration detected!"
             sendEvent(name: "acceleration", value: "active", displayed: true, isStateChange: true)
             def resetseconds = vibrationreset ? vibrationreset : 10
-//          log.debug "Vibration resetting in $resetseconds seconds"
             runIn(resetseconds,resetvib)
         } else {
         	log.debug "UNKNOWN Cluster and Attribute : $descMap"
@@ -90,7 +88,7 @@ def parse(String description) {
 
 def installed() {
 	log.debug "Device installed so setting values and beginning configuration..."
-    sendEvent(name: "battery", value: "100", displayed: true, isStateChange: true)
+    sendEvent(name: "battery", value: "100", displayed: true, isStateChange: true)	// Sensor only sends out a low battery event, so we need to set this value here and wait for the sensor to send a low value event later.
 	configure()
 }
 
@@ -100,46 +98,51 @@ def updated() {
 }
 
 def ping() {
-	log.debug "Device refresh requested..."
 	refresh()
 }
 
 def resetvib() {
-//	log.debug "Setting device to inactive (no vibration)..."
+//	log.debug "Setting device to inactive (no activity)..."
 	sendEvent(name: "acceleration", value: "inactive", displayed: true, isStateChange: true)
 }
 
 def refresh() {
-	log.debug "Refreshing values..."
+	log.debug "Device refresh requested..."
 	[
-        "st rattr 0x${device.deviceNetworkId} 1 0x000 0", "delay 200",
-        "st rattr 0x${device.deviceNetworkId} 1 0x001 0", "delay 200",
-        "st rattr 0x${device.deviceNetworkId} 1 0x500 0", "delay 200"
+        "st rattr 0x${device.deviceNetworkId} 1 0x000 0", "delay 2000",
+        "st rattr 0x${device.deviceNetworkId} 1 0x001 0", "delay 2000",
+        "st rattr 0x${device.deviceNetworkId} 1 0x500 0", "delay 2000"
 	]
-    zigbee.readAttribute( 0x0000, 0xFF0D)
+    zigbee.readAttribute( 0x0000, 0xFF0D)	// This cluster/attribute should contain certain settings we're interested in.
 }
 
 def configure() {
 	log.debug "Configuration starting..."
 	sendEvent(name: "checkInterval", value: 86400, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
     sendEvent(name: "acceleration", value: "inactive", descriptionText: "{{ device.displayName }} was $value", displayed: false)
-    log.debug "...bindings..."
+    log.debug "...perform Zigbee bindings..."
 	[
-		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 1000",	// basic cluster
-        "zdo bind 0x${device.deviceNetworkId} 1 1 0x001 {${device.zigbeeId}} {}", "delay 1000",	// power cluster
-		"zdo bind 0x${device.deviceNetworkId} 1 1 0x003 {${device.zigbeeId}} {}", "delay 1000",	// identify cluster
-		"zdo bind 0x${device.deviceNetworkId} 1 1 0x500 {${device.zigbeeId}} {}", "delay 1000",	// IAS Zone cluster
+		"zdo bind 0x${device.deviceNetworkId} 1 1 0x000 {${device.zigbeeId}} {}", "delay 2000",	// basic cluster
+        "zdo bind 0x${device.deviceNetworkId} 1 1 0x001 {${device.zigbeeId}} {}", "delay 2000",	// power cluster
+		"zdo bind 0x${device.deviceNetworkId} 1 1 0x003 {${device.zigbeeId}} {}", "delay 2000",	// identify cluster
+		"zdo bind 0x${device.deviceNetworkId} 1 1 0x500 {${device.zigbeeId}} {}", "delay 2000",	// IAS Zone cluster
 		"send 0x${device.deviceNetworkId} 1 1"
 	]
-    log.debug "...other Zigbee commands for the device..."
-    def senselevel = sensitivity ? sensitivity : 1
-    // def test = toHexString(senselevel)
-    log.debug "...sensitivity level to send to the device : ${senselevel}..."
+    log.debug "...attempting to set battery reporting frequency..."
     [
-    	zigbee.configureReporting(0x0001, 0x0020, DataType.UINT8, 60, 3600, 0x01), "delay 5000",	// get battery voltage
-        zigbee.configureReporting(0x0001, 0x0021, DataType.UINT8, 60, 3600, 0x01), "delay 5000",	// get battery %
-        zigbee.writeAttribute(0x0000, 0xFF0D, DataType.UINT8, 0x01)									// set sensitivity level (0x15=low, 0x0B=medium, 0x01=high) data type 0x20
+    	zigbee.configureReporting(0x0001, 0x0020, DataType.UINT8, 60, 3600, 0x01), "delay 2000",	// get battery voltage
+        zigbee.configureReporting(0x0001, 0x0021, DataType.UINT8, 60, 3600, 0x01), "delay 2000"		// get battery %
     ]
+    log.debug "...attempting to set sensitivity level..."
+    if (senselevel == "1") {
+    	zigbee.writeAttribute(0x0000, 0xFF0D, DataType.UINT8, 0x01)									// set sensitivity level (0x15=low, 0x0B=medium, 0x01=high) data type 0x20
+    } else if (senselevel == "11") {
+    	zigbee.writeAttribute(0x0000, 0xFF0D, DataType.UINT8, 0x0b)									// set sensitivity level (0x15=low, 0x0B=medium, 0x01=high) data type 0x20
+    } else if (senselevel == "21") {
+    	zigbee.writeAttribute(0x0000, 0xFF0D, DataType.UINT8, 0x15)									// set sensitivity level (0x15=low, 0x0B=medium, 0x01=high) data type 0x20
+    } else {
+    	zigbee.writeAttribute(0x0000, 0xFF0D, DataType.UINT8, 0x01)									// set sensitivity level (0x15=low, 0x0B=medium, 0x01=high) data type 0x20
+    }
     def resetseconds = vibrationreset ? vibrationreset : 10
     log.debug "...vibration reset is set to $resetseconds seconds..."
     log.debug "Configuration (${device.deviceNetworkId} ${device.zigbeeId}) finished..."
