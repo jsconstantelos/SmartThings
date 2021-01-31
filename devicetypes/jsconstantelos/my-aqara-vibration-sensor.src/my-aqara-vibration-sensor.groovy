@@ -13,6 +13,7 @@
  *  Updates:
  *  -------
  *  01-30-2021 : Initial commit.
+ *  01-31-2021 : Removed code for tiles that was only needed for the old Classic app.
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -33,26 +34,10 @@ metadata {
         input "vibrationreset", "number", title: "Reporting Interval (in seconds)", description: "Reporting interval to keep showing vibration before resetting to inactive (default = 10 seconds)", range: "1..60"
         input("sensitivity", "enum",
               title: "Sensitivity Level",
-              description: "What should the sensitivity level be (default = high)?",
+              description: "Sensitivity level of the device (default = high)",
               options: [1: "High",
                         11: "Medium",
                         21: "Low"])
-	}
-    
-    // These tiles are not needed for the new ST mobile app.  R.I.P. ST Classic app.
-    tiles(scale: 2) {
-		standardTile("acceleration", "device.acceleration", width: 2, height: 2) {
-			state("active", label:'${name}', icon:"st.motion.acceleration.active", backgroundColor:"#00a0dc")
-			state("inactive", label:'${name}', icon:"st.motion.acceleration.inactive", backgroundColor:"#cccccc")
-		}
-		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false, width: 2, height: 2) {
-			state "battery", label: '${currentValue}% battery', unit: ""
-		}
-		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", action: "refresh.refresh", icon: "st.secondary.refresh"
-		}
-		main(["acceleration"])
-		details(["acceleration","battery","refresh"])
 	}
 }
 
