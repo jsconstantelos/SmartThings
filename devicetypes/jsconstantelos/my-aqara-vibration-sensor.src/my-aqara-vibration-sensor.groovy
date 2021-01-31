@@ -57,7 +57,7 @@ metadata {
 }
 
 def parse(String description) {
-//	log.debug "Incoming data from device : $description"
+	log.debug "Incoming data from device : $description"
     if (description?.startsWith("catchall:")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
 		log.debug "Catchall Map Data : $descMap"
@@ -103,7 +103,7 @@ def ping() {
 
 def resetvib() {
 //	log.debug "Setting device to inactive (no activity)..."
-	sendEvent(name: "acceleration", value: "inactive", displayed: true, isStateChange: true)
+	sendEvent(name: "acceleration", value: "inactive", displayed: true, isStateChange: true)	// this must be done because the device does not report an inactive state.
 }
 
 def refresh() {
