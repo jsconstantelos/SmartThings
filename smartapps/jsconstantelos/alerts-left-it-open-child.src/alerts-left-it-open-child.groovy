@@ -47,7 +47,7 @@ preferences {
   }
   
   section("AND turn on this switch") {
-    input "switches", "capability.switch", title: "Which switches (if any)?", multiple:true
+    input "switches", "capability.switch", title: "Which switches (if any)?", multiple:true, required: false
   }
   
 }
