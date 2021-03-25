@@ -45,6 +45,11 @@ preferences {
       input "phone", "phone", title: "Phone number (optional)", required: false
     }
   }
+  
+  section("AND turn on this switch") {
+    input "switches", "capability.switch", title: "Which switches (if any)?", multiple:true
+  }
+  
 }
 
 def installed() {
@@ -77,7 +82,6 @@ def doorClosed(evt) {
 def doorOpenTooLong() {
   def contactState = contact.currentState("contact")
   def freq = (frequency != null && frequency != "") ? frequency * 60 : 600
-
   if (contactState.value == "open") {
     def elapsed = now() - contactState.rawDateCreated.time
     def threshold = ((openThreshold != null && openThreshold != "") ? openThreshold * 60000 : 60000) - 1000
@@ -97,6 +101,10 @@ void sendMessage() {
   def minutes = (openThreshold != null && openThreshold != "") ? openThreshold : 10
   def msg = "${contact.displayName} has been left open for ${minutes} minutes."
   log.info msg
+  if (switches) {
+  	log.info "Turning on the switch(es) selected by the user..."
+  	switches?.on()
+  }
   if (location.contactBookEnabled) {
     sendNotificationToContacts(msg, recipients)
   } else {
