@@ -16,7 +16,7 @@
  *
  */
 metadata {
-	definition (name: "My FortrezZ Water FMI", namespace: "jsconstantelos", author: "John Constantelos", mnmm: "SmartThingsCommunity", vid: "33c3381d-f626-39d0-aa93-c50a629654a1") {
+	definition (name: "My FortrezZ Water FMI", namespace: "jsconstantelos", author: "John Constantelos", mnmn: "SmartThingsCommunity", vid: "33c3381d-f626-39d0-aa93-c50a629654a1") {
         capability "Power Meter"        
 		capability "Energy Meter"
 		capability "Temperature Measurement"
