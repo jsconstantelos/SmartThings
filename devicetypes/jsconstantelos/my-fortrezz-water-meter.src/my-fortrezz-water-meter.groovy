@@ -36,8 +36,8 @@ metadata {
         capability "laughbook63613.gallonsLastUsed"
         capability "laughbook63613.highestGallonsUsed"
         
-        attribute "gpm", "number" // support for FortrezZ's legacy smartapps
-        attribute "cumulative", "number" // support for FortrezZ's legacy smartapps
+        attribute "gpm", "number"			// support for FortrezZ's legacy smartapps
+        attribute "cumulative", "number"	// support for FortrezZ's legacy smartapps
         attribute "alarmState", "string"
 
         command "resetMeter"
@@ -67,7 +67,7 @@ def installed() {
 def updated(){
 	state.debug = ("true" == debugOutput)
 	// Device-Watch simply pings if no device events received for 32min(checkInterval)
-	sendEvent(name: "checkInterval", value: 2 * 30 * 60 + 2 * 60, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
+	sendEvent(name: "checkInterval", value: 2 * 30 * 60 + 2 * 60, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])   
     response(configure())
 }
 
