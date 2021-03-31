@@ -16,7 +16,7 @@
  *
  */
 metadata {
-	definition (name: "My FortrezZ Water Meter", namespace: "jsconstantelos", author: "John Constantelos", mnmn: "SmartThingsCommunity", vid: "10d90dbd-2dc3-373d-9193-c70ff9914a6b") {
+	definition (name: "My FortrezZ Water Meter", namespace: "jsconstantelos", author: "John Constantelos", mnmn: "SmartThingsCommunity", vid: "d5504ae8-7c24-3589-97c6-75d2c19a2a0e") {
         capability "Power Meter"        
 		capability "Energy Meter"
 		capability "Temperature Measurement"
@@ -31,7 +31,7 @@ metadata {
         capability "Health Check"
 
 		capability "laughbook63613.waterFlowRate"
-        capability "laughbook63613.waterFlowHighestRate"
+        capability "laughbook63613.highestWaterFlowRate"
         capability "laughbook63613.totalGallonsUsed"
         capability "laughbook63613.gallonsLastUsed"
         capability "laughbook63613.highestGallonsUsed"
