@@ -148,7 +148,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
             }
 			def prevCumulative = cmd.scaledMeterValue - device.currentState('energy')?.doubleValue
 			if (prevCumulative > device.currentState('waterUsedHighest')?.doubleValue) {
-                sendEvent(name: "waterUsedHighest", value: String.format("%3.1f",prevCumulative), unit: "gals", displayed: false)
+                sendEvent(name: "waterUsedHighest", value: prevCumulative, unit: "gals", displayed: false)
             }
             sendEvent(name: "power", value: delta, displayed: false)						//needed in case a power/energy SmartApp wants to use this device
             sendEvent(name: "energy", value: cmd.scaledMeterValue, displayed: false)		//needed in case a power/energy SmartApp wants to use this device
@@ -157,7 +157,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
             sendEvent(name: "water", value: "dry", displayed: False)						//needed for FortrezZ legacy SmartApps
 			sendEvent(name: "waterFlowRate", value: delta, unit: "gpm", displayed: true)
             sendEvent(name: "waterUsedTotal", value: cmd.scaledMeterValue, unit: "gals", displayed: true)
-            sendEvent(name: "waterUsedLast", value: String.format("%3.1f",prevCumulative), unit: "gals", displayed: true)
+            sendEvent(name: "waterUsedLast", value: prevCumulative, unit: "gals", displayed: true)
             sendEvent(name: "alarmState", value: "Normal Operation", displayed: true)
             return
     	} else {
@@ -166,7 +166,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
             sendEvent(name: "waterFlowRate", value: delta, unit: "gpm", displayed: true)
             if (state.debug) log.debug "flowing at ${delta} gpm"
             if (delta > device.currentState('waterFlowHighestRate')?.doubleValue) {
-                sendEvent(name: "waterFlowHighestRate", value: String.format("%3.1f",delta), unit: "gpm", displayed: true)
+                sendEvent(name: "waterFlowHighestRate", value: delta, unit: "gpm", displayed: true)
             }
         	if (delta > gallonThreshhold) {
                 sendEvent(name: "water", value: "wet", displayed: false)					//needed for FortrezZ legacy SmartApps
