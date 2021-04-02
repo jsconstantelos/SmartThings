@@ -20,6 +20,7 @@ import physicalgraph.zigbee.zcl.DataType
 
 metadata {
     definition (name: "My Aqara Vibration Sensor", namespace: "jsconstantelos", author: "jsconstantelos") {
+    	capability "Actuator"
     	capability "Acceleration Sensor"
 		capability "Battery"
 		capability "Configuration"
