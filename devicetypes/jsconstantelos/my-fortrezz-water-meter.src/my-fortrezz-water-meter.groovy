@@ -17,7 +17,7 @@
  *
  */
 metadata {
-	definition (name: "My FortrezZ Water Meter", namespace: "jsconstantelos", author: "John Constantelos", mnmn: "SmartThingsCommunity", vid: "d5504ae8-7c24-3589-97c6-75d2c19a2a0e") {
+	definition (name: "My FortrezZ Water Meter", namespace: "jsconstantelos", author: "John Constantelos", mnmn: "SmartThingsCommunity", vid: "d5504ae8-7c24-3589-97c6-75d2c19a2a0e", ocfDeviceType: "oic.d.watervalve") {
         capability "Power Meter"        
 		capability "Energy Meter"
 		capability "Temperature Measurement"
