@@ -14,6 +14,7 @@
  *  -------
  *  03-30-2021 : Original commit.
  *  04-01-2021 : Minor tweaks to capture history.
+ *  04-11-2021 : Changed powerSource to use ST's standard values
  *
  */
 metadata {
@@ -186,10 +187,10 @@ def zwaveEvent(physicalgraph.zwave.commands.alarmv2.AlarmReport cmd) {
     if (cmd.zwaveAlarmType == 8) { // Power Alarm
         if (cmd.zwaveAlarmEvent == 2) { // AC Mains Disconnected
             sendEvent(name: "alarmState", value: "Mains Disconnected!", descriptionText: text, displayed: true)
-            sendEvent(name: "powerSource", value: "Power Loss!", displayed: true)
+            sendEvent(name: "powerSource", value: "battery", displayed: true)
         } else if (cmd.zwaveAlarmEvent == 3) { // AC Mains Reconnected
             sendEvent(name: "alarmState", value: "Mains Reconnected", descriptionText: text, displayed: true)
-            sendEvent(name: "powerSource", value: "AC Power", displayed: true)
+            sendEvent(name: "powerSource", value: "mains", displayed: true)
         } else if (cmd.zwaveAlarmEvent == 0x0B) { // Replace Battery Now
             sendEvent(name: "alarmState", value: "Replace Battery Now", descriptionText: text, displayed: true)
         } else if (cmd.zwaveAlarmEvent == 0x00) { // Battery Replaced
