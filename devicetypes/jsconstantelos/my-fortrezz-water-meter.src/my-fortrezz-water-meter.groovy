@@ -14,7 +14,8 @@
  *  -------
  *  03-30-2021 : Original commit.
  *  04-01-2021 : Minor tweaks to capture history.
- *  04-11-2021 : Changed powerSource to use ST's standard values
+ *  04-11-2021 : Changed powerSource to use ST's standard values.
+ *  04-24-2021 : Added cumulative sendevent to support legacy FortrezZ smartapps.
  *
  */
 metadata {
@@ -164,7 +165,10 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
             return
     	} else {
             sendEvent(name: "power", value: delta, displayed: false)						//needed in case a power/energy SmartApp wants to use this device
+            sendEvent(name: "energy", value: cmd.scaledMeterValue, displayed: false)		//needed in case a power/energy SmartApp wants to use this device
             sendEvent(name: "gpm", value: delta, displayed: false)							//needed for FortrezZ legacy SmartApps
+            sendEvent(name: "cumulative", value: cmd.scaledMeterValue, displayed: false)	//needed for FortrezZ legacy SmartApps
+            sendEvent(name: "waterUsedTotal", value: cmd.scaledMeterValue, unit: "gals", displayed: true)
             sendEvent(name: "waterFlowRate", value: delta, unit: "gpm", displayed: true)
             if (state.debug) log.debug "flowing at ${delta} gpm"
             if (delta > device.currentState('waterFlowHighestRate')?.doubleValue) {
