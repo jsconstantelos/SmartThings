@@ -153,22 +153,21 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
 			if (prevCumulative > device.currentState('waterUsedHighest')?.doubleValue) {
                 sendEvent(name: "waterUsedHighest", value: String.format("%3.1f",prevCumulative), unit: "gals", displayed: true)
             }
-            sendEvent(name: "power", value: delta, displayed: false)									//needed in case a power/energy SmartApp wants to use this device
-            sendEvent(name: "energy", value: cmd.scaledMeterValue, displayed: false)					//needed in case a power/energy SmartApp wants to use this device
-            sendEvent(name: "gpm", value: delta, displayed: false)										//needed for FortrezZ legacy SmartApps
-            sendEvent(name: "cumulative", value: cmd.scaledMeterValue, displayed: false, unit: "gal")	//needed for FortrezZ legacy SmartApps
-            sendEvent(name: "water", value: "dry", displayed: False)									//needed for FortrezZ legacy SmartApps
+            sendEvent(name: "power", value: delta, displayed: false)						//needed in case a power/energy SmartApp wants to use this device
+            sendEvent(name: "energy", value: cmd.scaledMeterValue, displayed: false)		//needed in case a power/energy SmartApp wants to use this device
+            sendEvent(name: "gpm", value: delta, displayed: false)							//needed for FortrezZ legacy SmartApps
+            sendEvent(name: "cumulative", value: cmd.scaledMeterValue, displayed: false)	//needed for FortrezZ legacy SmartApps
+            sendEvent(name: "water", value: "dry", displayed: False)						//needed for FortrezZ legacy SmartApps
 			sendEvent(name: "waterFlowRate", value: delta, unit: "gpm", displayed: true)
             sendEvent(name: "waterUsedTotal", value: cmd.scaledMeterValue, unit: "gals", displayed: true)
             sendEvent(name: "waterUsedLast", value: String.format("%3.1f",prevCumulative), unit: "gals", displayed: true)
             sendEvent(name: "alarmState", value: "Normal Operation", displayed: true)
             return
     	} else {
-            sendEvent(name: "power", value: delta, displayed: false)									//needed in case a power/energy SmartApp wants to use this device
-            sendEvent(name: "energy", value: cmd.scaledMeterValue, displayed: false)					//needed in case a power/energy SmartApp wants to use this device
-            sendEvent(name: "gpm", value: delta, displayed: false)										//needed for FortrezZ legacy SmartApps
-            sendEvent(name: "cumulative", value: cmd.scaledMeterValue, displayed: false, unit: "gal")	//needed for FortrezZ legacy SmartApps
-            sendEvent(name: "waterUsedTotal", value: cmd.scaledMeterValue, unit: "gals", displayed: true)
+            sendEvent(name: "power", value: delta, displayed: false)						//needed in case a power/energy SmartApp wants to use this device
+            sendEvent(name: "energy", value: cmd.scaledMeterValue, displayed: false)		//needed in case a power/energy SmartApp wants to use this device
+            sendEvent(name: "gpm", value: delta, displayed: false)							//needed for FortrezZ legacy SmartApps
+            sendEvent(name: "cumulative", value: cmd.scaledMeterValue, displayed: false)	//needed for FortrezZ legacy SmartApps
             sendEvent(name: "waterFlowRate", value: delta, unit: "gpm", displayed: true)
             if (state.debug) log.debug "flowing at ${delta} gpm"
             if (delta > device.currentState('waterFlowHighestRate')?.doubleValue) {
