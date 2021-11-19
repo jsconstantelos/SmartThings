@@ -39,41 +39,12 @@ metadata {
 		command "childOn", ["string"]
 		command "childOff", ["string"]
         command "reset"
-
+        
 		fingerprint profileId: "0104", inClusters: "0000,0002,0003,0004,0005,0006,0009,0702,0B04", outClusters: "000A,0019", manufacturer: "LUMI", model: "lumi.switch.b2naus01", deviceJoinName: "Aqara Double Rocker Switch"
 	}
-
     preferences {
        input "debugOutput", "boolean", title: "Enable debug logging?", defaultValue: false, displayDuringSetup: false
     }
-
-	tiles(scale: 2) {
-		multiAttributeTile(name: "switch", width: 6, height: 4, canChangeIcon: false) {
-			tileAttribute("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "on", label: '${name}', action: "switch.off", icon: "st.switches.light.on", backgroundColor: "#00A0DC", nextState: "turningOff"
-				attributeState "off", label: '${name}', action: "switch.on", icon: "st.switches.light.off", backgroundColor: "#ffffff", nextState: "turningOn"
-				attributeState "turningOn", label: '${name}', action: "switch.off", icon: "st.switches.light.on", backgroundColor: "#00A0DC", nextState: "turningOff"
-				attributeState "turningOff", label: '${name}', action: "switch.on", icon: "st.switches.light.off", backgroundColor: "#ffffff", nextState: "turningOn"
-			}
-			tileAttribute("power", key: "SECONDARY_CONTROL") {
-				attributeState "power", label: '${currentValue} W'
-			}
-		}
-        childDeviceTiles("all")
-        standardTile("energy", "device.energy", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state "default", label:'${currentValue} kWh'
-        }
-        standardTile("reset", "device.energy", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state "default", label:'Reset kWh', action:"reset", icon: "st.secondary.refresh-icon"
-        }
-		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label: "Refresh", action: "refresh.refresh", icon: "st.secondary.refresh-icon"
-		}
-//		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-//			state "default", action: "configuration.configure", icon: "st.secondary.configure"
-//		}
-//		main "switch"
-	}
 }
 
 def installed() {
