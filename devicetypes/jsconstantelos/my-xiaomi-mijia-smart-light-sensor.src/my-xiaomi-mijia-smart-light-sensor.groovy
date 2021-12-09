@@ -20,13 +20,14 @@
  *  05-22-2020 : Fixed issues with preference values.
  *  05-23-2020 : Removed preferences because the sensor doesn't seem to honor them.
  *  05-30-2020 : Added a preference/setting for the new app that will force device configuration.  This is a workaround for not having a Configure tile in the new app.
- *  08-07-2020 : Added/Updated mnmn and VID values to have LUX show up properly in the new app vs. battery level or "checking status"
+ *  08-07-2020 : Added/Updated mnmn and VID values to have LUX show up properly in the new app vs. battery level or "checking status".
+ *  12-07-2021 : Added AQARA model to the fingerprints, and added ocfDeviceType to get the proper icon.
  */
 
 import physicalgraph.zigbee.zcl.DataType
 
 metadata {
-    definition (name: "My Xiaomi Mijia Smart Light Sensor", namespace: "jsconstantelos", author: "jsconstantelos", mnmn: "SmartThingsCommunity", vid: "a3fe3c0d-1f51-3d51-9309-566ba1219b4f") {
+    definition (name: "My Xiaomi Mijia Smart Light Sensor", namespace: "jsconstantelos", author: "jsconstantelos", mnmn: "SmartThingsCommunity", vid: "a3fe3c0d-1f51-3d51-9309-566ba1219b4f", ocfDeviceType: "x.com.st.d.sensor.light") {
         capability "Illuminance Measurement"
         capability "Configuration"
         capability "Refresh"
@@ -39,27 +40,10 @@ metadata {
 		input "forceConfig", "boolean", title: "Toggle ONCE to force device configuration (any position will force a config)"
 	}
 
+	fingerprint profileId: "0104", inClusters: "0000,0400,0003,0001", outClusters: "0003", manufacturer: "AQARA", model: "lumi.sen_ill.agl01", deviceJoinName: "Xiaomi Mijia Smart Home Light Sensor"
 	fingerprint profileId: "0104", inClusters: "0000,0400,0003,0001", outClusters: "0003", manufacturer: "LUMI", model: "lumi.sen_ill.mgl01", deviceJoinName: "Xiaomi Mijia Smart Home Light Sensor"
     fingerprint profileId: "0104", inClusters: "0000,0400,0003,0001", outClusters: "0003", manufacturer: "XIAOMI", model: "lumi.sen_ill.mgl01", deviceJoinName: "Xiaomi Mijia Smart Home Light Sensor"
-    
-    tiles(scale: 2) {
-		multiAttributeTile(name:"illuminance", type: "generic", width: 6, height: 4){
-			tileAttribute("device.illuminance", key: "PRIMARY_CONTROL") {
-				attributeState("illuminance", label:'${currentValue} LUX', icon:"st.illuminance.illuminance.bright", backgroundColor:"#999999")
-			}
-		}
-		standardTile("battery", "device.battery", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-			state "default", label:'${currentValue}% battery', unit:"%"
-		}
-		standardTile("refresh", "device.illuminance", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-			state "default", label: 'Refresh', action:"refresh.refresh", icon:"st.secondary.refresh-icon"
-		}
-		standardTile("configure", "device.illuminance", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-			state "default", action:"configuration.configure", icon:"st.secondary.configure"
-		}
-		main(["illuminance"])
-		details(["illuminance", "battery", "refresh", "configure"])
-	}
+
 }
 
 def parse(String description) {
