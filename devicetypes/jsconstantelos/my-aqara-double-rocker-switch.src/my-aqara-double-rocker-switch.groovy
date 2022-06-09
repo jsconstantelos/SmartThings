@@ -40,7 +40,7 @@ metadata {
 		command "childOff", ["string"]
         command "reset"
         
-		fingerprint profileId: "0104", inClusters: "0000,0002,0003,0004,0005,0006,0009,0702,0B04", outClusters: "000A,0019", manufacturer: "LUMI", model: "lumi.switch.b2naus01", deviceJoinName: "Aqara Double Rocker Switch"
+//		fingerprint profileId: "0104", inClusters: "0000,0002,0003,0004,0005,0006,0009,0702,0B04", outClusters: "000A,0019", manufacturer: "LUMI", model: "lumi.switch.b2naus01", deviceJoinName: "Aqara Double Rocker Switch"
 	}
     preferences {
        input "debugOutput", "boolean", title: "Enable debug logging?", defaultValue: false, displayDuringSetup: false
