@@ -26,35 +26,22 @@ metadata {
 		capability "Configuration"
 		capability "Sensor"
 		capability "Refresh"
-//		capability "Health Check"	// This sensor does not send data to "keep it alive" (aka online) unless there is activity.  Since that may not happen for a very long time, this capability is not used.
 
-		fingerprint profileId: "0104", inClusters: "0000,0500,0003,0001", outClusters: "0003,0019", manufacturer: "LUMI", model: "lumi.vibration.agl01", deviceJoinName: "Aqara Vibration Sensor"
+//		fingerprint profileId: "0104", inClusters: "0000,0500,0003,0001", outClusters: "0003,0019", manufacturer: "LUMI", model: "lumi.vibration.agl01", deviceJoinName: "Aqara Vibration Sensor"
     }
 
 	preferences {
         input "vibrationreset", "number", title: "Reporting Interval (in seconds)", description: "Reporting interval to keep showing vibration before resetting to inactive (default = 10 seconds)", range: "1..60"
-        input("sensitivity", "enum",
-              title: "Sensitivity Level",
-              description: "Sensitivity level of the device (default = high)",
-              options: [1: "High",
-                        11: "Medium",
-                        21: "Low"])
 	}
 }
 
 def parse(String description) {
-	log.debug "Incoming data from device : $description"
     if (description?.startsWith("catchall:")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
 		log.debug "Catchall Map Data : $descMap"
-        if (descMap.clusterId == "0000") {
-        	def dataElements = descMap.data.size()
-        	log.debug "Found ${dataElements} data elements for attribute ID ${descMap.attrId} : ${descMap.data}"
-        }
 	}
     if (description?.startsWith("read attr -")) {
 		def descMap = zigbee.parseDescriptionAsMap(description)
-//		log.debug "Read Attr Map Data : $descMap"
 		if (descMap.cluster == "0001" && descMap.attrId == "0020") {
             def vBatt = Integer.parseInt(descMap.value,16) / 10
             def pct = (vBatt - 2.1) / (3 - 2.1)
@@ -99,7 +86,6 @@ def refresh() {
         "st rattr 0x${device.deviceNetworkId} 1 0x001 0", "delay 2000",
         "st rattr 0x${device.deviceNetworkId} 1 0x500 0", "delay 2000"
 	]
-    zigbee.readAttribute( 0x0000, 0xFF0D)	// This cluster/attribute should contain certain settings we're interested in.
 }
 
 def configure() {
@@ -119,16 +105,6 @@ def configure() {
     	zigbee.configureReporting(0x0001, 0x0020, DataType.UINT8, 60, 3600, 0x01), "delay 2000",	// get battery voltage
         zigbee.configureReporting(0x0001, 0x0021, DataType.UINT8, 60, 3600, 0x01), "delay 2000"		// get battery %
     ]
-    log.debug "...attempting to set sensitivity level..."
-    if (senselevel == "1") {
-    	zigbee.writeAttribute(0x0000, 0xFF0D, DataType.UINT8, 0x01)									// set sensitivity level (0x15=low, 0x0B=medium, 0x01=high) data type 0x20
-    } else if (senselevel == "11") {
-    	zigbee.writeAttribute(0x0000, 0xFF0D, DataType.UINT8, 0x0b)									// set sensitivity level (0x15=low, 0x0B=medium, 0x01=high) data type 0x20
-    } else if (senselevel == "21") {
-    	zigbee.writeAttribute(0x0000, 0xFF0D, DataType.UINT8, 0x15)									// set sensitivity level (0x15=low, 0x0B=medium, 0x01=high) data type 0x20
-    } else {
-    	zigbee.writeAttribute(0x0000, 0xFF0D, DataType.UINT8, 0x01)									// set sensitivity level (0x15=low, 0x0B=medium, 0x01=high) data type 0x20
-    }
     def resetseconds = vibrationreset ? vibrationreset : 10
     log.debug "...vibration reset is set to $resetseconds seconds..."
     log.debug "Configuration (${device.deviceNetworkId} ${device.zigbeeId}) finished..."
